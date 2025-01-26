@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="../static/img/favicon.ico"/>
+    <link rel="stylesheet" href="../static/css/framework.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
+    {% block customCSS %}{% endblock %}
+</head>
+<body>
+    <header class="contenedor-ancho no-margen header-header">
+        <div class="header-title">
+            <picture>
+                <source media="(max-width:1400px)" srcset="../static/img/DHL_rgb.png">
+                <img class="header-img no-margen" src="../static/img/DHL_rgb.png" alt="DHL Forms" style="width: 250px;">
+            </picture>
+            <p class="wh_data no-margen">{{warehouse_logged}}</p>
+        </div>
+        <div class="usuario">
+            <p class="user no-margen padding-izquierda">{{user_logged}}</p>
+        </div>
+        <nav class="menu" style="background: transparent;">
+            <ul>
+                <li><a type="button" class="{% if request.path == url_for('home') %}active{% endif %} {% if request.path == url_for('login') %}active{% endif %}" href="{{url_for('home')}}"><span class="material-symbols-outlined">Home</span>&nbsp;Home</a></li>
+                <li><a class="{% if request.path == url_for('forms') %}active{% endif %}" href="{{url_for('forms')}}"><span class="material-symbols-outlined">Wysiwyg</span>&nbsp;Forms</a></li>
+                <li><a class="{% if request.path == url_for('tools') %}active{% endif %}
+                                {% if request.path == url_for('done_tasks') %}active{% endif %}
+                                {% if request.path == url_for('new_task') %}active{% endif %}
+                                {% if tools_button_active == 'active' %}active{% endif %}
+                                {% if request.path == url_for('notes') %}active{% endif %}
+                                {% if request.path == url_for('new_note') %}active{% endif %}
+                                {% if request.path == url_for('csv_reader') %}active{% endif %}
+                                {% if request.path == url_for('barcode_generator') %}active{% endif %}" href="{{url_for('tools')}}"><span class="material-symbols-outlined">Build</span>&nbsp;Tools</a></li>
+                <li class="{{user_privileges}}"><a class="{% if request.path == url_for('warehouse_configuration') %}active{% endif %}
+                                                            {% if request.path == url_for('users_config') %}active{% endif %}
+                                                            {% if request.path == url_for('forms_config') %}active{% endif %}
+                                                            {% if request.path == url_for('tools_config') %}active{% endif %}
+                                                            {% if config_button_active == 'active' %}active{% endif %}
+                                                            {% if request.path == url_for('configuration_home') %}active{% endif %}" href="{{url_for('configuration_home')}}"><span class="material-symbols-outlined">Settings</span>&nbsp;Configuration</a></li>
+                <li ><a href="{{url_for('logout')}}"><span class="material-symbols-outlined">logout</span></a></li>
+            </ul>
+        </nav>
+        </header>
+    {% block main %}{% endblock %}
+    <footer></footer>
+<script src="../static/js/button_activation.js"></script>
+</body>
+</html>

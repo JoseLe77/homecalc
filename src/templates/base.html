@@ -3,6 +3,7 @@
 <head>
     <title>My First Flask Webpage</title>
     <!--<title>{% block title %}{% endblock %}</title>-->
+    <link rel="stylesheet" href="static/css/normalize.css">
     <link rel="stylesheet" href="static/css/framework.css">
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
@@ -12,7 +13,14 @@
     <header class="header-top">
         <h1>Welcome to my Flask webpages!</h1>
     </header>
-    <nav class="nav-top"></nav>
+    <nav class="nav-top menu col-1">
+        <ul class="nav-top_menu">
+            <li class="nav-top_menu--option">Menu1</li>
+            <li class="nav-top_menu--option">Menu2</li>
+            <li class="nav-top_menu--option">Menu3</li>
+            <li class="nav-top_menu--option">Menu4</li>
+        </ul>
+    </nav>
     {% block main %}{% endblock %}
     <footer class="footer-bottom"></footer>
 </body>

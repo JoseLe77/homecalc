@@ -2,7 +2,7 @@
 # Imports
 # -------------------------------------------------------------------------
 from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
-import pysqlite3
+import sqlite3
 
 # -------------------------------------------------------------------------
 # Setup
@@ -12,7 +12,7 @@ app.secret_key = "homecalc2025"
 
 def dbconnection():
   # Connects to the specified SQLite database and returns a connection and cursor.
-  connection = sqlite3.connect('../src/db/database/homecalc.db')
+  connection = sqlite3.connect('src/db/database/homecalc.db')
   cursor = connection.cursor()
   return connection, cursor
 
@@ -26,8 +26,20 @@ def dbconnection():
     ) """
 
 @app.route("/")
-def hello_world():
-    return render_template('home.html')
+def home():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+    print('DB connected successfully')
+    
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/must_haveto.sql', mode='r')
+    must_haveto_query = webcall.read()
+    webcall.close()
+    cursor.execute(must_haveto_query)
+    must_haveto_query_results = cursor.fetchall()
+    print(must_haveto_query_results)
+
+    return render_template('home.html', must_haveto_query_results=must_haveto_query_results)
 
 
 if __name__ == "__main__":

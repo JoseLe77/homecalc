@@ -23,15 +23,15 @@
     --fuente:                   'Open Sans', sans-serif;
     --fondo:                    #f2f2f2;
     --ancho-contenedor:         1200px;
-    --color-primario2:          rgb(100, 30, 231);
+    --color-primario:           #252525; 
+    --color-table_header:       rgb(9, 25, 77);
     --color-primario-accion:    rgb(81, 20, 194);
     --color-secundario:         rgb(212, 5, 17);
     --color-secundario-accion:  rgb(0, 131, 61);
     --color-terciario:          rgb(255, 204, 0);
-    --color-primario:           #252525;
     --color-rojo:               #D40511;
     --color-amarillo:           #FFCC00;
-    --color-filas_tabla:        ##D7D7D7;
+    --color-filas_tabla:        #D7D7D7;
 }
 
 
@@ -279,7 +279,7 @@ h1, h2, h3, h4, h5, h6{
 }
 
 .tabla thead{
-    background-color:   var(--color-rojo);
+    background-color:   var(--color-table_header);
     border-bottom:      5px solid black;
     color:              white;
     font-weight:        bold;

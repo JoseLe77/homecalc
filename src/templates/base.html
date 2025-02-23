@@ -13,15 +13,17 @@
     <header class="header-top">
         <h1>Welcome to my Flask webpages!</h1>
     </header>
-    <nav class="nav-top menu col-1">
-        <ul class="nav-top_menu">
-            <li class="nav-top_menu--option"><a href="#">Menu1</a></li>
-            <li class="nav-top_menu--option"><a href="#">Menu2</a></li>
-            <li class="nav-top_menu--option"><a href="#">Menu3</a></li>
-            <li class="nav-top_menu--option"><a href="#">Menu4</a></li>
-        </ul>
-    </nav>
-    {% block main %}{% endblock %}
+    <main class="contenedor main-distribution no-margen">
+        <nav class="nav-top menu col-1">
+            <ul class="nav-top_menu">
+                <li class="nav-top_menu--option"><a href="#">Menu1</a></li>
+                <li class="nav-top_menu--option"><a href="#">Menu2</a></li>
+                <li class="nav-top_menu--option"><a href="#">Menu3</a></li>
+                <li class="nav-top_menu--option"><a href="#">Menu4</a></li>
+            </ul>
+        </nav>
+        {% block main %}{% endblock %}
+    </main>
     <footer class="footer-bottom"></footer>
 </body>
 </html>

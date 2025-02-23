@@ -43,11 +43,11 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='127.0.0.1', port=4000)
 
 # config.py
 DEVELOPMENT = {
     'DEBUG': True,
     'HOST': '127.0.0.1',
-    'PORT': 5000
+    'PORT': 4000
 }

@@ -24,14 +24,13 @@
     --fondo:                    #f2f2f2;
     --ancho-contenedor:         1200px;
     --color-primario:           #252525; 
-    --color-table_header:       rgb(9, 25, 77);
     --color-primario-accion:    rgb(81, 20, 194);
     --color-secundario:         rgb(212, 5, 17);
     --color-secundario-accion:  rgb(0, 131, 61);
     --color-terciario:          rgb(255, 204, 0);
-    --color-rojo:               #D40511;
-    --color-amarillo:           #FFCC00;
+    --color-table_header:       rgb(9, 25, 77);
     --color-filas_tabla:        #D7D7D7;
+    --color-text_menu:          #f2f2f2;
 }
 
 
@@ -206,7 +205,7 @@ img{
 }
 
 .menu a{
-    color:              var(--color-primario);
+    color:              var(--color-text_menu);
     text-decoration:    none;
     display:            flex;
     align-items:        center;
@@ -359,7 +358,7 @@ color: #fff;
 }
 
 .boton.oscuro:hover{
- background: var(--color-amarillo);
+ background: var(--color-terciario);
  color: #000;
 }
 

@@ -1,20 +1,35 @@
-.header-top{
-    height: 100px;
-    background: burlywood;
+/* ==================
+    * VARIABLES *
+================== */
+:root{
+    --header-hight: 100px;
+    --dinamic-100-width: 100dvw;
 }
 
-.main-distribution{
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: space-between;
-}
+/* ==================
+    * HEADER *
+================== */
+.top-header{
+    height:         var(--header-hight);
+    width:          var(--dinamic-100-width);
+    background:     #000;
+    position:       sticky;
+    
+    & .top-title{
+        height:             var(--header-hight);
+        display:            flex;
+        flex-direction:     column;
+        justify-content:    space-around;
+        color:              #fff;
+        padding-left:       30px;
+    }
 
-.menu{
-    width: 8%;
-    max-height: 100%;
-}
-
-.menu ul{
-    flex-direction: column;
+    & .top-nav{
+        height:         var(--header-hight);
+        position:       absolute;
+        top:            0;
+        width:          var(--dinamic-100-width);
+        background:     none;
+        align-items:    center;
+    }    
 }

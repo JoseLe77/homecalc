@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My First Flask Webpage</title>
+    <title>HomeCalc</title>
     <!--<title>{% block title %}{% endblock %}</title>-->
     <link rel="stylesheet" href="static/css/normalize.css">
     <link rel="stylesheet" href="static/css/framework.css">
@@ -11,13 +11,12 @@
 </head>
 <body class="col-5">
     <header class="top-header">
-        <h1 class="top-title padding-izquierda">HomeCalc</h1>
+        <h1 class="top-title padding-izquierda display-2">HomeCalc</h1>
         <nav class="top-nav menu menu-derecha">
             <ul class="nav-top_menu">
-                <li class="nav-top_menu--option"><a href="#">Menu1</a></li>
-                <li class="nav-top_menu--option"><a href="#">Menu2</a></li>
-                <li class="nav-top_menu--option"><a href="#">Menu3</a></li>
-                <li class="nav-top_menu--option"><a href="#">Menu4</a></li>
+                {% for button in nav_buttons_query_results %}
+                    <li class="nav-top_menu--option"><a href="{{ button.1 }}">{{ button.0 }}</a></li>
+                {% endfor %}
             </ul>
         </nav>
     </header>

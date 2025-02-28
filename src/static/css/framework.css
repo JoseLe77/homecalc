@@ -224,8 +224,8 @@ img{
 
 .menu a:hover,
 .menu a:active{
-    color:      #fff;
-    background: var(--color-terciario);
+    color:          var(--color-primario);
+    background:     var(--color-terciario);
 }
 
 /* ===============
@@ -353,13 +353,13 @@ form .input:focus{
 }
 
 .boton.oscuro{
-background: var(--color-primario);
-color: #fff;
+    background: var(--color-primario);
+    color: #fff;
 }
 
 .boton.oscuro:hover{
- background: var(--color-terciario);
- color: #000;
+    background: var(--color-terciario);
+    color: #000;
 }
 
 .boton.verde{

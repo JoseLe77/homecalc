@@ -1,27 +1,5 @@
 {% extends './base.html' %}
 {% block main %}
-<section class="contenedor">
-    <table class="tabla" id="tabla">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">AÑO</td>
-                <th class="texto-centrado">MES</td>
-                <th class="texto-centrado">MENSUALIDAD NETA</td>
-                <th class="texto-centrado">MENSUALIDAD EXTRA</td>
-                <th class="texto-centrado">TOTAL GASTOS</td>       
-            </tr>
-    </thead>
-    <tbody class="tabla_con_encabezado">
-    {% for must_haveto in must_haveto_query_results %}
-        <tr>
-            <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.0 }}</td>
-            <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.1 }}</td>
-            <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.2 }}</td>
-            <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.3 }}</td>
-            <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.6 }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</section>
+
 {% endblock %}
 

@@ -1,6 +1,6 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda shadow">
+<nav class="nav-main menu menu-izquierda">
     <ul>
         <li><a href="#">Gastos periodicos</a></li>
         <li><a href="#">Gastos Extra</a></li>
@@ -8,7 +8,53 @@
     </ul>
 </nav>
 <section class="contenedor">
-    
+    <form class="filter-form margen-inferior" action="#" method="POST">
+        <div class="margen-derecha">
+            <label for="año">AÑO</label>
+            <input type="text" class="input" id="año" name="año" placeholder="año">
+        </div>
+        <div class="margen-derecha">
+            <label for="mes">MES</label>
+            <select name="mes" class="input">
+                <option>TODOS</option>
+                <option>ENERO</option>
+                <option>FEBRERO</option>
+                <option>MARZO</option>
+                <option>ABRIL</option>
+                <option>MAYO</option>
+                <option>JUNIO</option>
+                <option>JULIO</option>
+                <option>AGOSTO</option>
+                <option>SEPTIEMBRE</option>
+                <option>OCTUBRE</option>
+                <option>NOVIEMBRE</option>
+                <option>DICIEMBRE</option>
+            </select>
+        </div>
+        <button class="boton" type="submit">Filtrar</button>
+    </form>
+    <table class="tabla no-padding-superior" id="tabla">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">MES</td>
+                <th class="texto-centrado">MENSUALIDAD NETA</td>
+                <th class="texto-centrado">MENSUALIDAD EXTRA</td>
+                <th class="texto-centrado">TOTAL GASTOS</td>       
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for must_haveto in must_haveto_query_results %}
+            <tr>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.0 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.3 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ must_haveto.6 }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </section>
 {% endblock %}
 

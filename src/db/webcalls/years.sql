@@ -1,0 +1,1 @@
+SELECT DISTINCT if2.año FROM IngresosFijos if2 WHERE año <= strftime('%Y', 'now')

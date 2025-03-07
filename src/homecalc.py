@@ -62,18 +62,9 @@ def home():
         nav_buttons_query_results = cursor.fetchall()
     except Exception as e:
         print(f"Error al ejecutar la query: {e}")
-    finally:
-        # ---- Database SQL Query ----
-        webcall = open('src/db/webcalls/must_haveto.sql', mode='r')
-        must_haveto_query = webcall.read()
-        webcall.close()
-        try:
-            cursor.execute(must_haveto_query)
-            must_haveto_query_results = cursor.fetchall()
-        except Exception as e:
-            print(f"Error al ejecutar la query: {e}")
+    
 
-    return render_template('home.html', must_haveto_query_results=must_haveto_query_results, nav_buttons_query_results=nav_buttons_query_results)
+    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results)
 
 
 @app.route("/form")
@@ -107,6 +98,7 @@ def income():
         nav_buttons_query_results = cursor.fetchall()
     except Exception as e:
         print(f"Error al ejecutar la query: {e}")
+    
         
     return render_template('income.html', nav_buttons_query_results=nav_buttons_query_results)
 
@@ -124,8 +116,18 @@ def expenses():
         nav_buttons_query_results = cursor.fetchall()
     except Exception as e:
         print(f"Error al ejecutar la query: {e}")
+    finally:
+        # ---- Database SQL Query ----
+        webcall = open('src/db/webcalls/must_haveto.sql', mode='r')
+        must_haveto_query = webcall.read()
+        webcall.close()
+        try:
+            cursor.execute(must_haveto_query)
+            must_haveto_query_results = cursor.fetchall()
+        except Exception as e:
+            print(f"Error al ejecutar la query: {e}")
         
-    return render_template('expenses.html', nav_buttons_query_results=nav_buttons_query_results)
+    return render_template('expenses.html', must_haveto_query_results=must_haveto_query_results, nav_buttons_query_results=nav_buttons_query_results)
 
 
 if __name__ == "__main__":

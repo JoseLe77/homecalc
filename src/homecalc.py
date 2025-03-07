@@ -93,6 +93,40 @@ def form():
         
     return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results)
 
+@app.route("/income")
+def income():
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
+    nav_buttons_query = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(nav_buttons_query)
+        nav_buttons_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error al ejecutar la query: {e}")
+        
+    return render_template('income.html', nav_buttons_query_results=nav_buttons_query_results)
+
+@app.route("/expenses")
+def expenses():
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
+    nav_buttons_query = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(nav_buttons_query)
+        nav_buttons_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error al ejecutar la query: {e}")
+        
+    return render_template('expenses.html', nav_buttons_query_results=nav_buttons_query_results)
+
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5100)

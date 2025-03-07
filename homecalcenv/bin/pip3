@@ -1,4 +1,4 @@
-#!/home/arimotla/Documentos/GitHub/homecalc/homecalcenv/bin/python
+#!/home/jperezar/Documentos/GitHub/homecalc/homecalcenv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -8,32 +8,26 @@
     </ul>
 </nav>
 <section class="contenedor">
-    <form class="filter-form margen-inferior" action="#" method="POST">
+    <form action="/expenses" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
             <label for="año">AÑO</label>
-            <input type="text" class="input" id="año" name="año" placeholder="año">
+            <select name="año" class="input">
+                {% for year in years_list_query_results%}
+                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="margen-derecha">
             <label for="mes">MES</label>
             <select name="mes" class="input">
-                <option>TODOS</option>
-                <option>ENERO</option>
-                <option>FEBRERO</option>
-                <option>MARZO</option>
-                <option>ABRIL</option>
-                <option>MAYO</option>
-                <option>JUNIO</option>
-                <option>JULIO</option>
-                <option>AGOSTO</option>
-                <option>SEPTIEMBRE</option>
-                <option>OCTUBRE</option>
-                <option>NOVIEMBRE</option>
-                <option>DICIEMBRE</option>
+                {% for month in months_list_query_results%}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
             </select>
         </div>
         <button class="boton" type="submit">Filtrar</button>
     </form>
-    <table class="tabla no-padding-superior" id="tabla">
+    <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>
                 <th class="texto-centrado">AÑO</td>

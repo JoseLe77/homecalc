@@ -46,6 +46,66 @@ def nav_buttons():
         print(f"Error al ejecutar la query: {e}")
     finally:
         return nav_buttons_query_results
+    
+def basic_finance_data():
+    if request.method == 'POST':
+        year2filter = int(request.form['año'])
+        print(year2filter)
+        month2filter = int(request.form['mes'])
+        print(month2filter)
+    else:
+        now = datetime.datetime.now()
+        year2filter = int(now.year)
+        print(year2filter)
+        month2filter = int(now.month)
+        print(month2filter)
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
+    nav_buttons_query = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/years.sql', mode='r')
+    years_list = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/months.sql', mode='r')
+    months_list = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    if month2filter == 0:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YY.sql', mode='r')
+    else:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YYMM.sql', mode='r')
+        
+    must_haveto_query = webcall.read()
+    webcall.close()
+    must_haveto_query = must_haveto_query.format(year2filter, month2filter)
+        
+    try:
+        cursor.execute(nav_buttons_query)
+        nav_buttons_query_results = cursor.fetchall()
+
+        cursor.execute(years_list)
+        years_list_query_results = cursor.fetchall()
+
+        cursor.execute(months_list)
+        months_list_query_results = cursor.fetchall()
+
+        cursor.execute(must_haveto_query)
+        must_haveto_query_results = cursor.fetchall()
+
+    except Exception as e:
+        print(f"Error al ejecutar la query: {e}")
+    
+    finally:
+        connection.close()
 
 
 @app.route("/")
@@ -85,28 +145,10 @@ def form():
         
     return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results)
 
-@app.route("/income")
+@app.route("/income", methods=['GET', 'POST'])
 def income():
-    connection, cursor = dbconnection()
-    # print('DB connected successfully')
-
-    # ---- Database SQL Query ----
-    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
-    nav_buttons_query = webcall.read()
-    webcall.close()
-    try:
-        cursor.execute(nav_buttons_query)
-        nav_buttons_query_results = cursor.fetchall()
-    except Exception as e:
-        print(f"Error al ejecutar la query: {e}")
-    
-        
-    return render_template('income.html', nav_buttons_query_results=nav_buttons_query_results)
-
-@app.route("/expenses", methods=['GET', 'POST'])
-def expenses():
     if request.method == 'POST':
-        year2filter = int(request.form['selected_year'])
+        year2filter = int(request.form['año'])
         print(year2filter)
         month2filter = int(request.form['mes'])
         print(month2filter)
@@ -117,58 +159,125 @@ def expenses():
         month2filter = int(now.month)
         print(month2filter)
 
-        connection, cursor = dbconnection()
-        # print('DB connected successfully')
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
 
-        # ---- Database SQL Query ----
-        webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
-        nav_buttons_query = webcall.read()
-        webcall.close()
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
+    nav_buttons_query = webcall.read()
+    webcall.close()
 
-        # ---- Database SQL Query ----
-        webcall = open('src/db/webcalls/years.sql', mode='r')
-        years_list = webcall.read()
-        webcall.close()
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/years.sql', mode='r')
+    years_list = webcall.read()
+    webcall.close()
 
-        # ---- Database SQL Query ----
-        webcall = open('src/db/webcalls/months.sql', mode='r')
-        months_list = webcall.read()
-        webcall.close()
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/months.sql', mode='r')
+    months_list = webcall.read()
+    webcall.close()
 
-        # ---- Database SQL Query ----
-        webcall = open('src/db/webcalls/expenses/must_haveto.sql', mode='r')
-        must_haveto_query = webcall.read()
-        webcall.close()
-        must_haveto_query = must_haveto_query.format(year2filter, month2filter)
-            
-        try:
-            cursor.execute(nav_buttons_query)
-            nav_buttons_query_results = cursor.fetchall()
+    # ---- Database SQL Query ----
+    if month2filter == 0:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YY.sql', mode='r')
+    else:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YYMM.sql', mode='r')
 
-            cursor.execute(years_list)
-            years_list_query_results = cursor.fetchall()
-
-            cursor.execute(months_list)
-            months_list_query_results = cursor.fetchall()
-
-            cursor.execute(must_haveto_query)
-            must_haveto_query_results = cursor.fetchall()
-
-        except Exception as e:
-            print(f"Error al ejecutar la query: {e}")
+    must_haveto_query = webcall.read()
+    webcall.close()
+    must_haveto_query = must_haveto_query.format(year2filter, month2filter)
         
-        finally:
-            connection.close()
+    try:
+        cursor.execute(nav_buttons_query)
+        nav_buttons_query_results = cursor.fetchall()
+
+        cursor.execute(years_list)
+        years_list_query_results = cursor.fetchall()
+
+        cursor.execute(months_list)
+        months_list_query_results = cursor.fetchall()
+
+        cursor.execute(must_haveto_query)
+        must_haveto_query_results = cursor.fetchall()
+
+    except Exception as e:
+        print(f"Error al ejecutar la query: {e}")
+    
+    finally:
+        connection.close()
         
-        return render_template('expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, must_haveto_query_results=must_haveto_query_results)
+    return render_template('income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, must_haveto_query_results=must_haveto_query_results)
+
+@app.route("/expenses", methods=['GET', 'POST'])
+def expenses():
+    if request.method == 'POST':
+        year2filter = int(request.form['año'])
+        print(year2filter)
+        month2filter = int(request.form['mes'])
+        print(month2filter)
+    else:
+        now = datetime.datetime.now()
+        year2filter = int(now.year)
+        print(year2filter)
+        month2filter = int(now.month)
+        print(month2filter)
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/nav_buttons.sql', mode='r')
+    nav_buttons_query = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/years.sql', mode='r')
+    years_list = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    webcall = open('src/db/webcalls/months.sql', mode='r')
+    months_list = webcall.read()
+    webcall.close()
+
+    # ---- Database SQL Query ----
+    if month2filter == 0:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YY.sql', mode='r')
+    else:
+        webcall = open('src/db/webcalls/finance/basic_finance_data_by_YYMM.sql', mode='r')
+
+    must_haveto_query = webcall.read()
+    webcall.close()
+    must_haveto_query = must_haveto_query.format(year2filter, month2filter)
+        
+    try:
+        cursor.execute(nav_buttons_query)
+        nav_buttons_query_results = cursor.fetchall()
+
+        cursor.execute(years_list)
+        years_list_query_results = cursor.fetchall()
+
+        cursor.execute(months_list)
+        months_list_query_results = cursor.fetchall()
+
+        cursor.execute(must_haveto_query)
+        must_haveto_query_results = cursor.fetchall()
+
+    except Exception as e:
+        print(f"Error al ejecutar la query: {e}")
+    
+    finally:
+        connection.close()
+    
+    return render_template('expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, must_haveto_query_results=must_haveto_query_results)
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5200)
+    app.run(host='127.0.0.1', port=5100)
 
 # config.py
 DEVELOPMENT = {
     'DEBUG': True,
     'HOST': '127.0.0.1',
-    'PORT': 5200
+    'PORT': 5100
 }

@@ -228,6 +228,11 @@ img{
     background:     var(--color-terciario);
 }
 
+.active{
+    color:          var(--color-primario);
+    background:     var(--color-terciario);
+}
+
 /* ===============
     * FUENTES *
 =============== */

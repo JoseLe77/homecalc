@@ -145,8 +145,45 @@ def basic_finance_data():
     finally:
         return basic_data_query_results
         connection.close()
+    
+def monthintext():
+    if request.method == 'POST':
+        year2filter = int(request.form['año'])
+        print(year2filter)
+        month2filter = int(request.form['mes'])
+        print(month2filter)
+    else:
+        now = datetime.datetime.now()
+        year2filter = int(now.year)
+        month2filter = int(now.month)
 
+    if month2filter == 0:
+        filtered_month = 'Mes (TODOS)'
+    else:
+        webcall = open('src/db/webcalls/get_text_month.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(month2filter)
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
 
+        except Exception as e:
+            print(f"Error at filtered month data SQL query: {e}")    
+        finally:
+            filtered_month = f'Mes ({readed_query_executed_results[0]})'
+            connection.close()
+
+    filtered_month = filtered_month
+
+    filtered_year = f'Año ({year2filter})'
+    
+    Filtrered_data = f'{filtered_year} y {filtered_month}.'
+
+    return Filtrered_data
+
+# ---- HOME ----  
 @app.route("/")
 def home():
     # ---- Database SQL Query ----
@@ -154,7 +191,7 @@ def home():
     
     return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results)
 
-
+# ---- FORM ----  
 @app.route("/form")
 def form():
     # ---- Database SQL Query ----
@@ -163,7 +200,6 @@ def form():
     return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results)
 
 # ---- INCOME ----   
-
 @app.route("/income", methods=['GET', 'POST'])
 def income():
 
@@ -178,11 +214,12 @@ def income():
 
     # ---- Database basic finance data SQL Query ----
     basic_data_query_results = basic_finance_data()
+    
+    filtered_data = monthintext()
         
-    return render_template('incomes/income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results)
+    return render_template('incomes/income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, filtered_data=filtered_data)
 
 # ---- EXPENSES ---- 
-
 @app.route("/expenses", methods=['GET', 'POST'])
 def expenses():
     # ---- Database years list SQL Query ----
@@ -196,8 +233,10 @@ def expenses():
 
     # ---- Database basic finance data SQL Query ----
     basic_data_query_results = basic_finance_data()
+
+    Filtrered_data = monthintext()
     
-    return render_template('expenses/expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results)
+    return render_template('expenses/expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, Filtrered_data=Filtrered_data)
 
 @app.route("/periodic_expenses", methods=['GET', 'POST'])
 def periodic_expenses():
@@ -222,10 +261,50 @@ def periodic_expenses():
         month2filter = int(now.month)
         concept2filter = 'TODOS'
         periodicity2filter = 'X'
+
+    if month2filter == 0:
+        filtered_month = 'Mes (TODOS)'
+    else:
+        webcall = open('src/db/webcalls/get_text_month.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(month2filter)
+
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
+        except Exception as e:
+            print(f"Error at filtered month data SQL query: {e}")    
+        finally:
+            connection.close()
+        filtered_month = f'Mes ({readed_query_executed_results[0]})'
+
+    if periodicity2filter == 'X':
+        filtered_periodicity = 'Periodicidad (TODOS)'
+    else:
+        webcall = open('src/db/webcalls/get_text_periodicity.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(periodicity2filter)
+
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
+        except Exception as e:
+            print(f"Error at filtered periodicity data SQL query: {e}")    
+        finally:
+            connection.close()
+        filtered_periodicity = f'{readed_query_executed_results[0]}'
+
+    if concept2filter == 'TODOS':
+        filtered_concept = 'Concepto (TODOS)'
+    else:
+        filtered_concept = f'Concepto ({concept2filter})'
     
-    print(f'Concepto: {concept2filter}')
-    print(f'Periodicidad: {periodicity2filter}')
-    print(f'Mes: {month2filter}')
+
+    Filtrered_data = f'{filtered_concept},  {filtered_periodicity} y {filtered_month}.'
 
     connection, cursor = dbconnection()
     # print('DB connected successfully')
@@ -275,7 +354,7 @@ def periodic_expenses():
                 webcall = open('src/db/webcalls/expenses/periodic_expenses_by_month-concept-periodicity.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(concept2filter, periodicity2filter, month2filter, concept2filter, periodicity2filter, month2filter)
+                readed_query_2_execute = readed_query.format(month2filter,concept2filter, periodicity2filter, month2filter)
         
     try:
         cursor.execute(readed_query_2_execute)
@@ -285,10 +364,9 @@ def periodic_expenses():
     finally:
         connection.close()
 
-    return render_template('expenses/periodic_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results, readed_query_executed_results =readed_query_executed_results, month2filter=month2filter, concept2filter=concept2filter, periodicity2filter=periodicity2filter)
+    return render_template('expenses/periodic_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results, readed_query_executed_results =readed_query_executed_results, month2filter=month2filter, concept2filter=concept2filter, periodicity2filter=periodicity2filter, Filtrered_data=Filtrered_data)
 
 # ---- ABOUT ---- 
-
 @app.route("/about")
 def about():
     # ---- Database SQL Query ----

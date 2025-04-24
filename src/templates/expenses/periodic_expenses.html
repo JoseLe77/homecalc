@@ -10,7 +10,7 @@
 <section class="contenedor">
     <form action="/periodic_expenses" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
-            <label for="concepto">CONCEPTO</label>
+            <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
             <select name="concepto" class="input">
                 {% for expense_concept in expenses_concepts_list_query_results%}
                     <option name="selected_expense_concept" value="{{ expense_concept.0 }}">{{ expense_concept.0 }}</option>
@@ -18,7 +18,7 @@
             </select>
         </div>
         <div class="margen-derecha">
-            <label for="periodicidad">PERIODICIDAD</label>
+            <label for="periodicidad" style="font-weight: bold;">PERIODICIDAD</label>
             <select name="periodicidad" class="input">
                 {% for periodicty in periodicity_list_query_results%}
                     <option name="selected_periodicity" value="{{ periodicty.0 }}">{{ periodicty.1 }}</option>
@@ -26,7 +26,7 @@
             </select>
         </div>
         <div class="margen-derecha">
-            <label for="mes">MES</label>
+            <label for="mes" style="font-weight: bold;">MES</label>
             <select name="mes" class="input">
                 {% for month in months_list_query_results%}
                     <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
@@ -35,7 +35,9 @@
         </div>
         <button class="boton" type="submit">Filtrar</button>
     </form>
-    <p>Filtrado por: MES {{month2filter}}</p>
+    <div class="contenedor">
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}
+    </div>
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>

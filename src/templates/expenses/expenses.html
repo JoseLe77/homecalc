@@ -2,7 +2,7 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda">
     <ul>
-        <li><a href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
+        <li><a class="{% if request.path == url_for('periodic_expenses') %}active{% endif %}" href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
         <li><a href="#">Gastos Extra</a></li>
         <li><a href="#">Resumen</a></li>
     </ul>
@@ -27,6 +27,9 @@
         </div>
         <button class="boton" type="submit">Filtrar</button>
     </form>
+    <div class="contenedor">
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}
+    </div>
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>

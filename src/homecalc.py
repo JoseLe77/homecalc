@@ -374,11 +374,10 @@ def about():
     
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
-
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5200)
 
-# config.py
+# ---- CONFIG ----
 DEVELOPMENT = {
     'DEBUG': True,
     'HOST': '127.0.0.1',

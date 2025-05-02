@@ -64,6 +64,23 @@ def years_list():
         return years_list_query_results
         connection.close()
 
+def yearslist2filter():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database year list SQL Query ----
+    webcall = open('src/db/webcalls/get_year_2_filter.sql', mode='r')
+    years_list_2_filter = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(years_list_2_filter)
+        years_list_2_filter_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years 2 filter query: {e}") 
+    finally:
+        return years_list_2_filter_query_results
+        connection.close()
+
 def months_list():
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -114,7 +131,24 @@ def expenses_concept_list():
     finally:
         return expenses_concepts_list_query_results
         connection.close()
-    
+
+def extra_expenses_concept_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/expenses/extra_expenses_concepts.sql', mode='r')
+    expenses_concepts_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(expenses_concepts_list)
+        expenses_concepts_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at expenses concepts query: {e}") 
+    finally:
+        return expenses_concepts_list_query_results
+        connection.close()
+
 def basic_finance_data():
     if request.method == 'POST':
         year2filter = int(request.form['año'])
@@ -145,7 +179,7 @@ def basic_finance_data():
     finally:
         return basic_data_query_results
         connection.close()
-    
+  
 def monthintext():
     if request.method == 'POST':
         year2filter = int(request.form['año'])
@@ -365,6 +399,132 @@ def periodic_expenses():
         connection.close()
 
     return render_template('expenses/periodic_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results, readed_query_executed_results =readed_query_executed_results, month2filter=month2filter, concept2filter=concept2filter, periodicity2filter=periodicity2filter, Filtrered_data=Filtrered_data)
+
+@app.route("/extra_expenses", methods=['GET', 'POST'])
+def extra_expenses():
+     # ---- Database Menu buttons SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database expenses concepts list SQL Query ----
+    expenses_concepts_list_query_results = extra_expenses_concept_list()
+
+    # ---- Database year list SQL Query ----
+    years_list_query_results = yearslist2filter()
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+
+    # Get data from form, first charge will get actual month and actual year
+    if request.method == 'POST':
+        concept2filter = request.form['concepto']
+        year2filter = request.form['año']
+        month2filter = int(request.form['mes'])
+    else:
+        now = datetime.datetime.now()
+        year2filter = int(now.year)
+        month2filter = int(now.month)
+        concept2filter = 'TODOS'
+
+    # will get number month and translate it to text (Example. 6 = JUNE)
+    if month2filter == 0:
+        filtered_month = 'Mes (TODOS)'
+    else:
+        webcall = open('src/db/webcalls/get_text_month.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(month2filter)
+
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
+        except Exception as e:
+            print(f"Error at filtered month data SQL query: {e}")    
+        finally:
+            connection.close()
+        filtered_month = f'Mes ({readed_query_executed_results[0]})'
+
+    if year2filter == 'TODOS':
+        filtered_year = 'Año (TODOS)'
+    else:
+        filtered_year = f'Año ({year2filter})'
+
+    if concept2filter == 'TODOS':
+        filtered_concept = 'Concepto (TODOS)'
+    else:
+        filtered_concept = f'Concepto ({concept2filter})'
+    
+    Filtered_data = f'{filtered_concept},  {filtered_year} y {filtered_month}.'
+
+    print(year2filter)
+    print(type(year2filter))
+    print(month2filter)
+    print(type(month2filter))
+    print(concept2filter)
+    print(type(concept2filter))
+
+    connection, cursor = dbconnection()
+    print('DB connected successfully')
+
+    if year2filter == 'TODOS':
+        if month2filter == 0:
+            if concept2filter == 'TODOS':
+                webcall = open('src/db/webcalls/expenses/extra_expenses_all.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query
+            else:
+                webcall = open('src/db/webcalls/expenses/extra_expenses_all_by_concept.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(concept2filter)
+        else:
+            if concept2filter == 'TODOS':
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_month.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(month2filter)
+            else:
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_month-concept.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(month2filter, concept2filter)
+    else:
+        if month2filter == 0:
+            if concept2filter == 'TODOS':
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_year.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(int(year2filter))
+            else:
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-concept.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(int(year2filter), concept2filter)
+        else:
+            if concept2filter == 'TODOS':
+                print('Query por Año y Mes')
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-month.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(int(year2filter), month2filter)
+            else:
+                webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-month-concept.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(int(year2filter), month2filter, concept2filter)
+    try:
+        cursor.execute(readed_query_2_execute)
+        readed_query_executed_results = cursor.fetchall()
+        print('Query Ejecutada')
+    except Exception as e:
+        print(f"Error at extra expenses data SQL query: {e}")    
+    finally:
+        connection.close()
+
+    print(readed_query_executed_results)
+
+    return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
 
 # ---- ABOUT ---- 
 @app.route("/about")

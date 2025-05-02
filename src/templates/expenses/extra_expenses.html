@@ -2,13 +2,13 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda">
     <ul>
-        <li><a class="active" href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
-        <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
+        <li><a href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
+        <li><a class="active" href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
         <li><a href="#">Resumen</a></li>
     </ul>
 </nav>
 <section class="contenedor">
-    <form action="/periodic_expenses" method="POST" class="card filter-form margen-inferior">
+    <form action="/extra_expenses" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
             <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
             <select name="concepto" class="input">
@@ -18,10 +18,10 @@
             </select>
         </div>
         <div class="margen-derecha">
-            <label for="periodicidad" style="font-weight: bold;">PERIODICIDAD</label>
-            <select name="periodicidad" class="input">
-                {% for periodicty in periodicity_list_query_results%}
-                    <option name="selected_periodicity" value="{{ periodicty.0 }}">{{ periodicty.1 }}</option>
+            <label for="año">AÑO</label>
+            <select name="año" class="input">
+                {% for year in years_list_query_results%}
+                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -36,22 +36,24 @@
         <button class="boton" type="submit">Filtrar</button>
     </form>
     <div class="contenedor">
-        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtered_data}}
     </div>
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">MES</td>
                 <th class="texto-centrado">CONCEPTO</td>
-                <th class="texto-centrado">PERIODICIDAD</td>
-                <th class="texto-centrado">CANTIDAD</td>       
+                <th class="texto-centrado">CANTIDAD</td>
             </tr>
         </thead>
         <tbody class="tabla_con_encabezado">
         {% for extracted_data in readed_query_executed_results %}
             <tr>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.3 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td> <!--año-->
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td> <!--mes-->
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.3 }}</td> <!--concepto-->
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.4 }} €</td> <!--cantidad-->
             </tr>
         {% endfor %}
         </tbody>

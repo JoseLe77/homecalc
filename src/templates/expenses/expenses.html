@@ -3,7 +3,7 @@
 <nav class="nav-main menu menu-izquierda">
     <ul>
         <li><a class="{% if request.path == url_for('periodic_expenses') %}active{% endif %}" href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
-        <li><a href="#">Gastos Extra</a></li>
+        <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
         <li><a href="#">Resumen</a></li>
     </ul>
 </nav>

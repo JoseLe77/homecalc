@@ -14,6 +14,11 @@
   --color-table_header: #002333;
 }
 
+.expense-active{
+    color:          var(--color-primario);
+    background:     var(--color-terciario);
+}
+
 /* ==================
     * HEADER *
 ================== */

@@ -403,6 +403,8 @@ form .input:focus{
 .scroll-vertical{ overflow-y: scroll;}
 .scroll-horizontal{ overflow-x: scroll;}
 
+.ocultar-vertical{overflow-y: hidden;}
+
 .texto-centrado{text-align: center;}
 .texto-izquierda{text-align: left;}
 .texto-derecha{text-align: right;}

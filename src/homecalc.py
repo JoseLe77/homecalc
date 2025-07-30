@@ -372,7 +372,7 @@ def periodic_expenses():
                 webcall = open('src/db/webcalls/expenses/periodic_expenses_by_month.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(month2filter)
+                readed_query_2_execute = readed_query.format(month2filter, month2filter)
             else:
                 webcall = open('src/db/webcalls/expenses/periodic_expenses_by_month-concept.sql', mode='r')
                 readed_query = webcall.read()
@@ -402,7 +402,7 @@ def periodic_expenses():
 
 @app.route("/extra_expenses", methods=['GET', 'POST'])
 def extra_expenses():
-     # ---- Database Menu buttons SQL Query ----
+    # ---- Database Menu buttons SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
     # ---- Database expenses concepts list SQL Query ----
@@ -456,15 +456,8 @@ def extra_expenses():
     
     Filtered_data = f'{filtered_concept},  {filtered_year} y {filtered_month}.'
 
-    print(year2filter)
-    print(type(year2filter))
-    print(month2filter)
-    print(type(month2filter))
-    print(concept2filter)
-    print(type(concept2filter))
-
     connection, cursor = dbconnection()
-    print('DB connected successfully')
+    # print('DB connected successfully')
 
     if year2filter == 'TODOS':
         if month2filter == 0:
@@ -477,37 +470,36 @@ def extra_expenses():
                 webcall = open('src/db/webcalls/expenses/extra_expenses_all_by_concept.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(concept2filter)
+                readed_query_2_execute = readed_query.format(concept2filter,concept2filter)
         else:
             if concept2filter == 'TODOS':
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_month.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(month2filter)
+                readed_query_2_execute = readed_query.format(month2filter, month2filter)
             else:
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_month-concept.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(month2filter, concept2filter)
+                readed_query_2_execute = readed_query.format(month2filter, concept2filter, month2filter, concept2filter)
     else:
         if month2filter == 0:
             if concept2filter == 'TODOS':
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_year.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(int(year2filter))
+                readed_query_2_execute = readed_query.format(int(year2filter), int(year2filter))
             else:
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-concept.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(int(year2filter), concept2filter)
+                readed_query_2_execute = readed_query.format(int(year2filter), concept2filter, int(year2filter), concept2filter)
         else:
             if concept2filter == 'TODOS':
-                print('Query por Año y Mes')
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-month.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(int(year2filter), month2filter)
+                readed_query_2_execute = readed_query.format(int(year2filter), month2filter, int(year2filter), month2filter)
             else:
                 webcall = open('src/db/webcalls/expenses/extra_expenses_by_year-month-concept.sql', mode='r')
                 readed_query = webcall.read()
@@ -516,13 +508,10 @@ def extra_expenses():
     try:
         cursor.execute(readed_query_2_execute)
         readed_query_executed_results = cursor.fetchall()
-        print('Query Ejecutada')
     except Exception as e:
         print(f"Error at extra expenses data SQL query: {e}")    
     finally:
         connection.close()
-
-    print(readed_query_executed_results)
 
     return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
 

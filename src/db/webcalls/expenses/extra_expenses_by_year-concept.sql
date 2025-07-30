@@ -5,4 +5,13 @@ LEFT JOIN
 Meses m USING(mes) 
 WHERE active =1
 AND gt.año = {} 
-AND gt.concepto= '{}';
+AND gt.concepto= '{}'
+UNION ALL 
+SELECT NULL id, '' año, '' mes_texto, 'TOTAL' concepto, SUM(gt.cantidad) cantidad
+FROM 
+gastosTemporales gt 
+LEFT JOIN  
+Meses m USING(mes) 
+WHERE active =1
+AND gt.año = {} 
+AND gt.concepto= '{}' ;

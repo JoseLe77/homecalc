@@ -3,3 +3,4 @@ FROM (SELECT id, concepto, periodicidad, mes, cantidad FROM gastosPeriodicos WHE
 JOIN 
 (SELECT codigo, periodicidad FROM periodicidad)p 
 ON gp.periodicidad = p.codigo
+ORDER BY CASE WHEN gp.mes IS NOT NULL THEN p.periodicidad||' ('||gp.mes||')' ELSE p.periodicidad END DESC, gp.concepto

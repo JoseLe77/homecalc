@@ -1,0 +1,103 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
+        <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
+        <li> <a class="active" href="{{url_for('manage_expenses')}}">Registro</a>
+            <ul>
+                <li><a class="active" href="{{url_for('record_expenses')}}">Crear Gasto</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <h1 class="card">
+        CREACION DE NUEVOS GASTOS
+    </h1>
+   <form action="/add_expense" method="POST" class="card contenedor margen-inferior">
+    <div class="margen-derecha">
+        <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
+        <input name="concepto" label="concepto" type="text" class="input">
+    </div>
+    <div class="filter-form">
+        <div>
+            <label for="periodicidad" style="font-weight: bold;">PERIODICIDAD</label>
+            <select name="periodicidad" class="input">
+                {% for periodicty in periodicity_list_query_results%}
+                    <option name="selected_periodicity" value="{{ periodicty.0 }}">{{ periodicty.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="tipo" style="font-weight: bold;">TIPO</label>
+            <select name="tipo" class="input">
+                <option name="selected_expense_concept" value="P">Gasto Periodico</option>
+                <option name="selected_expense_concept" value="E">Gasto Extraordinario</option>
+            </select>
+        </div>
+    </div>  
+    <div class="filter-form">
+        <div>
+            <label for="año" style="font-weight: bold;">AÑO</label>
+            <input name="año" label="año" type="text" class="input texto-centrado">
+        </div>
+        <div>
+            <label for="mes" style="font-weight: bold;">MES</label>
+            <select name="mes" class="input">
+                {% for month in months_list_query_results%}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
+            <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
+        </div>
+    </div>
+    <div>
+        <button class="boton" type="submit">Guardar</button>
+        <button class="boton" type="reset">Refrescar</button>
+    </div>
+</form>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tipoSelect = document.querySelector('select[name="tipo"]');
+  const periodicidadSelect = document.querySelector('select[name="periodicidad"]');
+
+  const periodicidadDiv = periodicidadSelect.closest('div');
+  const anioDiv = document.querySelector('input[name="año"]').closest('div');
+  const mesDiv = document.querySelector('select[name="mes"]').closest('div');
+
+  const handleChange = () => {
+    const tipo = tipoSelect.value;
+    const periodicidad = periodicidadSelect.value;
+
+    // Mostrar todos por defecto
+    periodicidadDiv.style.display = '';
+    anioDiv.style.display = '';
+    mesDiv.style.display = '';
+
+    // Reglas de tipo
+    if (tipo === 'P') {
+      anioDiv.style.display = 'none'; // ocultar AÑO
+      if (periodicidad === 'M') {
+        mesDiv.style.display = 'none'; // ocultar MES si es mensual
+      }
+    } else if (tipo === 'E') {
+      periodicidadDiv.style.display = 'none'; // ocultar PERIODICIDAD
+    }
+  };
+
+  // Ejecutar al cargar la página
+  handleChange();
+
+  // Escuchar cambios en ambos selects
+  tipoSelect.addEventListener('change', handleChange);
+  periodicidadSelect.addEventListener('change', handleChange);
+});
+</script>
+
+{% endblock %}
+

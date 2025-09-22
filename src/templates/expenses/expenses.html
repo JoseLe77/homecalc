@@ -4,7 +4,7 @@
     <ul>
         <li><a class="{% if request.path == url_for('periodic_expenses') %}active{% endif %}" href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
         <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
-        <li><a href="#">Resumen</a></li>
+        <li><a href="{{url_for('manage_expenses')}}">Registro</a></li>
     </ul>
 </nav>
 <section class="contenedor">
@@ -45,9 +45,9 @@
             <tr>
                 <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.0 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.1 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.4 }} €</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.5 }} €</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.7 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.4)}} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.5)}} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.7) }} €</td>
             </tr>
         {% endfor %}
         </tbody>

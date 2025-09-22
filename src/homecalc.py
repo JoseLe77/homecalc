@@ -44,8 +44,8 @@ def nav_buttons():
     except Exception as e:
         print(f"Error al ejecutar la query: {e}")
     finally:
-        return nav_buttons_query_results
         connection.close()
+        return nav_buttons_query_results
 
 def years_list():
     # ---- Database Connection ----
@@ -61,8 +61,8 @@ def years_list():
     except Exception as e:
         print(f"Error at Years query: {e}") 
     finally:
-        return years_list_query_results
         connection.close()
+        return years_list_query_results
 
 def yearslist2filter():
     # ---- Database Connection ----
@@ -78,8 +78,8 @@ def yearslist2filter():
     except Exception as e:
         print(f"Error at Years 2 filter query: {e}") 
     finally:
-        return years_list_2_filter_query_results
         connection.close()
+        return years_list_2_filter_query_results
 
 def months_list():
     # ---- Database Connection ----
@@ -89,14 +89,33 @@ def months_list():
     webcall = open('src/db/webcalls/months.sql', mode='r')
     months_list = webcall.read()
     webcall.close()
+    months_list_query_results = []
     try:
         cursor.execute(months_list)
         months_list_query_results = cursor.fetchall()
     except Exception as e:
         print(f"Error at Months query: {e}") 
     finally:
-        return months_list_query_results
         connection.close()
+    return months_list_query_results
+
+def months_list_selected():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/months_selected.sql', mode='r')
+    months_list = webcall.read()
+    months_list_query = months_list.format(expense_month, expense_month)
+    webcall.close()
+    try:
+        cursor.execute(months_list_query)
+        months_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Months query: {e}") 
+    finally:
+        connection.close()
+        return months_list_query_results
 
 def periodicity_list():
     # ---- Database Connection ----
@@ -112,8 +131,8 @@ def periodicity_list():
     except Exception as e:
         print(f"Error at periodicity query: {e}") 
     finally:
-        return periodicity_list_query_results
         connection.close()
+        return periodicity_list_query_results
 
 def expenses_concept_list():
     # ---- Database Connection ----
@@ -129,8 +148,8 @@ def expenses_concept_list():
     except Exception as e:
         print(f"Error at expenses concepts query: {e}") 
     finally:
-        return expenses_concepts_list_query_results
         connection.close()
+        return expenses_concepts_list_query_results
 
 def extra_expenses_concept_list():
     # ---- Database Connection ----
@@ -146,8 +165,8 @@ def extra_expenses_concept_list():
     except Exception as e:
         print(f"Error at expenses concepts query: {e}") 
     finally:
-        return expenses_concepts_list_query_results
         connection.close()
+        return expenses_concepts_list_query_results
 
 def basic_finance_data():
     if request.method == 'POST':
@@ -177,8 +196,8 @@ def basic_finance_data():
     except Exception as e:
         print(f"Error at basic finance data SQL query: {e}")    
     finally:
-        return basic_data_query_results
         connection.close()
+        return basic_data_query_results
   
 def monthintext():
     if request.method == 'POST':
@@ -515,6 +534,453 @@ def extra_expenses():
 
     return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
 
+@app.route("/manage_expenses")
+def manage_expenses():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database periodicity list SQL Query ----
+    periodicity_list_query_results = periodicity_list()[1:]
+
+    # ---- Database year list SQL Query ----
+    years_list_query_results = yearslist2filter()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+    
+    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+
+@app.route("/manage_expenses_filter", methods=['GET', 'POST'])
+def manage_expenses_filter():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database periodicity list SQL Query ----
+    periodicity_list_query_results = periodicity_list()[1:]
+
+    # ---- Database year list SQL Query ----
+    years_list_query_results = yearslist2filter()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+
+    if request.method == 'POST':
+        type2filter = request.form['tipo']
+        periodicity2filter = request.form['periodicidad']
+        year2filter = request.form['año']
+        month2filter = int(request.form['mes'])
+        
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    if month2filter is not None:
+        webcall = open('src/db/webcalls/get_text_month.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(month2filter)
+
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
+        except Exception as e:
+            print(f"Error at filtered month data SQL query: {e}")    
+        finally:
+            filtered_month = f'Mes ({readed_query_executed_results[0]})'
+
+    if type2filter == 'P':
+        webcall = open('src/db/webcalls/get_text_periodicity.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(periodicity2filter)
+
+        try:
+            connection, cursor = dbconnection()
+            cursor.execute(readed_query_2_execute)
+            readed_query_executed_results = cursor.fetchone()
+        except Exception as e:
+            print(f"Error at filtered periodicity data SQL query: {e}")    
+        finally:
+            filtered_periodicity = f'{readed_query_executed_results[0]}'
+
+        if periodicity2filter!='M':
+            if month2filter==0:
+                webcall = open('src/db/webcalls/expenses/periodic_expenses_all_by_periodicity.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(periodicity2filter)
+                filtered_data = f'Gasto por {filtered_periodicity}'
+            else:
+                webcall = open('src/db/webcalls/expenses/periodic_expenses_by_month-periodicity.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(periodicity2filter, month2filter, periodicity2filter)
+                filtered_data = f'Gasto por {filtered_periodicity} del {filtered_month}'
+        else:
+            webcall = open('src/db/webcalls/expenses/periodic_expenses_all_by_periodicity.sql', mode='r')
+            readed_query = webcall.read()
+            webcall.close()
+            readed_query_2_execute = readed_query.format(periodicity2filter)
+            filtered_data = f'Gastos por {filtered_periodicity}'
+    else:
+        if month2filter==0:
+            webcall = open('src/db/webcalls/expenses/extra_expenses_by_year_to_edit.sql', mode='r')
+            readed_query = webcall.read()
+            webcall.close()
+            readed_query_2_execute = readed_query.format(int(year2filter))
+            filtered_data = f'Gastos Extraordinarios del Año {year2filter}'
+        else:
+            webcall = open('src/db/webcalls/expenses/extra_expenses_by_year_month_to_edit.sql', mode='r')
+            readed_query = webcall.read()
+            webcall.close()
+            readed_query_2_execute = readed_query.format(int(year2filter), month2filter)
+            filtered_data = f'Gastos Extraordinarios por Año {year2filter} y {filtered_month}'
+
+    try:
+        cursor.execute(readed_query_2_execute)
+        readed_query_executed_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at basic finance data SQL query: {e}")    
+    finally:
+        connection.close()
+        print(readed_query_executed_results)
+        print(filtered_data)
+
+    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, readed_query_executed_results=readed_query_executed_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, filtered_data=filtered_data)
+
+@app.route("/record_expenses")
+def record_expenses():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database periodicity list SQL Query ----
+    periodicity_list_query_results = periodicity_list()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()[1:]
+    
+    return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+
+@app.route("/add_expense", methods=['GET', 'POST'])
+def add_expense():
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        year2add = request.form['año']
+        print(f'YEAR: {year2add}')
+        month2add = request.form['mes']
+        #month2add = 'NULL' if month2add == '0' else month2add
+        print(f'NONTH: {month2add}')
+        concept2add = request.form['concepto']
+        print(f'CONCEPT: {concept2add}')
+        periodicity2add = request.form['periodicidad']
+        print(f'PERIODICITY: {periodicity2add}')
+        expenseType = request.form['tipo']
+        print(f'TYPE: {expenseType}')
+        qty2add = request.form['cantidad']
+        qty2add = qty2add.replace(',', '.')
+        print(f'QUANTITY: {qty2add}')
+
+        if expenseType == 'P':
+            if periodicity2add == 'M':
+                if (concept2add is not None and qty2add is not None) or (concept2add != '' and qty2add != '') :
+                    webcall = open('src/db/webcalls/expenses/add_periodic_mensual_expenses.sql', mode='r')
+                    readed_query = webcall.read()
+                    webcall.close()
+                    readed_query_2_execute = readed_query.format(concept2add, periodicity2add, float(qty2add))
+                else:
+                    print('Error1')
+            else:
+                if month2add is not None and concept2add is not None and qty2add is not None:
+                    webcall = open('src/db/webcalls/expenses/add_periodic_expenses.sql', mode='r')
+                    readed_query = webcall.read()
+                    webcall.close()
+                    readed_query_2_execute = readed_query.format(concept2add, periodicity2add, float(qty2add), int(month2add))
+                else:
+                    print('Error2')
+        elif expenseType == 'E':
+            if year2add is not None and month2add is not None and concept2add is not None and qty2add is not None:
+                webcall = open('src/db/webcalls/expenses/add_extra_expense.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(concept2add, float(qty2add), int(year2add), int(month2add))
+            else:
+                print('Error3')
+        else:
+            print(f'Error en filtro de gasto: {expenseType}.')
+    
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        connection.close()
+        print('ejecutado')
+    except Exception as e:
+        print(f'Error añadiendo {expenseType}. {e}')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database periodicity list SQL Query ----
+    periodicity_list_query_results = periodicity_list()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+    
+    return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+
+@app.route("/selected_expense/<selected_expense>")
+def selected_expense(selected_expense):
+    expense_type=selected_expense[:1]
+    print(expense_type)
+    selected_expense_id=selected_expense[1:]
+    print(selected_expense_id)
+
+     # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database SQL Query ----
+    years_list_query_results = years_list()
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    if expense_type=='E':
+        webcall = open('src/db/webcalls/expenses/extra_expense_selected_to_edit.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(selected_expense_id)
+    else:
+        webcall = open('src/db/webcalls/expenses/periodic_expense_selected_to_edit.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(selected_expense)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        readed_query_executed_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")    
+    finally:
+        connection.close()
+
+    if expense_type=='E':
+        for result in readed_query_executed_results:
+            expense_id = result[0]
+            expense_concept = result[1]
+            expense_qty = result[2]
+            expense_month = result[4]
+            expense_year = result[3]
+            expense_active = result[5]
+
+        readed_query_executed_results = [expense_id, expense_concept, expense_year, expense_month, expense_qty, expense_active]
+        print(readed_query_executed_results)
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database month list SQL Query ----
+        webcall = open('src/db/webcalls/months_selected.sql', mode='r')
+        months_list = webcall.read()
+        months_list_query = months_list.format(expense_month, expense_month)
+        webcall.close()
+        try:
+            cursor.execute(months_list_query)
+            months_list_query_results = cursor.fetchall()
+        except Exception as e:
+            print(f"Error at Months query: {e}") 
+        finally:
+            connection.close() 
+        
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database month list SQL Query ----
+        webcall = open('src/db/webcalls/expenses/expenses_periodicity.sql', mode='r')
+        periodicity_list = webcall.read()
+        webcall.close()
+        try:
+            cursor.execute(periodicity_list)
+            periodicity_list_query_results = cursor.fetchall()
+        except Exception as e:
+            print(f"Error at periodicity query: {e}") 
+        finally:
+            connection.close()
+
+    else:
+        for result in readed_query_executed_results:
+            expense_id = result[0]
+            expense_concept = result[1]
+            expense_periodicity = result[2]
+            expense_qty = result[3]
+            expense_month = result[4]
+            expense_active = result[5]
+
+        readed_query_executed_results = [expense_id, expense_concept, expense_periodicity, expense_month, expense_qty, expense_active]
+        print(readed_query_executed_results)
+
+        if expense_periodicity != 'M':
+            # ---- Database months list SQL Query ----
+            # ---- Database Connection ----
+            connection, cursor = dbconnection()
+
+            # ---- Database month list SQL Query ----
+            webcall = open('src/db/webcalls/months_selected.sql', mode='r')
+            months_list = webcall.read()
+            months_list_query = months_list.format(expense_month, expense_month)
+            webcall.close()
+            try:
+                cursor.execute(months_list_query)
+                months_list_query_results = cursor.fetchall()
+            except Exception as e:
+                print(f"Error at Months query: {e}") 
+            finally:
+                connection.close()
+        else:
+            # ---- Database Connection ----
+            connection, cursor = dbconnection()
+
+            # ---- Database month list SQL Query ----
+            webcall = open('src/db/webcalls/months.sql', mode='r')
+            months_list = webcall.read()
+            webcall.close()
+            months_list_query_results = []
+            try:
+                cursor.execute(months_list)
+                months_list_query_results = cursor.fetchall()
+            except Exception as e:
+                print(f"Error at Months query: {e}") 
+            finally:
+                connection.close()
+            months_list_query_results = months_list_query_results[1:]
+        
+        # ---- Database periodicity list SQL Query ----
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database month list SQL Query ----
+        webcall = open('src/db/webcalls/expenses/expenses_periodicity_selected.sql', mode='r')
+        periodicity_list = webcall.read()
+        periodicity_list_query = periodicity_list.format(expense_periodicity, expense_periodicity)
+        webcall.close()
+        print(periodicity_list_query)
+        try:
+            cursor.execute(periodicity_list_query)
+            periodicity_list_query_results = cursor.fetchall()
+        except Exception as e:
+            print(f"Error at periodicity query: {e}") 
+        finally:
+            connection.close()
+
+    if expense_type == 'E':
+        return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results[1:], years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+    else:
+        return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+
+@app.route("/update_expense", methods=['GET', 'POST'])
+def update_expense():
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        id2edit = request.form['id']     
+        year2edit = request.form['año']
+        month2edit = request.form['mes']
+        concept2edit = request.form['concepto']
+        periodicity2edit = request.form['periodicidad']
+        expenseType = request.form['tipo']
+        qty2edit = request.form['cantidad']
+        qty2edit = qty2edit.replace(',', '.')
+
+        print(f'ID: {id2edit}')
+        print(f'YEAR: {year2edit}')
+        print(f'MONTH: {month2edit}')
+        print(f'CONCEPT: {concept2edit}')
+        print(f'PERIODICITY: {periodicity2edit}')
+        print(f'TYPE: {expenseType}')
+        print(f'QUANTITY: {qty2edit}')
+
+        if expenseType == 'P':
+            if periodicity2edit == 'M':
+                if (concept2edit is not None and qty2edit is not None) or (concept2edit != '' and qty2edit != '') :
+                    webcall = open('src/db/webcalls/expenses/update_periodic_mensual_expenses.sql', mode='r')
+                    readed_query = webcall.read()
+                    webcall.close()
+                    readed_query_2_execute = readed_query.format(concept2edit, periodicity2edit, float(qty2edit), id2edit)
+                else:
+                    print('Error1')
+            else:
+                if month2edit is not None and concept2edit is not None and qty2edit is not None:
+                    webcall = open('src/db/webcalls/expenses/update_periodic_expenses.sql', mode='r')
+                    readed_query = webcall.read()
+                    webcall.close()
+                    readed_query_2_execute = readed_query.format(concept2edit, periodicity2edit, float(qty2edit), int(month2edit), id2edit)
+                else:
+                    print('Error2')
+        elif expenseType == 'E':
+            if year2edit is not None and month2edit is not None and concept2edit is not None and qty2edit is not None:
+                webcall = open('src/db/webcalls/expenses/update_extra_expense.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(concept2edit, float(qty2edit), int(year2edit), int(month2edit), id2edit)
+            else:
+                print('Error3')
+        else:
+            print(f'Error en filtro de gasto: {expenseType}.')
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        connection.close()
+        print('ejecutado')
+    except Exception as e:
+        print(f'Error añadiendo {expenseType}. {e}')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database periodicity list SQL Query ----
+    periodicity_list_query_results = periodicity_list()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+    
+    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+
+
+@app.route("/delete_expenses/<expenseid>")
+def delete_expenses(expenseid):
+    expense_type=expenseid[:1]
+    expense_id=expenseid[1:]
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    if expense_type=='E':
+        webcall = open('src/db/webcalls/expenses/extra_expenses_to_delete.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(expense_id)
+    else:
+        webcall = open('src/db/webcalls/expenses/periodic_expenses_to_delete.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(expenseid)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")    
+    finally:
+        connection.close()
+    
+    return redirect(url_for('manage_expenses'))
+
 # ---- ABOUT ---- 
 @app.route("/about")
 def about():
@@ -524,7 +990,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5200)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

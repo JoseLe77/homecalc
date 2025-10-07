@@ -2,34 +2,26 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda">
     <ul>
-        <li><a href="#">Ingresos Periodicos</a></li>
-        <li><a href="#">Ingresos Extra</a></li>
-        <li><a href="#">Analisis</a></li>
+        <li><a href="{{url_for('periodic_income')}}" class="active">Ingresos Periodicos</a></li>
+        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
+        <li><a href="#">Registros</a></li>
     </ul>
 </nav>
 <section class="contenedor">
-    <form action="/periodic_expenses" method="POST" class="card filter-form margen-inferior">
+    <form action="/periodic_income_filter" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
-            <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-            <select name="concepto" class="input">
-                {% for income_concept in income_concepts_list_query_results%}
-                    <option name="selected_income_concept" value="{{ income_concept.0 }}">{{ income_concept.0 }}</option>
+            <label for="company" style="font-weight: bold;">COMPAÑIA</label>
+            <select name="company" class="input">
+                {% for income_company in periodic_companies_list_query_results%}
+                    <option name="selected_income_company" value="{{ income_company.0 }}">{{ income_company.0 }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="margen-derecha">
-            <label for="año">AÑO</label>
+            <label for="año" style="font-weight: bold;">AÑO</label>
             <select name="año" class="input">
                 {% for year in years_list_query_results%}
                     <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="margen-derecha">
-            <label for="mes" style="font-weight: bold;">MES</label>
-            <select name="mes" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -41,17 +33,27 @@
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>
-                <th class="texto-centrado">CONCEPTO</td>
-                <th class="texto-centrado">PERIODICIDAD</td>
-                <th class="texto-centrado">CANTIDAD</td>       
+                <th class="texto-centrado">COMPAÑIA</td>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">RANGO MESES</td> 
+                <th class="texto-centrado">MESES </td> 
+                <th class="texto-centrado">BRUTO</td>
+                <th class="texto-centrado">NETO</td>
+                <th class="texto-centrado">MENSUALIDAD</td>
+                <th class="texto-centrado">BONUS</td>      
             </tr>
         </thead>
         <tbody class="tabla_con_encabezado">
-        {% for extracted_data in readed_query_executed_results %}
+        {% for extracted_data in periodic_income_query_results %}
             <tr>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.0 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.5 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.3 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.6 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.7 }} €</td>
             </tr>
         {% endfor %}
         </tbody>

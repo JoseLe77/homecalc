@@ -64,6 +64,57 @@ def years_list():
         connection.close()
         return years_list_query_results
 
+def income_years_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database year list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_years.sql', mode='r')
+    years_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(years_list)
+        years_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+        return years_list_query_results
+    
+def income_periodic_companies_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database year list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_periodic_companies.sql', mode='r')
+    companies_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(companies_list)
+        periodic_companies_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+        return periodic_companies_list_query_results
+
+def income_extra_companies_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database year list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_extra_companies.sql', mode='r')
+    companies_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(companies_list)
+        extra_companies_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+        return extra_companies_list_query_results
+
 def yearslist2filter():
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -271,6 +322,125 @@ def income():
     filtered_data = monthintext()
         
     return render_template('incomes/income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, filtered_data=filtered_data)
+
+@app.route("/periodic_income")
+def periodic_income():
+    # ---- Database buttons list SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database years SQL Query ----
+    years_list_query_results = income_years_list()
+
+    # ---- Database companies SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+
+    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results)
+
+@app.route("/periodic_income_filter", methods=['GET', 'POST'])
+def periodic_income_filter():
+    if request.method == 'POST':
+        company2filter = request.form['company']
+        year2filter = request.form['año']
+
+     # ---- Database buttons list SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database years SQL Query ----
+    years_list_query_results = income_years_list()
+
+    # ---- Database companies SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+    
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database periodic filtered income list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_periodic_anual.sql', mode='r')
+    periodic_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = periodic_query.format(company2filter, year2filter)
+    try:
+        cursor.execute(readed_query_2_execute)
+        periodic_income_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results)
+
+@app.route("/extra_income")
+def extra_income():
+    # ---- Database buttons list SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database years SQL Query ----
+    years_list_query_results = income_years_list()
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+
+    # ---- Database companies SQL Query ----
+    extra_companies_list_query_results = income_extra_companies_list()
+
+    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results)
+
+@app.route('/extra_income_filter', methods=['GET', 'POST'])
+def extra_income_filter():
+    if request.method == 'POST':
+        company2filter = request.form['company']
+        year2filter = request.form['año']
+        month2filter = request.form['mes']
+
+    # ---- Database buttons list SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database years SQL Query ----
+    years_list_query_results = income_years_list()
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+
+    # ---- Database companies SQL Query ----
+    extra_companies_list_query_results = income_extra_companies_list()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    if company2filter == 'TODAS' and month2filter == '0':
+        # ---- Database extra filtered income  all SQL Query ----
+        webcall = open('src/db/webcalls/income/income_extra_anual.sql', mode='r')
+        extra_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = extra_query.format(year2filter)
+    elif company2filter != 'TODAS' and month2filter == '0':
+        # ---- Database extra filtered income  by month SQL Query ----
+        webcall = open('src/db/webcalls/income/income_extra_anual_by_company.sql', mode='r')
+        extra_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = extra_query.format(company2filter, year2filter)
+    elif company2filter == 'TODAS' and month2filter != '0':
+        # ---- Database extra filtered income  by month SQL Query ----
+        webcall = open('src/db/webcalls/income/income_extra_anual_by_month.sql', mode='r')
+        extra_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = extra_query.format(year2filter, month2filter)
+    else:
+        # ---- Database extra filtered income liby company and month SQL Query ----
+        webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month.sql', mode='r')
+        extra_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = extra_query.format(company2filter, year2filter, month2filter)
+
+    try:
+        cursor.execute(readed_query_2_execute)
+        extra_income_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results)
 
 # ---- EXPENSES ---- 
 @app.route("/expenses", methods=['GET', 'POST'])
@@ -939,16 +1109,7 @@ def update_expense():
     except Exception as e:
         print(f'Error añadiendo {expenseType}. {e}')
 
-    # ---- Database SQL Query ----
-    nav_buttons_query_results = nav_buttons()
-
-    # ---- Database periodicity list SQL Query ----
-    periodicity_list_query_results = periodicity_list()[1:]
-
-    # ---- Database months list SQL Query ----
-    months_list_query_results = months_list()
-    
-    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+    return redirect(url_for('manage_expenses'))
 
 
 @app.route("/delete_expenses/<expenseid>")

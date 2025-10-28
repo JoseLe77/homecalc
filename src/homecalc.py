@@ -442,6 +442,181 @@ def extra_income_filter():
 
     return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results)
 
+@app.route("/manage_incomes")
+def manage_incomes():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database income periodic companies list SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+
+    # ---- Database income periodic companies list SQL Query ----
+    extra_companies_list_query_results = income_extra_companies_list()[1:]
+
+    # ---- Database year list SQL Query ----
+    years_list_query_results = yearslist2filter()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+    
+    income_types_descriptions = { 'P': 'Ingresos Periodicos', 'E': 'Ingresos Extraordinarios' }
+
+    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_types_descriptions=income_types_descriptions)
+
+@app.route("/record_income")
+def record_income():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database income periodic companies list SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+
+    # ---- Database income periodic companies list SQL Query ----
+    extra_companies_list_query_results = income_extra_companies_list()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()[1:]
+    
+    return render_template('incomes/record_income.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, months_list_query_results=months_list_query_results)
+
+@app.route("/add_income", methods=['GET','POST'])
+def add_income():
+    if request.method == 'POST':
+        tipo = request.form['tipo']
+        año = request.form['año']
+        cantidad = request.form['cantidad']
+        cantidad = cantidad.replace(',', '.')
+        if tipo == 'P':
+            company = request.form['company_periodic']
+            paga_extra = request.form['paga_extra']
+            mes_desde= request.form['mes_desde']
+            mes_hasta= request.form['mes_hasta']
+            irpf = request.form['irpf']
+            irpf = irpf.replace(',', '.')
+            resto_impuestos = request.form['resto_impuestos']
+            resto_impuestos = resto_impuestos.replace(',', '.')
+            bonus = request.form['bonus']
+            bonus = bonus.replace(',', '.') 
+        else:
+            company = request.form['company_extra']
+            concepto = request.form['concepto']
+            mes = request.form['mes']
+        
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    # ---- Database add income SQL Query ----
+    if (tipo == 'P'):
+        if paga_extra == 'S':
+            paga_extra_value = 1
+        else:
+            paga_extra_value = 0
+
+        mensualidades = int(mes_hasta) - int(mes_desde) +  paga_extra_value
+        webcall = open('src/db/webcalls/income/add_periodic_income.sql', mode='r')
+        add_periodic_income_query = webcall.read()
+        webcall.close()
+        add_income_query_2_execute = add_periodic_income_query.format(company, año, mes_desde, mes_hasta, cantidad, mensualidades)
+        webcall = open('src/db/webcalls/income/add_periodic_income_calculation.sql', mode='r')
+        add_periodic_income_calculation_query = webcall.read()
+        webcall.close()
+        webcall = open('src/db/webcalls/income/add_periodic_salary_discounts.sql', mode='r')
+        add_periodic_income_salary_discount_query = webcall.read()
+        webcall.close()
+
+    else:
+        webcall = open('src/db/webcalls/income/add_extra_income.sql', mode='r')
+        add_extra_income_query = webcall.read()
+        webcall.close()
+        add_income_query_2_execute = add_extra_income_query.format(company, año, mes, cantidad, concepto)
+        
+    try:
+        cursor.execute(add_income_query_2_execute)
+        connection.commit()
+        if (tipo == 'P'):
+            cursor.execute(add_periodic_income_calculation_query)
+            anual_salary_up = cursor.fetchone()[0]
+            print(anual_salary_up)
+            neto_anual = 100 - (float(irpf) + float(resto_impuestos))
+            print(neto_anual)
+            cursor.execute(add_periodic_income_salary_discount_query.format(company, año, anual_salary_up, neto_anual, irpf, resto_impuestos, bonus))
+            connection.commit()
+    except Exception as e:
+        print(f"Error at add income SQL query: {e}")    
+    finally:
+        connection.close()
+    
+    return redirect(url_for('record_income'))
+
+@app.route("/manage_income_filter", methods=['GET', 'POST'])
+def manage_income_filter():
+    if request.method == 'POST':
+        tipo = request.form['tipo']
+        año = request.form['año']
+        if tipo == 'P':
+            company = request.form['company_periodic']
+        else:
+            company = request.form['company_extra'] 
+            mes = request.form['mes']
+    
+    # ---- Database SQL Query ----
+    if tipo == 'P':
+        webcall = open('src/db/webcalls/income/income_periodic_anual_2_edit.sql', mode='r')
+        periodic_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = periodic_query.format(company, año)
+        filtered_data = f'Ingreso Periodico por Compañia ({company}) y año ({año}).'
+    else:
+        if mes == '0':
+            webcall = open('src/db/webcalls/income/income_extra_anual.sql', mode='r')
+            extra_query = webcall.read()
+            webcall.close()
+            readed_query_2_execute = extra_query.format(año)
+            filtered_data = f'Ingreso Extraordinario por año ({año}).'
+        else:
+            webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month.sql', mode='r')
+            extra_query = webcall.read()
+            webcall.close()
+            readed_query_2_execute = extra_query.format(company, año, mes)
+            filtered_data = f'Ingreso Extraordinario por compañia ({company}), mes ({mes}) y año ({año}).'
+    
+    connection, cursor = dbconnection()
+    try:
+        cursor.execute(readed_query_2_execute)
+        income_query_results = cursor.fetchall()
+        print(income_query_results)
+    except Exception as e:
+        print(f"Error at filtered income query: {e}")
+    finally:
+        connection.close()
+    
+     # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database income periodic companies list SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+
+    # ---- Database income periodic companies list SQL Query ----
+    extra_companies_list_query_results = income_extra_companies_list()[1:]
+
+    # ---- Database year list SQL Query ----
+    years_list_query_results = yearslist2filter()[1:]
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+
+    income_types_descriptions = { 'P': 'Ingresos Periodicos', 'E': 'Ingresos Extraordinarios' }
+
+    if tipo == 'P':
+        income_types_descriptions = income_types_descriptions
+    if tipo=='E':
+        income_types_descriptions = dict(reversed(list(income_types_descriptions.items())))
+    else:
+        income_types_descriptions = income_types_descriptions
+    
+
+    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
+
 # ---- EXPENSES ---- 
 @app.route("/expenses", methods=['GET', 'POST'])
 def expenses():
@@ -1111,7 +1286,6 @@ def update_expense():
 
     return redirect(url_for('manage_expenses'))
 
-
 @app.route("/delete_expenses/<expenseid>")
 def delete_expenses(expenseid):
     expense_type=expenseid[:1]
@@ -1151,7 +1325,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5100)
+    app.run(host='127.0.0.1', port=5200)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

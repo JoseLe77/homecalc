@@ -22,18 +22,18 @@
     </div>
     <div class="filter-form">
         <div>
+            <label for="tipo" style="font-weight: bold;">TIPO</label>
+            <select name="tipo" class="input">
+                <option name="selected_expense_concept" value="P">Gasto Periodico</option>
+                <option name="selected_expense_concept" value="E">Gasto Extraordinario</option>
+            </select>
+        </div>
+        <div>
             <label for="periodicidad" style="font-weight: bold;">PERIODICIDAD</label>
             <select name="periodicidad" class="input">
                 {% for periodicty in periodicity_list_query_results%}
                     <option name="selected_periodicity" value="{{ periodicty.0 }}">{{ periodicty.1 }}</option>
                 {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="tipo" style="font-weight: bold;">TIPO</label>
-            <select name="tipo" class="input">
-                <option name="selected_expense_concept" value="P">Gasto Periodico</option>
-                <option name="selected_expense_concept" value="E">Gasto Extraordinario</option>
             </select>
         </div>
     </div>  

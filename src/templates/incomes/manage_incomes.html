@@ -58,31 +58,25 @@
     <div class="contenedor">
         <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{filtered_data}}
     </div>
-    <table class="card tabla periodic_table" id="tabla">
+    <table class="card tabla periodic_table" id="tabla income_periodic">
         <thead class="tabla-encabezado-fijo">
             <tr>
                 <th class="texto-centrado">COMPAÑIA</td>
                 <th class="texto-centrado">AÑO</td>
                 <th class="texto-centrado">RANGO MESES</td> 
-                <th class="texto-centrado">MESES </td> 
-                <th class="texto-centrado">BRUTO</td>
-                <th class="texto-centrado">NETO</td>
+                <th class="texto-centrado">BRUTO | NETO  | BONUS</td>
                 <th class="texto-centrado">MENSUALIDAD</td>
-                <th class="texto-centrado">BONUS</td>
                 <th class="texto-centrado">ACCIONES</td>      
             </tr>
         </thead>
-        <tbody class="tabla_con_encabezado income_periodic">
+        <tbody class="tabla_con_encabezado">
         {% for extracted_data in income_query_results %}
             <tr>
                 <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.6 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.5 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }} <br> ({{ extracted_data.6 }})</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} € <br> {{ extracted_data.5 }} € <br> {{ extracted_data.8 }} €</td>
                 <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.7 }} €</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.8 }} €</td>
                 <td class="texto-centrado">
                     <a href="/selected_income/{{ extracted_data.0 }}" class="boton">Editar</a>
                     <a href="/delete_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
@@ -91,7 +85,7 @@
         {% endfor %}
         </tbody>
     </table>
-    <table class="card tabla extra_table" id="tabla">
+    <table class="card tabla extra_table" id="tabla income_extra">
         <thead class="tabla-encabezado-fijo">
             <tr>
                 <th class="texto-centrado">COMPAÑIA</td>
@@ -102,7 +96,7 @@
                 <th class="texto-centrado">ACCIONES</td>         
             </tr>
         </thead>
-        <tbody class="tabla_con_encabezado income_extra">
+        <tbody class="tabla_con_encabezado">
         {% for extracted_data in income_query_results %}
             <tr>
                 <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
@@ -129,9 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const company_extra = form.querySelector('select[name="company_extra"]').closest('div');
     const mesDiv = form.querySelector('select[name="mes"]').closest('div');
     const periodicTable = document.querySelector('.periodic_table');
-    const extraTable = document.querySelector('.extra_table');
-    const income_periodic = document.querySelector('.income_periodic');
-    const income_extra = document.querySelector('.income_extra');   
+    const extraTable = document.querySelector('.extra_table'); 
     
     const handleChange = () => {
         const tipo = tipoSelect.value;
@@ -143,19 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
         mesDiv.style.display = '';
         periodicTable.style.display = '';
         extraTable.style.display = '';
-        income_periodic.style.display = '';
-        income_extra.style.display = '';    
+  
 
         // Reglas
         if (tipo === 'P') {
             company_extra.style.display = 'none'; // ocultar compañia extra
             mesDiv.style.display = 'none'; // ocultar mes
             extraTable.style.display = 'none'; // ocultar tabla extra
-            income_extra.style.display = 'none'; // ocultar cuerpo tabla extra
+            extraTable.querySelector("tbody").innerHTML=""; // limpiar tabla extra
         } else {
             company_periodic.style.display = 'none'; // ocultar compañia periodica
             periodicTable.style.display = 'none'; // ocultar tabla periodica  
-            income_periodic.style.display = 'none'; // ocultar cuerpo tabla periodica   
+            periodicTable.querySelector("tbody").innerHTML=""; // limpiar tabla periodica
         }
 };
 

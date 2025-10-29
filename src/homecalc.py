@@ -584,7 +584,6 @@ def manage_income_filter():
     try:
         cursor.execute(readed_query_2_execute)
         income_query_results = cursor.fetchall()
-        print(income_query_results)
     except Exception as e:
         print(f"Error at filtered income query: {e}")
     finally:
@@ -1325,7 +1324,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5200)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

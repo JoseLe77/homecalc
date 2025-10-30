@@ -1,5 +1,5 @@
 SELECT
-	t.id,
+	'P'||t.id id,
 	t.empresa,
 	t.año,
 	m1.mes_texto ||' a '|| m2.mes_texto meses,

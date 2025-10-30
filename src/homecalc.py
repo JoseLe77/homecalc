@@ -359,6 +359,7 @@ def periodic_income_filter():
     periodic_query = webcall.read()
     webcall.close()
     readed_query_2_execute = periodic_query.format(company2filter, year2filter)
+    filtered_data = f'Compañia ({company2filter}) y Año ({year2filter}).'
     try:
         cursor.execute(readed_query_2_execute)
         periodic_income_query_results = cursor.fetchall()
@@ -367,7 +368,7 @@ def periodic_income_filter():
     finally:
         connection.close()
 
-    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results)
+    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
 
 @app.route("/extra_income")
 def extra_income():
@@ -413,25 +414,28 @@ def extra_income_filter():
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(year2filter)
+        filtered_data = f'Año ({year2filter}).'
     elif company2filter != 'TODAS' and month2filter == '0':
         # ---- Database extra filtered income  by month SQL Query ----
         webcall = open('src/db/webcalls/income/income_extra_anual_by_company.sql', mode='r')
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(company2filter, year2filter)
+        filtered_data = f'Compañia ({company2filter}) y Año ({year2filter}).'
     elif company2filter == 'TODAS' and month2filter != '0':
         # ---- Database extra filtered income  by month SQL Query ----
         webcall = open('src/db/webcalls/income/income_extra_anual_by_month.sql', mode='r')
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(year2filter, month2filter)
+        filtered_data = f'Año ({year2filter}) y Mes ({month2filter}).'
     else:
         # ---- Database extra filtered income liby company and month SQL Query ----
         webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month.sql', mode='r')
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(company2filter, year2filter, month2filter)
-
+        filtered_data = f'Compañia ({company2filter}), Año ({year2filter}) y Mes ({month2filter}).'
     try:
         cursor.execute(readed_query_2_execute)
         extra_income_query_results = cursor.fetchall()
@@ -440,7 +444,7 @@ def extra_income_filter():
     finally:
         connection.close()
 
-    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results)
+    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
 
 @app.route("/manage_incomes")
 def manage_incomes():
@@ -565,20 +569,20 @@ def manage_income_filter():
         periodic_query = webcall.read()
         webcall.close()
         readed_query_2_execute = periodic_query.format(company, año)
-        filtered_data = f'Ingreso Periodico por Compañia ({company}) y año ({año}).'
+        filtered_data = f'Ingreso Periodico por Compañia ({company}) y Año ({año}).'
     else:
         if mes == '0':
-            webcall = open('src/db/webcalls/income/income_extra_anual.sql', mode='r')
+            webcall = open('src/db/webcalls/income/income_extra_anual_filter.sql', mode='r')
             extra_query = webcall.read()
             webcall.close()
             readed_query_2_execute = extra_query.format(año)
-            filtered_data = f'Ingreso Extraordinario por año ({año}).'
+            filtered_data = f'Ingreso Extraordinario por Compañia ({company}) y Año ({año}).'
         else:
-            webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month.sql', mode='r')
+            webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month_filter_filter.sql', mode='r')
             extra_query = webcall.read()
             webcall.close()
             readed_query_2_execute = extra_query.format(company, año, mes)
-            filtered_data = f'Ingreso Extraordinario por compañia ({company}), mes ({mes}) y año ({año}).'
+            filtered_data = f'Ingreso Extraordinario por Compañia ({company}), Mes ({mes}) y Año ({año}).'
     
     connection, cursor = dbconnection()
     try:
@@ -615,6 +619,37 @@ def manage_income_filter():
     
 
     return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
+
+@app.route("/selected_income/<selected_income>")
+def selected_income(selected_income):
+    income_type=selected_income[:1]
+    selected_income_id=selected_income[1:]
+
+    if income_type == 'P':
+        webcall = open('src/db/webcalls/income/periodic_income_selected_to_edit.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(selected_income_id)
+    else:
+        webcall = open('src/db/webcalls/income/extra_income_selected_to_edit.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(selected_income_id)
+
+    connection, cursor = dbconnection()
+    try:
+        cursor.execute(readed_query_2_execute)
+        selected_income_query_results = cursor.fetchall()
+        print(selected_income_query_results)
+    except Exception as e:
+        print(f"Error at selected income query: {e}")
+    finally:
+        connection.close()
+    
+    nav_buttons_query_results = nav_buttons()
+
+    return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type)
+
 
 # ---- EXPENSES ---- 
 @app.route("/expenses", methods=['GET', 'POST'])

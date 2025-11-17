@@ -15,34 +15,26 @@
     <h1 class="card">
         EDICCION DE INGRESOS
     </h1>
-   <form action="/add_income" method="POST" class="card contenedor margen-inferior">
+   <form action="/update_income" method="POST" class="card contenedor margen-inferior">
     <div class="filter-form">
+        <input type="hidden" name="id" value="{{ selected_income_query_results.1 }}">
         <div>
             <label for="tipo" style="font-weight: bold;">TIPO</label>
             <select name="tipo" class="input">
-                <option name="selected_expense_concept" value="P">Ingreso Periodico</option>
-                <option name="selected_expense_concept" value="E">Ingreso Extraordinario</option>
+                {% for tipo_value, tipo_description in income_types_descriptions.items() %}
+                    <option name="selected_income_concept" value="{{ tipo_value }}">{{ tipo_description }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="margen-derecha">
             <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
-            <select name="company_extra" class="input">
-                {% for extra_income_company in extra_companies_list_query_results %}
-                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.0 }}</option>
-                {% endfor %}
-            </select>
+            <input name="company_extra" label="company_extra" type="text" class="input" value="{{ selected_income_query_results.4 }}">
         </div>
     </div> 
     <div class="filter-form">
         <div class="margen-derecha">
             <label for="company_periodic" style="font-weight: bold;">COMPAÑIA</label>
-            <select name="company_periodic" class="input">
-                {% for periodic_income_company in periodic_companies_list_query_results %}
-                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.0 }}</option>
-                {% endfor %}
-            </select>
-            
-            <!-- <input name="company_periodic" label="company_periodic" type="text" class="input"> -->
+            <input name="company_periodic" label="company_periodic" type="text" class="input" value="{{ selected_income_query_results.2 }}">
         </div>
         <div>
             <label for="paga_extra" style="font-weight: bold;">PAGA EXTRAORDINARIA</label>
@@ -55,67 +47,68 @@
     <div class="filter-form">
         <div class="margen-derecha">
             <label for="irpf" style="font-weight: bold;">IRPF %</label>
-            <input name="irpf" label="irpf" type="text" class="input">
+            <input name="irpf" label="irpf" type="text" class="input" value="{{ selected_income_query_results.9 }}">
         </div>
         <div class="margen-derecha">
             <label for="resto_impuestos" style="font-weight: bold;">RESTO IMPUESTOS %</label>
-            <input name="resto_impuestos" label="resto_impuestos" type="text" class="input">
+            <input name="resto_impuestos" label="resto_impuestos" type="text" class="input" value="{{ selected_income_query_results.10 }}">
         </div>
         <div class="margen-derecha">
             <label for="bonus" style="font-weight: bold;">BONUS %</label>
-            <input name="bonus" label="bonus" type="text" class="input">
+            <input name="bonus" label="bonus" type="text" class="input" value="{{ selected_income_query_results.11 }}">
         </div>
     </div>
     <div class="margen-derecha">
         <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-        <input name="concepto" label="concepto" type="text" class="input">
+        <input name="concepto" label="concepto" type="text" class="input" value="{{ selected_income_query_results.5 }}">
     </div> 
     <div class="filter-form">
         <div>
             <label for="año" style="font-weight: bold;">AÑO</label>
-            <input name="año" label="año" type="text" class="input texto-centrado">
+            <input name="año" label="año" type="text" class="input texto-centrado" value="{{ selected_income_query_results.3 }}">
         </div>
         <div>
             <label for="mes_desde" style="font-weight: bold;">MES DESDE</label>
             <select name="mes_desde" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_from_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% for month_from in months_from_list_query_results%}
+                    <option name="selected_from_month" value="{{ month_from.0 }}">{{ month_from.1 }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
             <label for="mes_hasta" style="font-weight: bold;">MES HASTA</label>
             <select name="mes_hasta" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_to_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% for month_to in months_to_list_query_results%}
+                    <option name="selected_to_month" value="{{ month_to.0 }}">{{ month_to.1 }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
             <label for="mes" style="font-weight: bold;">MES</label>
             <select name="mes" class="input">
-                {% for month in months_list_query_results%}
+                {% for month in months_extra_list_query_results%}
                     <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div>
+        <div class="input-moneda">
             <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
-            <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
+            <input name="cantidad" label="cantidad" type="text" class="input texto-derecha" value="{{ selected_income_query_results.6 }}">
+            <span class="moneda">€</span>
         </div>
     </div>
     <div>
         <button class="boton" type="submit">Guardar</button>
-        <button class="boton" type="reset">Refrescar</button>
+        <a href="{{url_for('manage_incomes')}}" class="boton">Cancelar</a>
     </div>
 </form>
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tipoSelect = document.querySelector('select[name="tipo"]');
-    const company_periodic = document.querySelector('select[name="company_periodic"]').closest('div');
+    const company_periodic = document.querySelector('input[name="company_periodic"]').closest('div');
     const paga_extra = document.querySelector('select[name="paga_extra"]').closest('div');
-    const company_extra = document.querySelector('select[name="company_extra"]').closest('div')
+    const company_extra = document.querySelector('input[name="company_extra"]').closest('div')
     const anioDiv = document.querySelector('input[name="año"]').closest('div');
     const mesDiv = document.querySelector('select[name="mes"]').closest('div');
     const mes_desdeDiv = document.querySelector('select[name="mes_desde"]').closest('div');

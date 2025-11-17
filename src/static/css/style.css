@@ -64,6 +64,23 @@
   }
 }
 
+.input-moneda{
+    position: relative;
+}
+
+.input-moneda input{
+    padding-right: 30px;
+}
+
+.moneda{
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--color-2);
+    font-size: 1.2rem;
+}
 
 @media screen and (min-width: 1024px) {
   .top-header {

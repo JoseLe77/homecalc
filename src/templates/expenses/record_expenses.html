@@ -16,10 +16,6 @@
         CREACION DE NUEVOS GASTOS
     </h1>
    <form action="/add_expense" method="POST" class="card contenedor margen-inferior">
-    <div class="margen-derecha">
-        <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-        <input name="concepto" label="concepto" type="text" class="input">
-    </div>
     <div class="filter-form">
         <div>
             <label for="tipo" style="font-weight: bold;">TIPO</label>
@@ -36,6 +32,10 @@
                 {% endfor %}
             </select>
         </div>
+    </div>
+    <div class="margen-derecha">
+        <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
+        <input name="concepto" label="concepto" type="text" class="input">
     </div>  
     <div class="filter-form">
         <div>
@@ -50,9 +50,10 @@
                 {% endfor %}
             </select>
         </div>
-        <div>
+        <div class="input-moneda">
             <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
             <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
+            <span class="moneda">€</span>
         </div>
     </div>
     <div>

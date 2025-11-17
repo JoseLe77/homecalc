@@ -616,13 +616,15 @@ def manage_income_filter():
         income_types_descriptions = dict(reversed(list(income_types_descriptions.items())))
     else:
         income_types_descriptions = income_types_descriptions
-    
+
+    print(income_query_results)    
 
     return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
 
 @app.route("/selected_income/<selected_income>")
 def selected_income(selected_income):
     income_type=selected_income[:1]
+    print(income_type)
     selected_income_id=selected_income[1:]
 
     if income_type == 'P':
@@ -637,9 +639,10 @@ def selected_income(selected_income):
         readed_query_2_execute = readed_query.format(selected_income_id)
 
     connection, cursor = dbconnection()
+
     try:
         cursor.execute(readed_query_2_execute)
-        selected_income_query_results = cursor.fetchall()
+        selected_income_query_results = cursor.fetchone()
         print(selected_income_query_results)
     except Exception as e:
         print(f"Error at selected income query: {e}")
@@ -648,8 +651,181 @@ def selected_income(selected_income):
     
     nav_buttons_query_results = nav_buttons()
 
-    return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type)
+    income_types_descriptions = { 'P': 'Ingresos Periodicos', 'E': 'Ingresos Extraordinarios' }
 
+    if income_type == 'P':
+        income_types_descriptions = income_types_descriptions
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database month list SQL Query ----
+        webcall = open('src/db/webcalls/months_selected.sql', mode='r')
+        months_list = webcall.read()
+        months_from_list_query = months_list.format(selected_income_query_results[4], selected_income_query_results[4])
+        months_to_list_query = months_list.format(selected_income_query_results[5], selected_income_query_results[5])
+        webcall.close()
+        try:
+            cursor.execute(months_from_list_query)
+            months_from_list_query_results = cursor.fetchall()
+            print(months_from_list_query_results)
+            cursor.execute(months_to_list_query)
+            months_to_list_query_results = cursor.fetchall()
+            print(months_from_list_query_results)
+            
+        except Exception as e:
+            print(f"Error at Months query: {e}") 
+        finally:
+            connection.close() 
+
+    if income_type=='E':
+        income_types_descriptions = dict(reversed(list(income_types_descriptions.items())))
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database month list SQL Query ----
+        webcall = open('src/db/webcalls/months_selected.sql', mode='r')
+        months_list = webcall.read()
+        months_list_query = months_list.format(selected_income_query_results[3], selected_income_query_results[3])
+        webcall.close()
+        try:
+            cursor.execute(months_list_query)
+            months_extra_list_query_results = cursor.fetchall()
+            print(months_extra_list_query_results)
+        except Exception as e:
+            print(f"Error at Months query: {e}") 
+        finally:
+            connection.close() 
+            
+    else:
+        income_types_descriptions = income_types_descriptions
+
+    if income_type == 'P':
+        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_from_list_query_results=months_from_list_query_results, months_to_list_query_results=months_to_list_query_results)
+    if income_type == 'E':
+        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_extra_list_query_results=months_extra_list_query_results)    
+    else:
+        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions)
+
+@app.route("/update_income", methods=['GET', 'POST'])
+def update_income():
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        incomeType = request.form['tipo']
+
+        if incomeType == 'P':
+            id2edit = request.form['id']     
+            year2edit = request.form['año']
+            mesdesde2edit = request.form['mes_desde']
+            meshasta2edit = request.form['mes_hasta']
+            PeriodicCompany2edit = request.form['company_periodic']
+            paga_extra2edit = request.form.get('paga_extra', 'N')
+            irpf2edit = request.form['irpf']
+            resto_impuestos2edit = request.form['resto_impuestos']
+            bonus2edit = request.form['bonus']
+            qty2edit = request.form['cantidad']
+            qty2edit = qty2edit.replace(',', '.')
+
+            print(f'ID: {id2edit}')
+            print(f'YEAR: {year2edit}')
+            print(f'MES DESDE: {mesdesde2edit}')
+            print(f'MES HASTA: {meshasta2edit}')
+            print(f'PERIODIC COMPANY: {PeriodicCompany2edit}')
+            print(f'PAGA EXTRA: {paga_extra2edit}')
+            print(f'IRPF: {irpf2edit}')
+            print(f'RESTO IMPUESTOS: {resto_impuestos2edit}')
+            print(f'BONUS: {bonus2edit}')
+            print(f'TYPE: {incomeType}')
+            print(f'QUANTITY: {qty2edit}')
+
+            ## AQUI ME QUEDE!!!
+
+            if PeriodicCompany2edit is not None and irpf2edit is not None and resto_impuestos2edit is not None and bonus2edit is not None and qty2edit is not None:
+                webcall = open('src/db/webcalls/income/update_periocid_income.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(ExtraCompany2edit, int(year2edit), int(month2edit), concept2edit, float(qty2edit), id2edit)
+            else:
+                print('Error2')
+
+        else:   
+            id2edit = request.form['id']     
+            year2edit = request.form['año']
+            month2edit = request.form['mes']
+            concept2edit = request.form['concepto']
+            ExtraCompany2edit = request.form['company_extra']
+            qty2edit = request.form['cantidad']
+            qty2edit = qty2edit.replace(',', '.')
+
+            print(f'ID: {id2edit}')
+            print(f'YEAR: {year2edit}')
+            print(f'MONTH: {month2edit}')
+            print(f'CONCEPT: {concept2edit}')
+            print(f'EXTRA COMPANY: {ExtraCompany2edit}')
+            print(f'TYPE: {incomeType}')
+            print(f'QUANTITY: {qty2edit}')
+
+            if month2edit is not None and concept2edit is not None and qty2edit is not None and ExtraCompany2edit is not None:
+                webcall = open('src/db/webcalls/income/update_extra_income.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(ExtraCompany2edit, int(year2edit), int(month2edit), concept2edit, float(qty2edit), id2edit)
+            else:
+                print('Error2')
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        connection.close()
+        print('ejecutado')
+    except Exception as e:
+        print(f'Error añadiendo {incomeType}. {e}') 
+
+    return redirect(url_for('manage_incomes'))
+
+@app.route("/selected_income/income")
+def selected_income_income():
+    return redirect(url_for('income'))
+
+@app.route("/selected_income/expenses")
+def selected_income_expense():
+    return redirect(url_for('expenses'))
+
+@app.route("/delete_income/<incomeid>")
+def delete_income(incomeid):
+    income_type=incomeid[:1]
+    income_id=incomeid[1:]
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    if income_type=='E':
+        webcall = open('src/db/webcalls/income/extra_income_to_delete.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(income_id)
+    else:
+        webcall = open('src/db/webcalls/income/periodic_income_to_delete.sql', mode='r')
+        readed_query = webcall.read()
+        webcall.close()
+        readed_query_2_execute = readed_query.format(income_id)
+    
+    print(readed_query_2_execute)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")    
+    finally:
+        connection.close()
+    
+    return redirect(url_for('manage_incomes'))
 
 # ---- EXPENSES ---- 
 @app.route("/expenses", methods=['GET', 'POST'])
@@ -1350,6 +1526,14 @@ def delete_expenses(expenseid):
     
     return redirect(url_for('manage_expenses'))
 
+@app.route("/selected_expense/income")
+def selected_expense_income():
+    return redirect(url_for('income'))
+
+@app.route("/selected_expense/expenses")
+def selected_expense_expense():
+    return redirect(url_for('expenses'))
+
 # ---- ABOUT ---- 
 @app.route("/about")
 def about():
@@ -1359,7 +1543,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5100)
+    app.run(host='127.0.0.1', port=5200)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

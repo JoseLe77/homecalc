@@ -51,14 +51,15 @@
                 {% endfor %}
             </select>
         </div>
-        <div>
+        <div class="input-moneda">
             <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
             <input name="cantidad" label="cantidad" type="text" class="input texto-derecha" value="{{readed_query_executed_results.4}}">
+            <span class="moneda">€</span>
         </div>
     </div>
     <div>
         <button class="boton" type="submit">Actualizar</button>
-        <button class="boton" type="reset">Refrescar</button>
+        <a href="{{url_for('manage_expenses')}}" class="boton">Cancelar</a>
     </div>
 </form>
 </section>

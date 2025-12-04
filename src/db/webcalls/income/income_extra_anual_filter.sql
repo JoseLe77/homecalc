@@ -11,4 +11,7 @@ FROM
 WHERE
 	ie.mes = m.mes
 	AND ie.activo = 1
-	AND ie.año = '{}';
+	AND ie.año = '{}'
+ORDER BY
+	ie.año DESC,
+	ie.mes ASC;

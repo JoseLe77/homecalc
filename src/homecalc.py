@@ -4,6 +4,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
 import sqlite3
 import datetime
+import os
 
 # -------------------------------------------------------------------------
 # Setup
@@ -12,10 +13,10 @@ app = Flask(__name__)
 app.secret_key = "homecalc2025"
 
 def dbconnection():
-  # Connects to the specified SQLite database and returns a connection and cursor.
-  connection = sqlite3.connect('src/db/database/homecalc.db')
-  cursor = connection.cursor()
-  return connection, cursor
+    # Connects to the specified SQLite database and returns a connection and cursor.
+    connection = sqlite3.connect('src/db/database/homecalc.db')
+    cursor = connection.cursor()
+    return connection, cursor
   
 
 """ def tmpl_show_menu():
@@ -287,6 +288,57 @@ def monthintext():
 
     return Filtrered_data
 
+def movements_concept_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/concepts_list.sql', mode='r')
+    movement_concepts_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(movement_concepts_list)
+        existing_concepts_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+        return existing_concepts_list_query_results
+
+def movements_year_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movement_years_list.sql', mode='r')
+    movement_years_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(movement_years_list)
+        existing_movement_years_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+        return existing_movement_years_list_query_results
+
+def movements_month_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movement_months_list.sql', mode='r')
+    movement_months_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(movement_months_list)
+        existing_movement_months_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+        return existing_movement_months_list_query_results
+
 # ---- HOME ----  
 @app.route("/")
 def home():
@@ -295,13 +347,71 @@ def home():
     
     return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results)
 
-# ---- FORM ----  
+# ---- MOVEMENTS ----  
 @app.route("/form")
 def form():
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
         
-    return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results)
+    return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results)
+
+@app.route("/add_movement", methods=['GET','POST'])
+def add_movement():
+    print('Adding movement...')
+    if request.method == 'POST':
+        print('POST method detected')
+        tipoEntrada = request.form['tipoEnt']
+        print(f'Tipo Entrada: {tipoEntrada}')
+        fecha = request.form['fecha']
+        fecha = datetime.datetime.strptime(fecha, '%Y-%m-%d').date()
+        print(f'Fecha Formatted: {fecha}')
+        tipo = request.form['tipoAbono']
+        print(f'Tipo: {tipo}')
+        cantidad = request.form['cantidad']
+        cantidad = cantidad.replace(',', '.')
+        print(f'Cantidad: {cantidad}')  
+        if tipoEntrada == 'M':
+            concepto = request.form['conceptoManual']
+        else:
+            concepto = request.form['conceptoSeleccion']
+        print(f'Concepto: {concepto}')
+        
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database add movement SQL Query (con parámetros seguros) ----
+        webcall = open('src/db/webcalls/movements/add_movement.sql', mode='r')
+        add_movement_query = webcall.read()
+        webcall.close()
+        add_movement_query_2_execute = add_movement_query.format(fecha, tipo, concepto, cantidad)
+        
+        # Usa parámetros en lugar de .format() para prevenir SQL injection
+        try:
+            cursor.execute(add_movement_query_2_execute)
+            connection.commit()
+        except Exception as e:
+            print(f"Error at add movement SQL query: {e}")    
+        finally:
+            connection.close()
+        
+        return redirect(url_for('form'))
+
+@app.route("/manage_movements")
+def manage_movements():
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    existing_movement_months_list_query_results = movements_month_list()
+
+    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results)
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])
@@ -617,6 +727,7 @@ def manage_income_filter():
     else:
         income_types_descriptions = income_types_descriptions
 
+
     print(income_query_results)    
 
     return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
@@ -654,7 +765,7 @@ def selected_income(selected_income):
     income_types_descriptions = { 'P': 'Ingresos Periodicos', 'E': 'Ingresos Extraordinarios' }
 
     if income_type == 'P':
-        income_types_descriptions = income_types_descriptions
+        income_types_descriptions = {'P': 'Ingresos Periodicos'}
 
         # ---- Database Connection ----
         connection, cursor = dbconnection()
@@ -679,7 +790,7 @@ def selected_income(selected_income):
             connection.close() 
 
     if income_type=='E':
-        income_types_descriptions = dict(reversed(list(income_types_descriptions.items())))
+        income_types_descriptions = {'E': 'Ingresos Extraordinarios'}  #dict(reversed(list(income_types_descriptions.items())))
 
         # ---- Database Connection ----
         connection, cursor = dbconnection()
@@ -744,10 +855,16 @@ def update_income():
             ## AQUI ME QUEDE!!!
 
             if PeriodicCompany2edit is not None and irpf2edit is not None and resto_impuestos2edit is not None and bonus2edit is not None and qty2edit is not None:
-                webcall = open('src/db/webcalls/income/update_periocid_income.sql', mode='r')
+                webcall = open('src/db/webcalls/income/update_periodic_income.sql', mode='r')
+                webcall2 = open('src/db/webcalls/income/update_periodic_income_discounts.sql', mode='r')
                 readed_query = webcall.read()
                 webcall.close()
-                readed_query_2_execute = readed_query.format(ExtraCompany2edit, int(year2edit), int(month2edit), concept2edit, float(qty2edit), id2edit)
+                readed_query2 = webcall2.read()
+                webcall2.close()
+                readed_query_2_execute = readed_query.format(PeriodicCompany2edit, int(year2edit), int(meshasta2edit), int(mesdesde2edit), float(qty2edit),paga_extra2edit, int(meshasta2edit), int(mesdesde2edit), int(meshasta2edit), int(mesdesde2edit), int(meshasta2edit), int(mesdesde2edit), int(meshasta2edit), int(mesdesde2edit), id2edit)
+                print(readed_query_2_execute)
+                readed_query_2_execute_2 = readed_query2.format(PeriodicCompany2edit, int(year2edit), int(year2edit), int(year2edit), int(irpf2edit), int(resto_impuestos2edit), int(irpf2edit), int(resto_impuestos2edit), float(bonus2edit), int(year2edit), PeriodicCompany2edit)
+                print(readed_query_2_execute_2)
             else:
                 print('Error2')
 
@@ -780,6 +897,9 @@ def update_income():
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
         connection.commit()
+        if incomeType == 'P':
+            cursor.execute(readed_query_2_execute_2)
+            connection.commit() 
         connection.close()
         print('ejecutado')
     except Exception as e:
@@ -1543,7 +1663,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5200)
+    app.run(host='127.0.0.1', port=5300)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

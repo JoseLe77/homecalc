@@ -1,0 +1,1 @@
+SELECT DISTINCT SUBSTR(movimientos.fecha,6,2) movmonths, meses.mes_texto  FROM movimientos, meses WHERE SUBSTR(movimientos.fecha,6,2)=meses.mes ORDER BY SUBSTR(movimientos.fecha,6,2);

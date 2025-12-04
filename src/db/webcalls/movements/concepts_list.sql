@@ -1,0 +1,1 @@
+SELECT concepto FROM (SELECT concepto, COUNT(concepto)X FROM movimientos GROUP BY concepto)ORDER BY X DESC;

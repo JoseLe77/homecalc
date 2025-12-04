@@ -1,0 +1,116 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('form')}}" class="active">Registro</a></li>
+        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
+        <li><a href="#">Analisis</a></li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <form action="/manage_movement_filter" method="POST" class="card filter-form margen-inferior">
+        <div class="margen-derecha">
+            <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
+            <select name="concepto" class="input">
+                <option name="selected_year" value="TODOS">TODOS</option>
+                {% for movement_concept in movements_concept_list_query_results%}
+                    <option name="selected_movement_concept" value="{{ movement_concept.0 }}">{{ movement_concept.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="tipoAbono" style="font-weight: bold;">TIPO</label>
+            <select name="tipoAbono" class="input">
+                <option name="tipoAbonoTarjeta" value="T">Tarjeta</option>
+                <option name="tipoAbonoEfectivo" value="E">Efectivo</option>
+                <option name="selected_year" value="A">Todos</option>
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="año" style="font-weight: bold;">AÑO</label>
+            <select name="año" class="input">
+                {% for year in existing_movement_years_list_query_results%}
+                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="mes" style="font-weight: bold;">MES</label>
+            <select name="mes" class="input">
+                <option name="selected_year" value="0">TODOS</option>
+                {% for month in existing_movement_months_list_query_results%}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="boton" type="submit">Filtrar</button>
+    </form>
+    <div class="contenedor">
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}
+    </div>
+    <table class="card tabla" id="tabla">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">FECHA</td>
+                <th class="texto-centrado">CONCEPTO</td>
+                <th class="texto-centrado">TIPO</td>
+                <th class="texto-centrado">CANTIDAD</td>
+                <th class="texto-centrado">ACCIONES</td>       
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in readed_query_executed_results %}
+            <tr>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
+                <td class="texto-centrado">
+                    <!-- <a href="/selected_movement/{{ extracted_data.0 }}" class="boton">Editar</a> -->
+                    <a href="/delete_movement/{{ extracted_data.0 }}" class="boton">Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+<!-- <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form[action="/manage_expenses_filter"]');
+
+  const tipoSelect = form.querySelector('select[name="tipo"]');
+  const periodicidadSelect = form.querySelector('select[name="periodicidad"]');
+  const anioDiv = form.querySelector('select[name="año"]').closest('div');
+  const periodicidadDiv = periodicidadSelect.closest('div');
+  const mesDiv = form.querySelector('select[name="mes"]').closest('div');
+
+  const handleChange = () => {
+    const tipo = tipoSelect.value;
+    const periodicidad = periodicidadSelect.value;
+
+    // Mostrar todo por defecto
+    anioDiv.style.display = '';
+    periodicidadDiv.style.display = '';
+    mesDiv.style.display = '';
+
+    // Reglas
+    if (tipo === 'P') {
+      anioDiv.style.display = 'none'; // ocultar año
+      if (periodicidad === 'M') {
+        mesDiv.style.display = 'none'; // ocultar mes si periodicidad = M
+      }
+    } else if (tipo === 'E') {
+      periodicidadDiv.style.display = 'none'; // ocultar periodicidad
+    }
+  };
+
+  // Ejecutar al cargar
+  handleChange();
+
+  // Escuchar cambios
+  tipoSelect.addEventListener('change', handleChange);
+  periodicidadSelect.addEventListener('change', handleChange);
+});
+</script> -->
+{% endblock %}
+

@@ -2,13 +2,13 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda">
     <ul>
-        <li><a href="{{url_for('form')}}" class="active">Registro</a></li>
-        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
+        <li><a href="{{url_for('form')}}">Registro</a></li>
+        <li><a href="{{url_for('manage_movements')}}" class="active">Visualizar</a></li>
         <li><a href="#">Analisis</a></li>
     </ul>
 </nav>
 <section class="contenedor">
-    <form action="/manage_movement_filter" method="POST" class="card filter-form margen-inferior">
+    <form action="/manage_movements_filter" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
             <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
             <select name="concepto" class="input">
@@ -21,9 +21,9 @@
         <div>
             <label for="tipoAbono" style="font-weight: bold;">TIPO</label>
             <select name="tipoAbono" class="input">
-                <option name="tipoAbonoTarjeta" value="T">Tarjeta</option>
-                <option name="tipoAbonoEfectivo" value="E">Efectivo</option>
-                <option name="selected_year" value="A">Todos</option>
+                <option name="selected_year" value="TODOS">TODOS</option>
+                <option name="tipoAbonoTarjeta" value="T">TARJETA</option>
+                <option name="tipoAbonoEfectivo" value="E">EFECTIVO</option>
             </select>
         </div>
         <div class="margen-derecha">
@@ -59,7 +59,7 @@
             </tr>
         </thead>
         <tbody class="tabla_con_encabezado">
-        {% for extracted_data in readed_query_executed_results %}
+        {% for extracted_data in movements_filter_list_query_results %}
             <tr>
                 <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
                 <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.2 }}</td>

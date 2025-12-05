@@ -411,7 +411,99 @@ def manage_movements():
 
     existing_movement_months_list_query_results = movements_month_list()
 
-    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results)
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movements_by_year.sql', mode='r')
+    movement_filter_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(movement_filter_list)
+        movements_filter_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+    
+    year_now = datetime.datetime.now()
+    year_now = year_now.year
+    filtered_data = f'Año ({year_now}).'
+
+    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
+
+@app.route("/manage_movements_filter", methods=['GET', 'POST'])
+def manage_movements_filter():
+    if request.method == 'POST':
+        concept2filter = request.form['concepto']
+        type2filter = request.form['tipoAbono']
+        year2filter = int(request.form['año'])
+        month2filter = int(request.form['mes'])
+        print(f'Filters - Concept: {concept2filter}, Type: {type2filter}, Year: {year2filter}, Month: {month2filter}')
+    
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    existing_movement_months_list_query_results = movements_month_list()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movements_filter.sql', mode='r')
+    movement_filter_list = webcall.read()
+    webcall.close()
+    readed_query_2_execute = movement_filter_list.format(concept2filter, concept2filter, type2filter, type2filter, year2filter, month2filter, month2filter)
+
+    if type2filter == 'T':
+        filtered_type = 'TARJETA'
+    elif type2filter == 'E':
+        filtered_type = 'EFECTIVO'
+    else:
+        filtered_type = 'TODOS' 
+
+    if month2filter == 0:
+        filtered_data = f'Concepto ({concept2filter}), Tipo Abono ({filtered_type}) y Año ({year2filter}).'
+    else:
+        filtered_data = f'Concepto ({concept2filter}), Tipo Abono ({filtered_type}), Año ({year2filter}) y Mes ({month2filter}).'
+        
+    try:
+        cursor.execute(readed_query_2_execute)
+        movements_filter_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
+
+@app.route("/delete_movement/<movement_id>")
+def delete_movement(movement_id):
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    webcall = open('src/db/webcalls/movements/movement_to_delete.sql', mode='r')
+    readed_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = readed_query.format(movement_id)
+    
+    print(readed_query_2_execute)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")    
+    finally:
+        connection.close()
+    
+    return redirect(url_for('manage_movements'))
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])

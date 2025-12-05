@@ -1,4 +1,4 @@
 # homecalc
 Household income and expense management
 
-[![Household income and expense management](https://readme-typing-svg.demolab.com/?lines=First+line+of+text;Second+line+of+text)](https://git.io/typing-svg)
+[![Typing SVG](https://readme-typing-svg.demolab.com/?lines=Household+income+and+expense+management;Daily+expenses+regstration+&+management)](https://git.io/typing-svg)

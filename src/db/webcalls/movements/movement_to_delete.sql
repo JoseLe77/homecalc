@@ -1,0 +1,1 @@
+DELETE FROM movimientos WHERE id={};

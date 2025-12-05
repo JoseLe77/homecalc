@@ -1,0 +1,87 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda shadow">
+    <ul>
+        <li><a href="{{url_for('form')}}" class="active">Registro</a></li>
+        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
+        <li><a href="#">Analisis</a></li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <h1 class="card">
+        REGISTRO DE GASTOS DIARIOS
+    </h1>
+    <form action="/add_movement" method="POST" class="card contenedor margen-inferior">
+        <div class="filter-form">
+            <div>
+                <label for="tipoEnt" style="font-weight: bold;">TIPO ENTRADA</label>
+                <select name="tipoEnt" class="input">
+                    <option name="tipoEntrada" value="E">Existente</option>
+                    <option name="tipoEntrada" value="M">Manual</option>
+                </select>
+            </div>
+            <div>
+                <label for="fecha" style="font-weight: bold;">FECHA</label>
+                <input name="fecha" label="fecha" type="date" class="input">
+            </div>
+        </div>  
+        <div>
+            <label for="conceptoManual" style="font-weight: bold;">CONCEPTO</label>
+            <input name="conceptoManual" label="conceptoManual" type="text" class="input">
+        </div>
+        <div>
+            <label for="conceptoSeleccion" style="font-weight: bold;">CONCEPTO</label>
+            <select name="conceptoSeleccion" class="input">
+                {% for concept in movements_concept_list_query_results%}
+                    <option name="selected_concept" value="{{ concept.0 }}">{{ concept.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-form">
+            <div>
+                <label for="tipoAbono" style="font-weight: bold;">TIPO ENTRADA</label>
+                <select name="tipoAbono" class="input">
+                    <option name="tipoAbonoTarjeta" value="T">Tarjeta</option>
+                    <option name="tipoAbonoEfectivo" value="E">Efectivo</option>
+                </select>
+            </div>
+            <div class="input-moneda">
+                <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>
+                <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
+                <span class="moneda">€</span>
+            </div>
+        </div>
+        
+        <div>
+            <button class="boton" type="submit">Guardar</button>
+            <button class="boton" type="reset">Refrescar</button>
+        </div>
+    </form>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tipoSelect = document.querySelector('select[name="tipoEnt"]');
+    // CORREGIDO: input en lugar de select
+    const manualConcept = document.querySelector('input[name="conceptoManual"]').closest('div'); 
+    const listedConcept = document.querySelector('select[name="conceptoSeleccion"]').closest('div');
+
+    const handleChange = () => {
+        const tipo = tipoSelect.value;
+        console.log(tipo); // CORREGIDO: console.log en lugar de print
+
+        manualConcept.style.display = '';
+        listedConcept.style.display = ''; 
+
+        if (tipo === 'M') {
+            listedConcept.style.display = 'none';
+        } else if (tipo === 'E') {
+            manualConcept.style.display = 'none';
+        }
+    };
+
+    handleChange();
+    tipoSelect.addEventListener('change', handleChange);
+});
+</script>
+{% endblock %}
+

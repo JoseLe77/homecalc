@@ -1,0 +1,1 @@
+SELECT DISTINCT SUBSTR(fecha,1,4) movyears FROM movimientos ORDER BY SUBSTR(fecha,1,4) DESC;

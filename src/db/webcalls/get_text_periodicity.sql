@@ -1,0 +1,1 @@
+SELECT 'Periodicidad ('||periodicidad||')' filtered_periodicity FROM periodicidad WHERE codigo='{}'

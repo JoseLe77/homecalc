@@ -1,0 +1,1 @@
+SELECT mes_texto filtered_month FROM Meses WHERE mes='{}'

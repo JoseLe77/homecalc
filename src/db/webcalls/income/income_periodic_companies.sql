@@ -1,0 +1,1 @@
+SELECT DISTINCT t.empresa  FROM ingresosFijos t WHERE t.activo =1;

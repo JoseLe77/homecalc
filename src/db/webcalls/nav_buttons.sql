@@ -1,0 +1,1 @@
+SELECT nombre, enlace FROM paginas WHERE activo=1

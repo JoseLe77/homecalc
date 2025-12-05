@@ -1,0 +1,1 @@
+SELECT DISTINCT año FROM (SELECT año FROM ingresosFijos t UNION ALL SELECT año FROM IngresosExtra ie) ORDER BY año DESC;

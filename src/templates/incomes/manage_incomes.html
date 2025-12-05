@@ -1,0 +1,161 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
+        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
+        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
+            <ul>
+                <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <form action="/manage_income_filter" method="POST" class="card filter-form margen-inferior">
+        <div class="margen-derecha">
+            <label for="tipo" style="font-weight: bold;">TIPO</label>
+            <select name="tipo" class="input">
+                {% for tipo_value, tipo_description in income_types_descriptions.items() %}
+                    <option name="selected_income_concept" value="{{ tipo_value }}">{{ tipo_description }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="company_periodic" style="font-weight: bold;">COMPAÑIA</label>
+            <select name="company_periodic" class="input">
+                {% for periodic_income_company in periodic_companies_list_query_results %}
+                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
+            <select name="company_extra" class="input">
+                {% for extra_income_company in extra_companies_list_query_results %}
+                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="año" style="font-weight: bold;">AÑO</label>
+            <select name="año" class="input">
+                {% for year in years_list_query_results %}
+                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="mes" style="font-weight: bold;">MES</label>
+            <select name="mes" class="input">
+                {% for month in months_list_query_results %}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="boton" type="submit">Filtrar</button>
+    </form>
+    <div class="contenedor">
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{filtered_data}}
+    </div>
+    <table class="card tabla periodic_table" id="tabla income_periodic">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">COMPAÑIA</td>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">RANGO MESES</td> 
+                <th class="texto-centrado">BRUTO | NETO  | BONUS</td>
+                <th class="texto-centrado">MENSUALIDAD</td>
+                <th class="texto-centrado">ACCIONES</td>      
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in income_query_results %}
+            <tr>
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }} <br> ({{ extracted_data.6 }})</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} € <br> {{ extracted_data.5 }} € <br> {{ extracted_data.8 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.7 }} €</td>
+                <td class="texto-centrado">
+                    <a href="/selected_income/{{ extracted_data.0 }}" class="boton">Editar</a>
+                    <a href="/delete_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <table class="card tabla extra_table" id="tabla income_extra">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">COMPAÑIA</td>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">MES</td> 
+                <th class="texto-centrado">CONCEPTO</td>
+                <th class="texto-centrado">CANTIDAD</td>
+                <th class="texto-centrado">ACCIONES</td>         
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in income_query_results %}
+            <tr>
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.4 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.5 }} €</td>
+                <td class="texto-centrado">
+                    <a href="/selected_income/{{ extracted_data.0 }}" class="boton">Editar</a>
+                    <a href="/delete_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form[action="/manage_income_filter"]');
+
+    const tipoSelect = form.querySelector('select[name="tipo"]');
+    const anioDiv = form.querySelector('select[name="año"]').closest('div');
+    const company_periodic = form.querySelector('select[name="company_periodic"]').closest('div');
+    const company_extra = form.querySelector('select[name="company_extra"]').closest('div');
+    const mesDiv = form.querySelector('select[name="mes"]').closest('div');
+    const periodicTable = document.querySelector('.periodic_table');
+    const extraTable = document.querySelector('.extra_table'); 
+    
+    const handleChange = () => {
+        const tipo = tipoSelect.value;
+
+        // Mostrar todo por defecto
+        anioDiv.style.display = '';
+        company_periodic.style.display = '';
+        company_extra.style.display = '';
+        mesDiv.style.display = '';
+        periodicTable.style.display = '';
+        extraTable.style.display = '';
+  
+
+        // Reglas
+        if (tipo === 'P') {
+            company_extra.style.display = 'none'; // ocultar compañia extra
+            mesDiv.style.display = 'none'; // ocultar mes
+            extraTable.style.display = 'none'; // ocultar tabla extra
+            extraTable.querySelector("tbody").innerHTML=""; // limpiar tabla extra
+        } else {
+            company_periodic.style.display = 'none'; // ocultar compañia periodica
+            periodicTable.style.display = 'none'; // ocultar tabla periodica  
+            periodicTable.querySelector("tbody").innerHTML=""; // limpiar tabla periodica
+        }
+};
+
+// Ejecutar al cargar
+handleChange();
+
+  // Escuchar cambios
+  tipoSelect.addEventListener('change', handleChange);
+});
+</script>
+{% endblock %}
+

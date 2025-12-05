@@ -1,0 +1,57 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a class="{% if request.path == url_for('periodic_expenses') %}active{% endif %}" href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
+        <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
+        <li><a href="{{url_for('manage_expenses')}}">Registro</a></li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <form action="/expenses" method="POST" class="card filter-form margen-inferior">
+        <div class="margen-derecha">
+            <label for="año">AÑO</label>
+            <select name="año" class="input">
+                {% for year in years_list_query_results%}
+                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="mes">MES</label>
+            <select name="mes" class="input">
+                {% for month in months_list_query_results%}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="boton" type="submit">Filtrar</button>
+    </form>
+    <div class="contenedor">
+        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}
+    </div>
+    <table class="card tabla" id="tabla">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">AÑO</td>
+                <th class="texto-centrado">MES</td>
+                <th class="texto-centrado">MENSUALIDAD NETA</td>
+                <th class="texto-centrado">MENSUALIDAD EXTRA</td>
+                <th class="texto-centrado">TOTAL GASTOS</td>       
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for expense_qty in basic_data_query_results %}
+            <tr>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.0 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ expense_qty.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.4)}} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.5)}} €</td>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ "%.2f"|format(expense_qty.7) }} €</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
+

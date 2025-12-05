@@ -1,0 +1,169 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
+        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
+        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
+            <ul>
+                <li><a href="{{url_for('record_income')}}" class="active">Crear Ingreso</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <h1 class="card">
+        CREACION DE NUEVOS INGRESOS
+    </h1>
+   <form action="/add_income" method="POST" class="card contenedor margen-inferior">
+    <div class="filter-form">
+        <div>
+            <label for="tipo" style="font-weight: bold;">TIPO</label>
+            <select name="tipo" class="input">
+                <option name="selected_expense_concept" value="P">Ingreso Periodico</option>
+                <option name="selected_expense_concept" value="E">Ingreso Extraordinario</option>
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
+            <select name="company_extra" class="input">
+                {% for extra_income_company in extra_companies_list_query_results %}
+                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div> 
+    <div class="filter-form">
+        <div class="margen-derecha">
+            <label for="company_periodic" style="font-weight: bold;">COMPAÑIA</label>
+            <!-- <input name="company_periodic" label="company_periodic" type="text" class="input"> -->
+            <select name="company_periodic" class="input">
+                {% for periodic_income_company in periodic_companies_list_query_results %}
+                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="paga_extra" style="font-weight: bold;">PAGA EXTRAORDINARIA</label>
+            <select name="paga_extra" class="input">
+                <option name="selected_paga_extra" value="S">SI</option>
+                <option name="selected_paga_extra" value="N">NO</option>
+            </select>
+        </div>
+    </div>
+    <div class="filter-form">
+        <div class="margen-derecha">
+            <label for="irpf" style="font-weight: bold;">IRPF %</label>
+            <input name="irpf" label="irpf" type="text" class="input">
+        </div>
+        <div class="margen-derecha">
+            <label for="resto_impuestos" style="font-weight: bold;">RESTO IMPUESTOS %</label>
+            <input name="resto_impuestos" label="resto_impuestos" type="text" class="input">
+        </div>
+        <div class="margen-derecha">
+            <label for="bonus" style="font-weight: bold;">BONUS %</label>
+            <input name="bonus" label="bonus" type="text" class="input">
+        </div>
+    </div>
+    <div class="margen-derecha">
+        <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
+        <input name="concepto" label="concepto" type="text" class="input">
+    </div> 
+    <div class="filter-form">
+        <div>
+            <label for="año" style="font-weight: bold;">AÑO</label>
+            <input name="año" label="año" type="text" class="input texto-centrado">
+        </div>
+        <div>
+            <label for="mes_desde" style="font-weight: bold;">MES DESDE</label>
+            <select name="mes_desde" class="input">
+                {% for month in months_list_query_results%}
+                    <option name="selected_from_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="mes_hasta" style="font-weight: bold;">MES HASTA</label>
+            <select name="mes_hasta" class="input">
+                {% for month in months_list_query_results%}
+                    <option name="selected_to_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="mes" style="font-weight: bold;">MES</label>
+            <select name="mes" class="input">
+                {% for month in months_list_query_results%}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-moneda">
+            <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
+            <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
+            <span class="moneda">€</span>
+        </div>
+    </div>
+    <div>
+        <button class="boton" type="submit">Guardar</button>
+        <button class="boton" type="reset">Refrescar</button>
+    </div>
+</form>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tipoSelect = document.querySelector('select[name="tipo"]');
+    const company_periodic = document.querySelector('select[name="company_periodic"]').closest('div');
+    const paga_extra = document.querySelector('select[name="paga_extra"]').closest('div');
+    const company_extra = document.querySelector('select[name="company_extra"]').closest('div')
+    const anioDiv = document.querySelector('input[name="año"]').closest('div');
+    const mesDiv = document.querySelector('select[name="mes"]').closest('div');
+    const mes_desdeDiv = document.querySelector('select[name="mes_desde"]').closest('div');
+    const mes_hastaDiv = document.querySelector('select[name="mes_hasta"]').closest('div');   
+    const conceptoDiv = document.querySelector('input[name="concepto"]').closest('div');
+    const irpfDiv = document.querySelector('input[name="irpf"]').closest('div');
+    const restoImpuestosDiv = document.querySelector('input[name="resto_impuestos"]').closest('div');
+    const bonusDiv = document.querySelector('input[name="bonus"]').closest('div');  
+
+  const handleChange = () => {
+    const tipo = tipoSelect.value;
+
+    // Mostrar todos por defecto
+    anioDiv.style.display = '';
+    company_periodic.style.display = '';
+    paga_extra.style.display = '';
+    company_extra.style.display = '';  
+    mesDiv.style.display = '';
+    mes_desdeDiv.style.display = '';
+    mes_hastaDiv.style.display = '';   
+    conceptoDiv.style.display = ''; 
+    bonusDiv.style.display = '';
+    irpfDiv.style.display = '';
+    restoImpuestosDiv.style.display = '';   
+
+    // Reglas de tipo
+    if (tipo === 'P') {
+      company_extra.style.display = 'none'; // ocultar compañia extra
+      mesDiv.style.display = 'none'; // ocultar MES si es mensual
+      conceptoDiv.style.display = 'none'; // counltar concepto
+    } else if (tipo === 'E') {
+      company_periodic.style.display = 'none'; // ocultar compañia periodica
+      mes_desdeDiv.style.display = 'none'; // ocultar MES DESDE
+      mes_hastaDiv.style.display = 'none'; // ocultar MES HASTA
+      paga_extra.style.display = 'none'; // ocultar PAGA EXTRA
+      irpfDiv.style.display = 'none'; // ocultar IRPF
+      restoImpuestosDiv.style.display = 'none'; // ocultar RESTO IMPUESTOS  
+      bonusDiv.style.display = 'none'; // ocultar BONUS
+    }
+  };
+
+  // Ejecutar al cargar la página
+  handleChange();
+
+  // Escuchar cambios en ambos selects
+  tipoSelect.addEventListener('change', handleChange);
+});
+</script>
+
+{% endblock %}
+

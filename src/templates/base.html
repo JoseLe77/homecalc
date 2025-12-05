@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HomeCalc</title>
+    <!--<title>{% block title %}{% endblock %}</title>-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/framework.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <link href="static/img/homecalc.ico" rel="icon" type="image/x-icon">
+    {% block customCSS %}{% endblock %}
+</head>
+<body class="col-5">
+    <header class="top-header">
+        <h1 class="top-title padding-izquierda display-2">HomeCalc</h1>
+        <nav class="top-nav menu menu-derecha">
+            <ul class="nav-top_menu">
+                {% for button in nav_buttons_query_results %}
+                    <li class="nav-top_menu--option 
+                    {% if request.path == url_for('home') and button.1 == '/' %}active{% endif %}
+                    {% if request.path == url_for('form') and button.1 == 'form' %}active{% endif %}
+                    {% if request.path == url_for('income') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('periodic_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('extra_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}">
+                    <a href="{{ button.1 }}">{{ button.0 }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+    <main class="contenedor main-distribution no-margen">
+        {% block main %}{% endblock %}
+    </main>
+    <footer class="footer-bottom"></footer>
+</body>
+</html>

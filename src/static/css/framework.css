@@ -1,0 +1,438 @@
+/* =====================
+    * TIPOGRAFIA *
+===================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap');
+
+/* =====================
+    * CONFIGURACION *
+===================== */
+
+*,
+*::after,
+*::before{
+    box-sizing: border-box;
+}
+
+
+/* ==================
+    * VARIABLES *
+================== */
+
+:root{
+    --fuente:                   'Open Sans', sans-serif;
+    --fondo:                    #f2f2f2;
+    --ancho-contenedor:         1200px;
+    --color-primario:           #252525; 
+    --color-primario-accion:    rgb(81, 20, 194);
+    --color-secundario:         rgb(212, 5, 17);
+    --color-secundario-accion:  rgb(0, 131, 61);
+    --color-terciario:          rgb(255, 204, 0);
+    --color-table_header:       rgb(9, 25, 77);
+    --color-filas_tabla:        #D7D7D7;
+    --color-text_menu:          #f2f2f2;
+}
+
+
+/* ==========================
+    * ESTILOS GENERALES *
+========================== */
+
+body{
+    background:     var(--fondo);
+    font-family:    var(--fuente);
+    font-size:      18px;
+    display:        flex;
+    flex-direction: column;
+    min-height:     100vh;
+    overflow-y:     scroll;
+}
+
+p{
+    line-height: 27px;
+}
+
+img{
+    vertical-align: top;
+    width:          100%;
+}
+
+.footer{
+    margin-top: auto;
+}
+
+/* =====================
+    * CONTENEDORES *
+===================== */
+
+.contenedor{
+    max-width:  90%;
+    width:      var(--ancho-contenedor);
+    margin:     20px auto;
+    overflow:   hidden;
+}
+
+.contenedor-ancho{
+    width:      100%;
+    padding:    0 40px;
+    margin:     20px auto;
+}
+
+/* =====================
+    * COMPONENTES *
+===================== */
+
+.card{
+    padding:        40px;
+    background:     #fff;
+    border-radius:  3px;
+    box-shadow:     0px 0px 30px rgba(221,221,221,0.3);
+}
+
+/* ===============
+    * GRID *
+=============== */
+
+.grid{
+    display:        grid;
+    gap:            21px;
+    margin-bottom:  21px;
+}
+
+/*TAMAÑO GRANDE - COMPUTADORAS Y TV*/
+
+.col-1{grid-template-columns: repeat(1, 1fr);}
+.col-2{grid-template-columns: repeat(2, 1fr);}
+.col-3{grid-template-columns: repeat(3, 1fr);}
+.col-4{grid-template-columns: repeat(4, 1fr);}
+.col-5{grid-template-columns: repeat(5, 1fr);}
+.col-6{grid-template-columns: repeat(6, 1fr);}
+.col-7{grid-template-columns: repeat(7, 1fr);}
+.col-8{grid-template-columns: repeat(8, 1fr);}
+.col-9{grid-template-columns: repeat(9, 1fr);}
+.col-10{grid-template-columns: repeat(10, 1fr);}
+.col-11{grid-template-columns: repeat(11, 1fr);}
+.col-12{grid-template-columns: repeat(12, 1fr);}
+
+.span-1{grid-column: span 1;}
+.span-2{grid-column: span 2;}
+.span-3{grid-column: span 3;}
+.span-4{grid-column: span 4;}
+.span-5{grid-column: span 5;}
+.span-6{grid-column: span 6;}
+.span-7{grid-column: span 7;}
+.span-8{grid-column: span 8;}
+.span-9{grid-column: span 9;}
+.span-10{grid-column: span 10;}
+.span-11{grid-column: span 11;}
+.span-12{grid-column: span 12;}
+
+
+/*TAMAÑO MEDIANO - TABLETS*/
+@media screen and (max-width:1024px) {
+    .med-col-1{grid-template-columns: repeat(1, 1fr);}
+    .med-col-2{grid-template-columns: repeat(2, 1fr);}
+    .med-col-3{grid-template-columns: repeat(3, 1fr);}
+    .med-col-4{grid-template-columns: repeat(4, 1fr);}
+    .med-col-5{grid-template-columns: repeat(5, 1fr);}
+    .med-col-6{grid-template-columns: repeat(6, 1fr);}
+    .med-col-7{grid-template-columns: repeat(7, 1fr);}
+    .med-col-8{grid-template-columns: repeat(8, 1fr);}
+    .med-col-9{grid-template-columns: repeat(9, 1fr);}
+    .med-col-10{grid-template-columns: repeat(10, 1fr);}
+    .med-col-11{grid-template-columns: repeat(11, 1fr);}
+    .med-col-12{grid-template-columns: repeat(12, 1fr);}
+
+    .med-span-1{grid-column: span 1;}
+    .med-span-2{grid-column: span 2;}
+    .med-span-3{grid-column: span 3;}
+    .med-span-4{grid-column: span 4;}
+    .med-span-5{grid-column: span 5;}
+    .med-span-6{grid-column: span 6;}
+    .med-span-7{grid-column: span 7;}
+    .med-span-8{grid-column: span 8;}
+    .med-span-9{grid-column: span 9;}
+    .med-span-10{grid-column: span 10;}
+    .med-span-11{grid-column: span 11;}
+    .med-span-12{grid-column: span 12;}
+}
+
+/*TAMAÑO MEDIANO - TELEFONOS MOVILES*/
+@media screen and (max-width:768px) {
+    .peq-col-1{grid-template-columns: repeat(1, 1fr);}
+    .peq-col-2{grid-template-columns: repeat(2, 1fr);}
+    .peq-col-3{grid-template-columns: repeat(3, 1fr);}
+    .peq-col-4{grid-template-columns: repeat(4, 1fr);}
+    .peq-col-5{grid-template-columns: repeat(5, 1fr);}
+    .peq-col-6{grid-template-columns: repeat(6, 1fr);}
+    .peq-col-7{grid-template-columns: repeat(7, 1fr);}
+    .peq-col-8{grid-template-columns: repeat(8, 1fr);}
+    .peq-col-9{grid-template-columns: repeat(9, 1fr);}
+    .peq-col-10{grid-template-columns: repeat(10, 1fr);}
+    .peq-col-11{grid-template-columns: repeat(11, 1fr);}
+    .peq-col-12{grid-template-columns: repeat(12, 1fr);}
+
+    .peq-span-1{grid-column: span 1;}
+    .peq-span-2{grid-column: span 2;}
+    .peq-span-3{grid-column: span 3;}
+    .peq-span-4{grid-column: span 4;}
+    .peq-span-5{grid-column: span 5;}
+    .peq-span-6{grid-column: span 6;}
+    .peq-span-7{grid-column: span 7;}
+    .peq-span-8{grid-column: span 8;}
+    .peq-span-9{grid-column: span 9;}
+    .peq-span-10{grid-column: span 10;}
+    .peq-span-11{grid-column: span 11;}
+    .peq-span-12{grid-column: span 12;}
+}
+
+
+/* =====================
+       * MENU *
+===================== */
+
+.menu{
+    background:     #252525;
+    display:        flex;
+    flex-wrap:      wrap;
+    padding-right:  40px;
+}
+
+.menu ul{
+    display:            flex;
+    flex-direction:     row;
+    list-style-type:    none;
+}
+
+.menu a{
+    color:              var(--color-text_menu);
+    text-decoration:    none;
+    display:            flex;
+    align-items:        center;
+    padding:            15px 25px;
+    transition:         .3s ease all;
+    font-size:          18px;
+    justify-content:    space-between;
+    transition:         background-color 2s ;
+}
+
+.menu .contenedor{
+    display:    flex;
+    flex-wrap:  wrap;
+    margin:     0px;
+}
+
+.menu a:hover,
+.menu a:active{
+    color:          var(--color-primario);
+    background:     var(--color-terciario);
+}
+
+.active{
+    color:          var(--color-primario);
+    background:     var(--color-terciario);
+}
+
+/* ===============
+    * FUENTES *
+=============== */
+
+h1, h2, h3, h4, h5, h6{
+    margin-top: 0;
+}
+
+.display-1{
+    font-weight:    700;
+    font-size:      64px;
+}
+
+.display-2{
+    font-weight:    700;
+    font-size:      54px;
+}
+
+.display-3{
+    font-weight:    700;
+    font-size:      44px;
+}
+
+.display-4{
+    font-weight:    700;
+    font-size:      34px;
+}
+
+.display-5{
+    font-weight:    700;
+    font-size:      24px;
+}
+
+/* =====================
+    * TABLAS *
+===================== */
+.tabla {
+    width:              100%;
+    background-color:   white;
+    text-align:         left;
+    border-collapse:    separate;
+    border-spacing:     0px;
+}
+
+.tabla td, th{
+    padding:    20px;
+    border:     0.5px solid grey;
+}
+
+.tabla thead{
+    background-color:   var(--color-table_header);
+    border-bottom:      5px solid black;
+    color:              white;
+    font-weight:        bold;
+    box-shadow:         0 -20px 0 20px #fff;    
+}
+
+.tabla tr:nth-child(even){
+    background-color: #ddd;
+}
+
+.tabla tr:hover td{
+    background-color:   var(--color-filas_tabla);
+    color:              white;
+}
+
+.tabla-encabezado-fijo{
+    position:   sticky; 
+    top:        0;
+}
+
+.tabla_con_encabezado{
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
+/* =====================
+    * FORMULARIO *
+===================== */
+form *{
+    font-family: var(--fuente);
+}
+
+form .input{
+    padding:        10px 15px;
+    border-radius:  3px;
+    border:         1px solid #d6d6d6;
+    transition:     .3s ease all;
+    width:          100%;
+    margin-bottom:  20px;
+}
+
+form .input:focus{
+    border: 1px solid var(--color-primario);
+    outline: none;
+}
+
+.boton{
+    background:         var(--color-secundario);
+    border:             none;
+    cursor:             pointer;
+    color:              #fff;
+    display:            inline-block;
+    padding:            10px 15px;
+    border-radius:      3px;
+    text-align:         center;
+    line-height:        22px;
+    transition:         .3s ease all;
+    text-decoration:    none;
+}
+
+.boton a {
+    text-decoration:    none;
+    color:              #fff;
+}
+
+.boton:hover{
+    background:     var(--color-terciario);
+}
+
+.boton:hover a {
+    color:          var(--color-primario);
+}
+
+.boton.oscuro{
+    background: var(--color-primario);
+    color: #fff;
+}
+
+.boton.oscuro:hover{
+    background: var(--color-terciario);
+    color: #000;
+}
+
+.boton.verde{
+    background: var(--color-secundario);
+}
+
+.boton.verde:hover{
+    background: var(--color-secundario-accion);
+}
+
+/* =====================
+    * HELPERS *
+===================== */
+.ocultar{display:none;}
+
+.no-margen{margin:0}
+.no-margen-superior{margin-top:0}
+.no-margen-inferior{margin-bottom:0}
+.no-margen-izquierdo{margin-left:0}
+.no-margen-derecho{margin-right:0}
+
+.margen-inferior{margin-bottom: 20px;}
+.margen-superior{margin-top: 20px;}
+.margen-izquierda{margin-left: 20px;}
+.margen-derecha{margin-right: 20px;}
+
+.no-padding{padding: 0px;}
+.no-padding-inferior{padding-bottom: 0px;}
+.no-padding-superior{padding-top: 0px;}
+
+.padding-inferior{padding-bottom: 20px;}
+.padding-superior{padding-top: 20px;}
+.padding-izquierda{padding-left: 20px;}
+.padding-derecha{padding-right: 20px;}
+
+.scroll-vertical{ overflow-y: scroll;}
+.scroll-horizontal{ overflow-x: scroll;}
+
+.ocultar-vertical{overflow-y: hidden;}
+
+.texto-centrado{text-align: center;}
+.texto-izquierda{text-align: left;}
+.texto-derecha{text-align: right;}
+.no-line-height{line-height:1;}
+
+.menu-derecha{justify-content: flex-end;}
+.menu-izquierda{justify-content: flex-start;}
+
+.shadow{box-shadow: 0px 0px 30px rgba(221,221,221,0.3);}
+
+.footer-abajo{margin-top: auto;}
+
+.Enabled{background-color: #E2EFDA; text-align:center; line-height:1.5;}
+.Disabled{background-color: #FFA3A3; text-align:center; line-height:1.5;}
+
+/* -- SATUSES CLASSES --*/
+/* -- Pending status --*/
+.P{background-color: #FFA3A3; text-align:center; line-height:2;}
+
+/* -- In Process status --*/
+.I{background-color: #f2eda7; text-align:center; line-height:2;}
+
+/* -- Checking status --*/
+.C{background-color: #f2a179; text-align:center; line-height:2;}
+
+/* -- Done status --*/
+.D{background-color: #E2EFDA; text-align:center; line-height:2;}
+
+
+
+

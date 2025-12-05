@@ -1,0 +1,19 @@
+SELECT gt.id, gt.año, m.mes_texto, gt.concepto, gt.cantidad 
+FROM 
+gastosTemporales gt 
+LEFT JOIN  
+Meses m 
+USING(mes) 
+WHERE gt.active = 1
+AND gt.año = {} 
+AND gt.mes = {}
+UNION ALL 
+SELECT NULL id, '' año, '' mes_texto, 'TOTAL' concepto, SUM(gt.cantidad) cantidad
+FROM 
+gastosTemporales gt 
+LEFT JOIN  
+Meses m 
+USING(mes) 
+WHERE gt.active = 1
+AND gt.año = {} 
+AND gt.mes = {};

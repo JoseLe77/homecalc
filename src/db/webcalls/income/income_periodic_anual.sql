@@ -1,5 +1,5 @@
 SELECT
-	t.empresa,
+	DISTINCT t.empresa,
 	t.año,
 	m1.mes_texto ||' a '|| m2.mes_texto meses,
 	t.bruto_anual,
@@ -10,7 +10,7 @@ SELECT
 FROM
 	(
 	SELECT
-		*
+		DISTINCT *
 	FROM
 		ingresosFijos
 	WHERE activo=1
@@ -18,7 +18,7 @@ FROM
 	and año='{}') t
 LEFT JOIN (
 	SELECT
-		empresa,
+		DISTINCT empresa,
 		año,
 		sum(mensualidades) mensualidades
 	FROM
@@ -31,21 +31,21 @@ LEFT JOIN (
 	and t.año = mm.año
 LEFT JOIN (
 	SELECT
-		*
+		DISTINCT *
 	FROM
 		descuentosNomina)dn 
 ON
 	t.año = dn.año
 LEFT JOIN (
 	SELECT
-		*
+		DISTINCT *
 	FROM
 		Meses)m1
 ON
 	t.mes_inicio = m1.mes
 LEFT JOIN (
 	SELECT
-		*
+		DISTINCT *
 	FROM
 		Meses)m2
 ON

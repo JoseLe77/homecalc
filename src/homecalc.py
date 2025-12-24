@@ -718,11 +718,27 @@ def add_income():
         else:
             paga_extra_value = 0
 
-        mensualidades = int(mes_hasta) - int(mes_desde) +  paga_extra_value
+        mensualidades = (int(mes_hasta) - int(mes_desde) + 1)
+        print(f'Initial Mensualidades Calculated: {mensualidades}')
+        if mensualidades >= 6:
+            if int(mes_hasta)<12:
+                mensualidades = mensualidades+paga_extra_value
+            else:
+                mensualidades = mensualidades+(paga_extra_value*2)
+        else:
+            if int(mes_hasta) <= 5:
+                mensualidades +=0
+            else:
+                mensualidades = mensualidades+paga_extra_value
+        
+        print(f'Mensualidades Calculated: {mensualidades}')
+
         webcall = open('src/db/webcalls/income/add_periodic_income.sql', mode='r')
         add_periodic_income_query = webcall.read()
         webcall.close()
         add_income_query_2_execute = add_periodic_income_query.format(company, año, mes_desde, mes_hasta, cantidad, mensualidades)
+        webcall = open('src/db/webcalls/income/check_existing_salary_discount.sql', mode='r')
+        check_existing_salary_discount_query = webcall.read()
         webcall = open('src/db/webcalls/income/add_periodic_income_calculation.sql', mode='r')
         add_periodic_income_calculation_query = webcall.read()
         webcall.close()
@@ -740,6 +756,15 @@ def add_income():
         cursor.execute(add_income_query_2_execute)
         connection.commit()
         if (tipo == 'P'):
+            cursor.execute(check_existing_salary_discount_query.format(company, año))
+            existing_salary_discount = cursor.fetchone()[0]
+            print(existing_salary_discount)
+            if existing_salary_discount is not None:
+                delete_existing_salary_discount_query = f'DELETE FROM descuentosNomina WHERE id = {existing_salary_discount};'
+                cursor.execute(delete_existing_salary_discount_query)
+                connection.commit()
+                print('Existing salary discount deleted.')
+
             cursor.execute(add_periodic_income_calculation_query)
             anual_salary_up = cursor.fetchone()[0]
             print(anual_salary_up)
@@ -1025,12 +1050,18 @@ def delete_income(incomeid):
         readed_query = webcall.read()
         webcall.close()
         readed_query_2_execute = readed_query.format(income_id)
+        webcall = open('src/db/webcalls/income/periodic_income_salary_discounts_to_delete.sql', mode='r')
+        readed_query2 = webcall.read()
+        webcall.close()
+        readed_query_2_execute_2 = readed_query2
     
     print(readed_query_2_execute)
 
     try:
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
+        connection.commit()
+        cursor.execute(readed_query_2_execute_2)
         connection.commit()
     except Exception as e:
         print(f"Error at filtered month data SQL query: {e}")    
@@ -1755,7 +1786,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5300)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

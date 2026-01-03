@@ -5,6 +5,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 import datetime
 import os
+from io import BytesIO
+import matplotlib
+matplotlib.use('Agg')  # Backend sin interfaz gráfica
+import matplotlib.pyplot as plt
+import base64
+import numpy as np
 
 # -------------------------------------------------------------------------
 # Setup
@@ -504,6 +510,153 @@ def delete_movement(movement_id):
         connection.close()
     
     return redirect(url_for('manage_movements'))
+
+@app.route("/movements_analysis")
+def movements_analysis():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    now = datetime.datetime.now()
+    año = (now.year)
+
+    print(año)
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movements_analysis.sql', mode='r')
+    movements_analysis_query = webcall.read()
+    movements_analysis_query = movements_analysis_query.format(año)
+    webcall.close()
+    print(movements_analysis_query)
+    try:
+        cursor.execute(movements_analysis_query)
+        movements_analysis_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement analysis query: {e}") 
+    finally:
+        connection.close()
+        print(movements_analysis_query_results)
+    
+    x_values = [row[0] for row in movements_analysis_query_results] 
+    y_values = [row[1] for row in movements_analysis_query_results]
+    plt.figure()  # Crear nueva figura
+    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
+    plt.xlabel(f'Meses año {año}')
+    plt.ylabel('Cantidad Total')
+    plt.title(f'Analisis de Movimientos - {año}')
+    plt.grid(True)
+
+    # Guardar en memoria
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    print('grafico creado')
+
+    # Crear HTML con la imagen embebida
+    html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
+
+    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=año, image_base64=image_base64)
+
+@app.route("/movements_analysis_filter", methods=['GET', 'POST'])
+def movements_analysis_filter():
+    if request.method == 'POST':
+        concept2filter = request.form['concepto']
+        type2filter = request.form['tipoAbono']
+        if type2filter == 'T':
+            filtered_type = 'TARJETA'
+        elif type2filter == 'E':
+            filtered_type = 'EFECTIVO'
+        else:
+            filtered_type = 'TODOS' 
+        year2filter = int(request.form['año'])
+        print(f'Filters - Concept: {concept2filter}, Type: {type2filter}, Year: {year2filter}')
+    
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    if concept2filter == 'TODOS' and type2filter == 'TODOS':
+        print('filtro por año')
+        datafiltered = f'Analisis por Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter)
+    elif concept2filter != 'TODOS' and type2filter == 'TODOS':
+        print('filtro por concepto y año')
+        datafiltered = f'Analisis por Concepto ({concept2filter}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_concept-year.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, concept2filter)
+    elif concept2filter == 'TODOS' and type2filter != 'TODOS':
+        print('filtro por tipo y año')
+        datafiltered = f'Analisis por Tipo ({filtered_type}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_type-year.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, type2filter)
+    else:
+        print('filtro por todo')
+        datafiltered = f'Analisis por Concepto ({concept2filter}), Tipo ({filtered_type}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_all.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, concept2filter, type2filter)
+
+    webcall.close()
+    print(movements_analysis_query)
+    try:
+        cursor.execute(movements_analysis_query)
+        movements_analysis_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement analysis query: {e}") 
+    finally:
+        connection.close()
+        print(movements_analysis_query_results)
+    
+    x_values = [row[0] for row in movements_analysis_query_results] 
+    y_values = [row[1] for row in movements_analysis_query_results]
+
+    # Calcular la media
+    media = np.mean(y_values)  
+
+    plt.figure()  # Crear nueva figura
+    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
+
+    # Añadir línea horizontal de la media
+    plt.axhline(y=media, color='r', linestyle='--', label=f'Media: {media}')
+
+    plt.xlabel(f'Meses año {year2filter}')
+    plt.ylabel('Cantidad Total')
+    plt.title(datafiltered)
+    plt.grid(True)
+
+    # Guardar en memoria
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    print('grafico creado')
+
+    # Crear HTML con la imagen embebida
+    html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
+
+    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=year2filter, image_base64=image_base64)
+    
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])

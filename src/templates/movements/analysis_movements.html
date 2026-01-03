@@ -3,12 +3,12 @@
 <nav class="nav-main menu menu-izquierda">
     <ul>
         <li><a href="{{url_for('form')}}">Registro</a></li>
-        <li><a href="{{url_for('manage_movements')}}" class="active">Visualizar</a></li>
-        <li><a href="{{url_for('movements_analysis')}}">Analisis</a></li>
+        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
+        <li><a href="{{url_for('movements_analysis')}}" class="active">Analisis</a></li>
     </ul>
 </nav>
 <section class="contenedor">
-    <form action="/manage_movements_filter" method="POST" class="card filter-form margen-inferior">
+    <form action="/movements_analysis_filter" method="POST" class="card filter-form margen-inferior">
         <div class="margen-derecha">
             <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
             <select name="concepto" class="input">
@@ -34,46 +34,13 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="mes" style="font-weight: bold;">MES</label>
-            <select name="mes" class="input">
-                <option name="selected_year" value="0">TODOS</option>
-                {% for month in existing_movement_months_list_query_results%}
-                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
         <button class="boton" type="submit">Filtrar</button>
     </form>
-    <div class="contenedor">
-        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}
-    </div>
-    <table class="card tabla" id="tabla">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">FECHA</td>
-                <th class="texto-centrado">CONCEPTO</td>
-                <th class="texto-centrado">TIPO</td>
-                <th class="texto-centrado">CANTIDAD</td>
-                <th class="texto-centrado">ACCIONES</td>       
-            </tr>
-        </thead>
-        <tbody class="tabla_con_encabezado">
-        {% for extracted_data in movements_filter_list_query_results %}
-            <tr>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
-                <td class="texto-centrado">
-                    <!-- <a href="/selected_movement/{{ extracted_data.0 }}" class="boton">Editar</a> -->
-                    <a href="/delete_movement/{{ extracted_data.0 }}" class="boton">Borrar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <article class="card">
+        <img src="data:image/png;base64,{{ image_base64 }}" alt="Gráfico">
+    </article>
 </section>
+
 <!-- <script>
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('form[action="/manage_expenses_filter"]');

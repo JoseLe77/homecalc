@@ -1,5 +1,52 @@
 {% extends './base.html' %}
 {% block main %}
-
+<section class="contenedor-ancho">
+    <article class="contenedor grid col-3 med-col-3 peq-col-1">
+        <div class="card span-1">
+            <header>Ingresos Mes:</header>
+            <main class="display-3 padding-izquierda"> {{nowaday_month_data.2}} € </main>  
+        </div>
+        <div class="card span-1">
+            <header>Gastos Mes:</header>
+            <main class="display-3  padding-izquierda"> {{nowaday_month_data.3}} € </main>
+        </div>
+        <div class="card span-1">
+            <header>Resto Mes:</header>
+            <main class="display-3  padding-izquierda" style="color:{% if nowaday_month_data.4|float < 0 %}red{% else %}Green{% endif %}"> {{nowaday_month_data.4}} € </main>
+        </div>
+    </article>
+    <article class="contenedor grid col-2 med-col-2 peq-col-1">
+        <div class="card span-1">
+            <h2>Ingresos vs. Gastos por Mes</h2>
+            <img src="data:image/png;base64,{{ Grafico_Barras }}" alt="Grafico de barras"> 
+        </div>
+        <div class="card span-1">
+            <h2>Distribucion de Gastos</h2>
+            <img src="data:image/png;base64,{{ Grafico_donuts }}" alt="Grafico de Donut"> 
+        </div>
+    </article>
+    <article class="contenedor">
+        <table class="card tabla" id="tabla">
+            <thead class="tabla-encabezado-fijo">
+                <tr>
+                    <th class="texto-centrado">MES</td>
+                    <th class="texto-centrado">INGRESOS</td>
+                    <th class="texto-centrado">GASTOS</td>
+                    <th class="texto-centrado">RESTO</td>       
+                </tr>
+            </thead>
+            <tbody class="tabla_con_encabezado">
+            {% for extracted_data in income_expense_list_query_results %}
+                <tr>
+                    <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                    <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }} €</td>
+                    <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }} €</td>
+                    <td class="texto-centrado" style="font-weight:bold; color:{% if extracted_data.4|float < 0 %}red{% else %}Green{% endif %}">{{ extracted_data.4 }} €</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </article>
+</section>
 {% endblock %}
 

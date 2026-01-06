@@ -29,6 +29,7 @@
   width: var(--dinamic-100-width);
   background: var(--color-1);
   position: sticky;
+  z-index: 2;
 
   & .top-title {
     height: var(--header-hight);

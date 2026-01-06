@@ -29,6 +29,7 @@
                     {% if request.path == url_for('expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('periodic_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('extra_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('summary_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('manage_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('record_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}">
@@ -37,7 +38,7 @@
             </ul>
         </nav>
     </header>
-    <main class="contenedor main-distribution no-margen">
+    <main class="contenedor-ancho main-distribution no-margen no-padding">
         {% block main %}{% endblock %}
     </main>
     <footer class="footer-bottom"></footer>

@@ -343,16 +343,115 @@ def movements_month_list():
         print(f"Error at movement concepts query: {e}") 
     finally:
         connection.close()
-        return existing_movement_months_list_query_results
+    return existing_movement_months_list_query_results
 
 # ---- HOME ----  
 @app.route("/")
 def home():
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
-    
-    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results)
 
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/home/income-expenses_current_year_formatted.sql', mode='r')
+    income_expense_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(income_expense_list)
+        income_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+    
+    get_now = datetime.datetime.now()
+    month_now = get_now.month
+
+    nowaday_month_data = next((fila for fila in income_expense_list_query_results if fila[0] == month_now), None)
+    print(nowaday_month_data)
+
+    """Gráfico de barras: Ingresos vs Gastos por Mes"""
+    meses = tuple(meses[1][:3] for meses in income_expense_list_query_results)
+    print(meses)
+    ingresos = tuple(ingresos[2] for ingresos in income_expense_list_query_results)
+    gastos = tuple(gastos[3] for gastos in income_expense_list_query_results)
+
+    x = np.arange(len(meses))
+    width = 0.35
+    
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(x - width/2, ingresos, width, label='Ingresos', color='#4A90E2')
+    ax.bar(x + width/2, gastos, width, label='Gastos', color='#E8742F')
+    
+    ax.set_ylabel('Cantidad (€)')
+    ax.set_title('Ingresos vs. Gastos por Mes')
+    ax.set_xticks(x)
+    ax.set_xticklabels(meses)
+    ax.legend()
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Convertir a base64
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+    buffer.seek(0)
+    Grafico_Barras = base64.b64encode(buffer.read()).decode()
+    print('Grafico de barras creado')
+    print(Grafico_Barras)
+    plt.close()
+
+    """Gráfico de donut: Distribución de Gastos"""
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/home/expenses_by_current_month.sql', mode='r')
+    current_month_expense_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(current_month_expense_list)
+        current_month_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+
+    categorias = tuple(categoria[0] for categoria in current_month_expense_list_query_results)
+    print(categorias)
+    valores = tuple(cantidad[1] for cantidad in current_month_expense_list_query_results)
+    print(valores)
+    colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
+    print(colores)
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    
+    # Crear donut
+    wedges, texts, autotexts = ax.pie(valores, labels=categorias, colors=colores,
+                                        autopct='%1.0f%%', startangle=90,
+                                        pctdistance=0.75, 
+                                        labeldistance=1.2)
+    
+    for autotext in autotexts:
+        autotext.set_color('black')
+        autotext.set_fontsize(10)
+        # autotext.set_weight('bold')
+
+    # Añadir círculo en el centro para hacer donut
+    centre_circle = plt.Circle((0, 0), 0.50, fc='white')
+    fig.gca().add_artist(centre_circle)
+    
+    ax.set_title('Distribución de Gastos')
+    
+    # Convertir a base64
+    buffer = BytesIO()
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+    buffer.seek(0)
+    Grafico_donuts = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results, nowaday_month_data=nowaday_month_data,income_expense_list_query_results=income_expense_list_query_results, Grafico_Barras=Grafico_Barras, Grafico_donuts=Grafico_donuts)
 # ---- MOVEMENTS ----  
 @app.route("/form")
 def form():
@@ -656,7 +755,7 @@ def movements_analysis_filter():
     html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
 
     return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=year2filter, image_base64=image_base64)
-    
+
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])
@@ -1485,6 +1584,28 @@ def extra_expenses():
 
     return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
 
+@app.route("/summary_expenses")
+def summary_expenses():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/expenses/summary_expenses.sql', mode='r')
+    summary_expenses_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(summary_expenses_list)
+        summary_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('expenses/summary_expenses.html', nav_buttons_query_results=nav_buttons_query_results, summary_expense_list_query_results=summary_expense_list_query_results)
+
 @app.route("/manage_expenses")
 def manage_expenses():
     # ---- Database SQL Query ----
@@ -1939,7 +2060,7 @@ def about():
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5100)
+    app.run(host='127.0.0.1', port=5300)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

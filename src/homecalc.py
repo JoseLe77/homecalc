@@ -5,6 +5,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 import datetime
 import os
+from io import BytesIO
+import matplotlib
+matplotlib.use('Agg')  # Backend sin interfaz gráfica
+import matplotlib.pyplot as plt
+import base64
+import numpy as np
 
 # -------------------------------------------------------------------------
 # Setup
@@ -337,16 +343,116 @@ def movements_month_list():
         print(f"Error at movement concepts query: {e}") 
     finally:
         connection.close()
-        return existing_movement_months_list_query_results
+    return existing_movement_months_list_query_results
 
 # ---- HOME ----  
 @app.route("/")
 def home():
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
-    
-    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results)
 
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/home/income-expenses_current_year_formatted.sql', mode='r')
+    income_expense_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(income_expense_list)
+        income_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+    
+    get_now = datetime.datetime.now()
+    month_now = get_now.month
+
+    nowaday_month_data = next((fila for fila in income_expense_list_query_results if fila[0] == month_now), None)
+    print(nowaday_month_data)
+
+    """Gráfico de barras: Ingresos vs Gastos por Mes"""
+    meses = tuple(meses[1][:3] for meses in income_expense_list_query_results)
+    print(meses)
+    ingresos = tuple(ingresos[2] for ingresos in income_expense_list_query_results)
+    gastos = tuple(gastos[3] for gastos in income_expense_list_query_results)
+
+    x = np.arange(len(meses))
+    width = 0.35
+    
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(x - width/2, ingresos, width, label='Ingresos', color='#4A90E2')
+    ax.bar(x + width/2, gastos, width, label='Gastos', color='#E8742F')
+    
+    ax.set_ylabel('Cantidad (€)')
+    ax.set_title('Ingresos vs. Gastos por Mes')
+    ax.set_xticks(x)
+    ax.set_xticklabels(meses)
+    ax.legend()
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Convertir a base64
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+    buffer.seek(0)
+    Grafico_Barras = base64.b64encode(buffer.read()).decode()
+    print('Grafico de barras creado')
+    print(Grafico_Barras)
+    plt.close()
+
+    """Gráfico de donut: Distribución de Gastos"""
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/home/expenses_by_current_month.sql', mode='r')
+    current_month_expense_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(current_month_expense_list)
+        current_month_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+
+    categorias = tuple(categoria[0] for categoria in current_month_expense_list_query_results)
+    print(categorias)
+    valores = tuple(cantidad[1] for cantidad in current_month_expense_list_query_results)
+    print(valores)
+    colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
+    # colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
+    print(colores)
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    
+    # Crear donut
+    wedges, texts, autotexts = ax.pie(valores, labels=categorias, colors=colores,
+                                        autopct='%1.0f%%', startangle=90,
+                                        pctdistance=0.75, 
+                                        labeldistance=1.2)
+    
+    for autotext in autotexts:
+        autotext.set_color('black')
+        autotext.set_fontsize(10)
+        # autotext.set_weight('bold')
+
+    # Añadir círculo en el centro para hacer donut
+    centre_circle = plt.Circle((0, 0), 0.50, fc='white')
+    fig.gca().add_artist(centre_circle)
+    
+    ax.set_title('Distribución de Gastos')
+    
+    # Convertir a base64
+    buffer = BytesIO()
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+    plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+    buffer.seek(0)
+    Grafico_donuts = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results, nowaday_month_data=nowaday_month_data,income_expense_list_query_results=income_expense_list_query_results, Grafico_Barras=Grafico_Barras, Grafico_donuts=Grafico_donuts)
 # ---- MOVEMENTS ----  
 @app.route("/form")
 def form():
@@ -504,6 +610,153 @@ def delete_movement(movement_id):
         connection.close()
     
     return redirect(url_for('manage_movements'))
+
+@app.route("/movements_analysis")
+def movements_analysis():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    now = datetime.datetime.now()
+    año = (now.year)
+
+    print(año)
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/movements/movements_analysis.sql', mode='r')
+    movements_analysis_query = webcall.read()
+    movements_analysis_query = movements_analysis_query.format(año)
+    webcall.close()
+    print(movements_analysis_query)
+    try:
+        cursor.execute(movements_analysis_query)
+        movements_analysis_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement analysis query: {e}") 
+    finally:
+        connection.close()
+        print(movements_analysis_query_results)
+    
+    x_values = [row[0] for row in movements_analysis_query_results] 
+    y_values = [row[1] for row in movements_analysis_query_results]
+    plt.figure()  # Crear nueva figura
+    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
+    plt.xlabel(f'Meses año {año}')
+    plt.ylabel('Cantidad Total')
+    plt.title(f'Analisis de Movimientos - {año}')
+    plt.grid(True)
+
+    # Guardar en memoria
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    print('grafico creado')
+
+    # Crear HTML con la imagen embebida
+    html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
+
+    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=año, image_base64=image_base64)
+
+@app.route("/movements_analysis_filter", methods=['GET', 'POST'])
+def movements_analysis_filter():
+    if request.method == 'POST':
+        concept2filter = request.form['concepto']
+        type2filter = request.form['tipoAbono']
+        if type2filter == 'T':
+            filtered_type = 'TARJETA'
+        elif type2filter == 'E':
+            filtered_type = 'EFECTIVO'
+        else:
+            filtered_type = 'TODOS' 
+        year2filter = int(request.form['año'])
+        print(f'Filters - Concept: {concept2filter}, Type: {type2filter}, Year: {year2filter}')
+    
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    movements_concept_list_query_results = movements_concept_list()
+
+    existing_movement_years_list_query_results = movements_year_list()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    if concept2filter == 'TODOS' and type2filter == 'TODOS':
+        print('filtro por año')
+        datafiltered = f'Analisis por Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter)
+    elif concept2filter != 'TODOS' and type2filter == 'TODOS':
+        print('filtro por concepto y año')
+        datafiltered = f'Analisis por Concepto ({concept2filter}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_concept-year.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, concept2filter)
+    elif concept2filter == 'TODOS' and type2filter != 'TODOS':
+        print('filtro por tipo y año')
+        datafiltered = f'Analisis por Tipo ({filtered_type}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_type-year.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, type2filter)
+    else:
+        print('filtro por todo')
+        datafiltered = f'Analisis por Concepto ({concept2filter}), Tipo ({filtered_type}) y Año ({year2filter}).\n'
+        webcall = open('src/db/webcalls/movements/movements_analysis_by_all.sql', mode='r')
+        movements_analysis_query = webcall.read()
+        movements_analysis_query = movements_analysis_query.format(year2filter, concept2filter, type2filter)
+
+    webcall.close()
+    print(movements_analysis_query)
+    try:
+        cursor.execute(movements_analysis_query)
+        movements_analysis_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at movement analysis query: {e}") 
+    finally:
+        connection.close()
+        print(movements_analysis_query_results)
+    
+    x_values = [row[0] for row in movements_analysis_query_results] 
+    y_values = [row[1] for row in movements_analysis_query_results]
+
+    # Calcular la media
+    media = np.mean(y_values)  
+
+    plt.figure()  # Crear nueva figura
+    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
+
+    # Añadir línea horizontal de la media
+    plt.axhline(y=media, color='r', linestyle='--', label=f'Media: {media}')
+
+    plt.xlabel(f'Meses año {year2filter}')
+    plt.ylabel('Cantidad Total')
+    plt.title(datafiltered)
+    plt.grid(True)
+
+    # Guardar en memoria
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode()
+    plt.close()
+
+    print('grafico creado')
+
+    # Crear HTML con la imagen embebida
+    html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
+
+    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=year2filter, image_base64=image_base64)
+
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])
@@ -718,11 +971,27 @@ def add_income():
         else:
             paga_extra_value = 0
 
-        mensualidades = int(mes_hasta) - int(mes_desde) +  paga_extra_value
+        mensualidades = (int(mes_hasta) - int(mes_desde) + 1)
+        print(f'Initial Mensualidades Calculated: {mensualidades}')
+        if mensualidades >= 6:
+            if int(mes_hasta)<12:
+                mensualidades = mensualidades+paga_extra_value
+            else:
+                mensualidades = mensualidades+(paga_extra_value*2)
+        else:
+            if int(mes_hasta) <= 5:
+                mensualidades +=0
+            else:
+                mensualidades = mensualidades+paga_extra_value
+        
+        print(f'Mensualidades Calculated: {mensualidades}')
+
         webcall = open('src/db/webcalls/income/add_periodic_income.sql', mode='r')
         add_periodic_income_query = webcall.read()
         webcall.close()
         add_income_query_2_execute = add_periodic_income_query.format(company, año, mes_desde, mes_hasta, cantidad, mensualidades)
+        webcall = open('src/db/webcalls/income/check_existing_salary_discount.sql', mode='r')
+        check_existing_salary_discount_query = webcall.read()
         webcall = open('src/db/webcalls/income/add_periodic_income_calculation.sql', mode='r')
         add_periodic_income_calculation_query = webcall.read()
         webcall.close()
@@ -740,6 +1009,15 @@ def add_income():
         cursor.execute(add_income_query_2_execute)
         connection.commit()
         if (tipo == 'P'):
+            cursor.execute(check_existing_salary_discount_query.format(company, año))
+            existing_salary_discount = cursor.fetchone()[0]
+            print(existing_salary_discount)
+            if existing_salary_discount is not None:
+                delete_existing_salary_discount_query = f'DELETE FROM descuentosNomina WHERE id = {existing_salary_discount};'
+                cursor.execute(delete_existing_salary_discount_query)
+                connection.commit()
+                print('Existing salary discount deleted.')
+
             cursor.execute(add_periodic_income_calculation_query)
             anual_salary_up = cursor.fetchone()[0]
             print(anual_salary_up)
@@ -1025,12 +1303,18 @@ def delete_income(incomeid):
         readed_query = webcall.read()
         webcall.close()
         readed_query_2_execute = readed_query.format(income_id)
+        webcall = open('src/db/webcalls/income/periodic_income_salary_discounts_to_delete.sql', mode='r')
+        readed_query2 = webcall.read()
+        webcall.close()
+        readed_query_2_execute_2 = readed_query2
     
     print(readed_query_2_execute)
 
     try:
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
+        connection.commit()
+        cursor.execute(readed_query_2_execute_2)
         connection.commit()
     except Exception as e:
         print(f"Error at filtered month data SQL query: {e}")    
@@ -1300,6 +1584,28 @@ def extra_expenses():
         connection.close()
 
     return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
+
+@app.route("/summary_expenses")
+def summary_expenses():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/expenses/summary_expenses.sql', mode='r')
+    summary_expenses_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(summary_expenses_list)
+        summary_expense_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Income | Expense query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('expenses/summary_expenses.html', nav_buttons_query_results=nav_buttons_query_results, summary_expense_list_query_results=summary_expense_list_query_results)
 
 @app.route("/manage_expenses")
 def manage_expenses():

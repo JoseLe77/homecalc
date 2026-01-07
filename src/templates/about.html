@@ -2,12 +2,40 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda shadow">
     <ul>
-        <li><a href="#">Manual</a></li>
+        <li class="active"><a href="{{ url_for('about') }}">Manual</a></li>
         <li><a href="#">Contacto</a></li>
     </ul>
 </nav>
 <section class="contenedor">
-    
+    <article class="manual">
+        <h1 class="card">MANUAL DE USUARIO</h1>
+        <div class="card">
+            <p>Bienvenido a HomeCalc. Este sencillo manual explica las funcionalidades principales y cómo consultarlas paso a paso.</p>
+
+            <h2>Funciones principales 🔧</h2>
+            <ul>
+                <li><strong>Registrar movimiento:</strong> Use el formulario en <a href="{{ url_for('form') }}">Registro</a> para añadir ingresos o gastos (manual o por selección).</li>
+                <li><strong>Gestionar movimientos:</strong> En <a href="{{ url_for('manage_movements') }}">Gestionar movimientos</a> puede filtrar, editar y eliminar entradas.</li>
+                <li><strong>Ingresos y Gastos:</strong> Pestañas dedicadas para ver y gestionar ingresos (extra y periódicos) y gastos (extra y periódicos).</li>
+                <li><strong>Resumen y análisis:</strong> Gráficos y resúmenes en la pantalla principal permiten ver la distribución por mes y por categoría.</li>
+                <li><strong>Periodos y filtros:</strong> Use filtros por año/mes/periodicidad para ver datos específicos.</li>
+            </ul>
+
+            <h2>Consejos rápidos 💡</h2>
+            <ul>
+                <li>Use la opción de conceptos predefinidos para mantener consistencia en reportes.</li>
+                <li>Para importes con decimales, use punto o coma; el sistema normaliza ambos.</li>
+                <li>Revise el <em>Histórico</em> antes de eliminar movimientos irreversibles.</li>
+            </ul>
+        </div>
+
+        <p class="nota"><strong>Nota:</strong> Para encontrar movimientos o conceptos, use las páginas de Registro o Gestionar Movimientos.</p>
+    </article>
+
+    <style>
+        .manual h1{ margin-bottom:8px; }
+        .nota{font-size:0.9em; color:#666;}
+    </style>
 </section>
 {% endblock %}
 

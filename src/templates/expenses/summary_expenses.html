@@ -1,0 +1,47 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_expenses')}}">Gastos periodicos</a></li>
+        <li><a href="{{url_for('extra_expenses')}}">Gastos Extra</a></li>
+        <li><a class="active" href="{{url_for('summary_expenses')}}">Resumen</a></li>
+        <li><a href="{{url_for('manage_expenses')}}">Registro</a></li>
+    </ul>
+</nav>
+<section class="contenedor-ancho">
+    <h1 class="card">
+        RESUMEN DE GASTOS
+    </h1>
+    <table class="card tabla" id="tabla">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">MES</th>
+                <th class="texto-centrado">MENSUAL</th>
+                <th class="texto-centrado">BIMENSUAL</th>
+                <th class="texto-centrado">TRIMESTRAL</th>
+                <th class="texto-centrado">CUATRIMESTRAL</th>
+                <th class="texto-centrado">SEMESTRAL</td>
+                <th class="texto-centrado">ANUAL</td>
+                <th class="texto-centrado">EXTRA</td>
+                <th class="texto-centrado">TOTAL</td>       
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in summary_expense_list_query_results %}
+            <tr>
+                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.0 }}</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.1 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.2 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.3 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.4 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.5 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.6 }} €</td>
+                <td class="texto-centrado" style="color: var(--color-primario)">{{ extracted_data.7 }} €</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.8 }} €</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
+

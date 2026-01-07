@@ -19,17 +19,26 @@
                     <li class="nav-top_menu--option 
                     {% if request.path == url_for('home') and button.1 == '/' %}active{% endif %}
                     {% if request.path == url_for('form') and button.1 == 'form' %}active{% endif %}
+                    {% if request.path == url_for('manage_movements') and button.1 == 'form' %}active{% endif %}
+                    {% if request.path == url_for('movements_analysis') and button.1 == 'form' %}active{% endif %}
                     {% if request.path == url_for('income') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('periodic_income') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('extra_income') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('manage_incomes') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('record_income') and button.1 == 'income' %}active{% endif %}
                     {% if request.path == url_for('expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('periodic_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('extra_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('summary_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('manage_expenses') and button.1 == 'expenses' %}active{% endif %}
+                    {% if request.path == url_for('record_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}">
                     <a href="{{ button.1 }}">{{ button.0 }}</a></li>
                 {% endfor %}
             </ul>
         </nav>
     </header>
-    <main class="contenedor main-distribution no-margen">
+    <main class="contenedor-ancho main-distribution no-margen no-padding">
         {% block main %}{% endblock %}
     </main>
     <footer class="footer-bottom"></footer>

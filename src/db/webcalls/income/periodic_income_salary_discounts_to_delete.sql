@@ -1,0 +1,1 @@
+DELETE FROM "descuentosNomina" WHERE año NOT IN (SELECT año FROM "ingresosFijos");

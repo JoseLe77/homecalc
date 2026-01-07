@@ -421,7 +421,8 @@ def home():
     print(categorias)
     valores = tuple(cantidad[1] for cantidad in current_month_expense_list_query_results)
     print(valores)
-    colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
+    colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
+    # colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
     print(colores)
 
     fig, ax = plt.subplots(figsize=(9, 7))

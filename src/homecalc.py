@@ -2,7 +2,6 @@
 # Imports
 # -------------------------------------------------------------------------
 from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
-from flask_mail import Mail, Message
 import sqlite3
 import datetime
 import os
@@ -13,24 +12,12 @@ import matplotlib.pyplot as plt
 import base64
 import numpy as np
 import hashlib
-import re
 
 # -------------------------------------------------------------------------
 # Setup
 # -------------------------------------------------------------------------
 app = Flask(__name__)
 app.secret_key = "homecalc2025"
-
-# ---- Mail Configuration ----
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', True)
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'tu_correo@gmail.com')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'tu_contraseña')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@homecalc.com')
-app.config['ADMIN_EMAIL'] = os.getenv('ADMIN_EMAIL', 'admin@homecalc.com')
-
-mail = Mail(app)
 
 def dbconnection():
     # Connects to the specified SQLite database and returns a connection and cursor.

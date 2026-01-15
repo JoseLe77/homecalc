@@ -2,6 +2,7 @@
 # Imports
 # -------------------------------------------------------------------------
 from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
+from flask_mail import Mail, Message
 import sqlite3
 import datetime
 import os
@@ -11,12 +12,25 @@ matplotlib.use('Agg')  # Backend sin interfaz gráfica
 import matplotlib.pyplot as plt
 import base64
 import numpy as np
+import hashlib
+import re
 
 # -------------------------------------------------------------------------
 # Setup
 # -------------------------------------------------------------------------
 app = Flask(__name__)
 app.secret_key = "homecalc2025"
+
+# ---- Mail Configuration ----
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', True)
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'tu_correo@gmail.com')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'tu_contraseña')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@homecalc.com')
+app.config['ADMIN_EMAIL'] = os.getenv('ADMIN_EMAIL', 'admin@homecalc.com')
+
+mail = Mail(app)
 
 def dbconnection():
     # Connects to the specified SQLite database and returns a connection and cursor.
@@ -345,9 +359,118 @@ def movements_month_list():
         connection.close()
     return existing_movement_months_list_query_results
 
-# ---- HOME ----  
 @app.route("/")
+def login():
+    session.clear()
+    return render_template('login.html')
+
+@app.route("/login_check", methods=['POST'])
+def login_check():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Hash the password using SHA-256
+        hashed_password = hashlib.sha1(password.encode()).hexdigest()
+        print(f'Hashed Password: {hashed_password}')
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database user authentication SQL Query ----
+        webcall = open('src/db/webcalls/login/authenticate_user.sql', mode='r')
+        auth_query = webcall.read()
+        webcall.close()
+        auth_query_2_execute = auth_query.format(username)
+        
+        try:
+            cursor.execute(auth_query_2_execute)
+            user = cursor.fetchone()
+            print(f'User fetched from DB: {user[0]}')
+            if user[0] == username:
+
+                # ---- Database user authentication SQL Query ----
+                webcall2 = open('src/db/webcalls/login/authenticate_check_2.sql', mode='r')
+                auth_query2 = webcall2.read()
+                webcall2.close()
+                auth_query_2_execute2 = auth_query2.format(username, hashed_password)
+
+                try:
+                    cursor.execute(auth_query_2_execute2)
+                    auth_result = cursor.fetchone()
+                    if auth_result:
+                        session['username'] = username
+                        flash('Inicio de sesión exitoso.', 'success')
+                        return redirect(url_for('home'))
+                    else:
+                        flash('Credenciales inválidas. Inténtalo de nuevo.', 'danger')
+                        return redirect(url_for('login'))
+                except Exception as e:
+                    print(f"Error at user authentication_2 SQL query: {e}")
+            else:
+                flash('Credenciales inválidas. Inténtalo de nuevo.', 'danger')
+                return redirect(url_for('login'))
+        except Exception as e:
+            print(f"Error at user authentication_1 SQL query: {e}")    
+        finally:
+            connection.close()
+        
+
+@app.route("/register", methods=['GET','POST'])
+def register():
+
+    if request.method == 'POST':
+        username = request.form['name']
+        usermail = request.form['email']
+        password = request.form['password']
+        password_confirm = request.form['password_confirm']
+        print(f'Username: {username}, Usermail: {usermail}')
+        print(f'Password: {password}, Password Confirm: {password_confirm}')
+        if password != password_confirm:
+            flash('Las contraseñas registradas no coinciden. Inténtalo de nuevo.', 'danger')
+        else:
+            # Hash the password using SHA-256
+            hashed_password = hashlib.sha1(password.encode()).hexdigest()
+            print(f'Hashed Password: {hashed_password}')
+
+            # ---- Database Connection ----
+            connection, cursor = dbconnection()
+
+            # ---- Database user registration SQL Query ----
+            webcall = open('src/db/webcalls/login/existing_user_check.sql', mode='r')
+            existing_user_check_query = webcall.read()
+            webcall.close()
+            user_check_query_2_execute = existing_user_check_query.format(usermail)
+
+            # ---- Database user registration SQL Query ----
+            webcall = open('src/db/webcalls/login/register_user.sql', mode='r')
+            register_query = webcall.read()
+            webcall.close()
+            register_query_2_execute = register_query.format(username, usermail, hashed_password)
+            
+            try:
+                cursor.execute(user_check_query_2_execute)
+                user_check_result = cursor.fetchone()
+                if user_check_result:
+                    flash('El correo electrónico indicado ya está registrado.', 'danger')
+                else:   
+                    cursor.execute(register_query_2_execute)
+                    connection.commit()
+                    flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
+            except Exception as e:
+                print(f"Error at user registration SQL query: {e}")    
+                flash('Error durante el registro. Inténtalo de nuevo.', 'danger')
+                return redirect(url_for('login'))
+            finally:
+                connection.close()
+    return render_template('login.html')
+
+# ---- HOME ----  
+@app.route("/home")
 def home():
+    session_username = session.get('username')
+    print(f'Session Username: {session_username}')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -370,11 +493,9 @@ def home():
     month_now = get_now.month
 
     nowaday_month_data = next((fila for fila in income_expense_list_query_results if fila[0] == month_now), None)
-    print(nowaday_month_data)
 
     """Gráfico de barras: Ingresos vs Gastos por Mes"""
     meses = tuple(meses[1][:3] for meses in income_expense_list_query_results)
-    print(meses)
     ingresos = tuple(ingresos[2] for ingresos in income_expense_list_query_results)
     gastos = tuple(gastos[3] for gastos in income_expense_list_query_results)
 
@@ -397,8 +518,6 @@ def home():
     plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
     buffer.seek(0)
     Grafico_Barras = base64.b64encode(buffer.read()).decode()
-    print('Grafico de barras creado')
-    print(Grafico_Barras)
     plt.close()
 
     """Gráfico de donut: Distribución de Gastos"""
@@ -418,12 +537,9 @@ def home():
         connection.close()
 
     categorias = tuple(categoria[0] for categoria in current_month_expense_list_query_results)
-    print(categorias)
     valores = tuple(cantidad[1] for cantidad in current_month_expense_list_query_results)
-    print(valores)
     colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
     # colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
-    print(colores)
 
     fig, ax = plt.subplots(figsize=(9, 7))
     
@@ -453,6 +569,7 @@ def home():
     plt.close()
 
     return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results, nowaday_month_data=nowaday_month_data,income_expense_list_query_results=income_expense_list_query_results, Grafico_Barras=Grafico_Barras, Grafico_donuts=Grafico_donuts)
+
 # ---- MOVEMENTS ----  
 @app.route("/form")
 def form():
@@ -2055,13 +2172,85 @@ def selected_expense_expense():
 # ---- ABOUT ---- 
 @app.route("/about")
 def about():
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
     
     return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
 
+@app.route("/change_password")
+def change_password():
+    session_username = session.get('username')
+    flash(f'Es Necesario disponer de la contraseña actual para cambiarla.', 'info')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database user registration SQL Query ----
+    webcall = open('src/db/webcalls/session/session_user_data.sql', mode='r')
+    existing_user_check_query = webcall.read()
+    webcall.close()
+    user_session_query_2_execute = existing_user_check_query.format(session_username)
+
+    try:
+        cursor.execute(user_session_query_2_execute)
+        user_session_result = cursor.fetchone()
+    except Exception as e:
+        print(f"Error at user session SQL query: {e}")    
+        flash('Error durante el checkeo de su usuario. Inténtalo de nuevo.', 'danger')
+        return redirect(url_for('login'))
+    finally:
+        connection.close()
+    
+    return render_template('about/change.html', nav_buttons_query_results=nav_buttons_query_results,user_session_result=user_session_result)
+
+@app.route("/update_password", methods=['GET', 'POST'])
+def update_password():
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        session_username = session.get('username')
+        mail_session_user = request.form['email']
+        old_password = request.form['password_old']
+        new_password = request.form['password_new']
+        confirm_new_password = request.form['password_confirm']
+
+        if  new_password != confirm_new_password:
+            flash('La nueva contraseña y su confirmación no coinciden. Inténtalo de nuevo.', 'danger')
+        else:
+            if session_username!= mail_session_user:
+                flash('El usuario de sesión y el email no coinciden. Inténtalo de nuevo.', 'danger')
+            else:   
+                hashed_new_password = hashlib.sha1(new_password.encode()).hexdigest()
+                hashed_old_password = hashlib.sha1(old_password.encode()).hexdigest()
+                webcall = open('src/db/webcalls/session/update_user_password.sql', mode='r')
+                readed_query = webcall.read()
+                webcall.close()
+                readed_query_2_execute = readed_query.format(hashed_new_password, session_username, hashed_old_password)
+
+
+        print(f'USERNAME: {session_username}')
+        print(f'NEW PASSWORD: {new_password}')
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        connection.close()
+        print('ejecutado')
+        flash('Contraseña actualizada correctamente.', 'success')
+    except Exception as e:
+        print(f'Error actualizando la contraseña del usuario {session_username}. {e}')
+        flash('Error actualizando la contraseña. Inténtalo de nuevo.', 'danger')
+
+    return redirect(url_for('change_password'))
+
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5300)
+    app.run(host='127.0.0.1', port=5200)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

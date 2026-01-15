@@ -380,6 +380,8 @@ form .input:focus{
 ===================== */
 .ocultar{display:none;}
 
+.no-visible{visibility:hidden;}
+
 .no-margen{margin:0}
 .no-margen-superior{margin-top:0}
 .no-margen-inferior{margin-bottom:0}
@@ -432,6 +434,8 @@ form .input:focus{
 
 /* -- Done status --*/
 .D{background-color: #E2EFDA; text-align:center; line-height:2;}
+
+.alert{color: red; font-weight: bold; text-decoration: none; list-style-type: none; text-align:center;}
 
 
 

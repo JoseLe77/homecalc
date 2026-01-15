@@ -1,0 +1,1 @@
+UPDATE usuarios set usrpass='{}' where usrmail='{}' and usrpass='{}';

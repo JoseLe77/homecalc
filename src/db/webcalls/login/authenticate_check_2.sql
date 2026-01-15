@@ -1,0 +1,1 @@
+SELECT usrmail FROM usuarios WHERE usrmail='{}' and usrpass='{}';

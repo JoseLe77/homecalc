@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/framework.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
-    <link href="static/img/homecalc.ico" rel="icon" type="image/x-icon">
+    <link href="static/img/homecalc.png" rel="icon" type="image/x-icon">
     {% block customCSS %}{% endblock %}
 </head>
 <body class="col-5">
@@ -17,7 +17,7 @@
             <ul class="nav-top_menu">
                 {% for button in nav_buttons_query_results %}
                     <li class="nav-top_menu--option 
-                    {% if request.path == url_for('home') and button.1 == '/' %}active{% endif %}
+                    {% if request.path == url_for('home') and button.1 == 'home' %}active{% endif %}
                     {% if request.path == url_for('form') and button.1 == 'form' %}active{% endif %}
                     {% if request.path == url_for('manage_movements') and button.1 == 'form' %}active{% endif %}
                     {% if request.path == url_for('movements_analysis') and button.1 == 'form' %}active{% endif %}
@@ -32,7 +32,8 @@
                     {% if request.path == url_for('summary_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('manage_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('record_expenses') and button.1 == 'expenses' %}active{% endif %}
-                    {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}">
+                    {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}
+                    {% if request.path == url_for('change_password') and button.1 == 'about' %}active{% endif %}">
                     <a href="{{ button.1 }}">{{ button.0 }}</a></li>
                 {% endfor %}
             </ul>

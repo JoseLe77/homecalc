@@ -33,7 +33,8 @@
                     {% if request.path == url_for('manage_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('record_expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('about') and button.1 == 'about' %}active{% endif %}
-                    {% if request.path == url_for('change_password') and button.1 == 'about' %}active{% endif %}">
+                    {% if request.path == url_for('change_password') and button.1 == 'about' %}active{% endif %}
+                    {% if request.path == url_for('contact') and button.1 == 'about' %}active{% endif %}">
                     <a href="{{ button.1 }}">{{ button.0 }}</a></li>
                 {% endfor %}
             </ul>

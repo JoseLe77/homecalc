@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------------
 # Imports
 # -------------------------------------------------------------------------
+import mail_config as mail_cfg
 from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
 import sqlite3
 import datetime
@@ -12,6 +13,11 @@ import matplotlib.pyplot as plt
 import base64
 import numpy as np
 import hashlib
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 # -------------------------------------------------------------------------
 # Setup
@@ -2235,6 +2241,91 @@ def update_password():
         flash('Error actualizando la contraseña. Inténtalo de nuevo.', 'danger')
 
     return redirect(url_for('change_password'))
+
+@app.route("/contact", methods=['GET', 'POST'])
+def contact():
+    session_username = session.get('username')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database user registration SQL Query ----
+    webcall = open('src/db/webcalls/session/session_user_data.sql', mode='r')
+    existing_user_check_query = webcall.read()
+    webcall.close()
+    user_session_query_2_execute = existing_user_check_query.format(session_username)
+
+    try:
+        cursor.execute(user_session_query_2_execute)
+        user_session_result = cursor.fetchone()
+    except Exception as e:
+        print(f"Error at user session SQL query: {e}")    
+        flash('Error durante el checkeo de su usuario. Inténtalo de nuevo.', 'danger')
+        return redirect(url_for('login'))
+    finally:
+        connection.close()
+
+    return render_template('about/contact.html', nav_buttons_query_results=nav_buttons_query_results, user_session_result=user_session_result)
+
+@app.route("/send_contact", methods=['GET', 'POST'])
+def send_contact():
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        # 1. Captura de datos del formulario
+        user_contact = request.form['name']
+        mail_contact = request.form['email']
+        phone_contact = request.form['phone']
+        subject_contact = request.form['topic']
+        message_contact = request.form['message']
+
+        # 2. Preparar correo para el ADMINISTRADOR
+        full_subject = mail_cfg.ASUNTO_PREFIX + subject_contact
+        admin_body = f"Nombre: {user_contact}\nEmail: {mail_contact}\nTeléfono: {phone_contact}\n\nMensaje:\n{message_contact}"
+        msg_admin = MIMEText(admin_body)
+        msg_admin['Subject'] = full_subject
+        msg_admin['From'] = mail_cfg.REMITENTE_EMAIL
+        msg_admin['To'] = ", ".join(mail_cfg.DESTINATARIOS)
+
+        # 3. Preparar correo para el USUARIO (Confirmación)
+        user_subject = "Confirmación: Hemos recibido tu mensaje"
+        user_body = f"Hola {user_contact},\n\nGracias por contactarnos. Hemos recibido tu mensaje correctamente y te responderemos lo antes posible.\n\nCopia de tu mensaje:\n------------------\n{message_contact}"
+        msg_user = MIMEText(user_body)
+        msg_user['Subject'] = user_subject
+        msg_user['From'] = mail_cfg.REMITENTE_EMAIL
+        msg_user['To'] = mail_contact
+
+        try:
+            # 4. Conexión y envío
+            if mail_cfg.SMTP_USE_SSL:
+                server = smtplib.SMTP_SSL(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+            else:
+                server = smtplib.SMTP(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                server.starttls()
+            
+            server.login(mail_cfg.REMITENTE_EMAIL, mail_cfg.REMITENTE_PASSWORD)
+
+            # Enviar al Admin
+            server.sendmail(mail_cfg.REMITENTE_EMAIL, mail_cfg.DESTINATARIOS, msg_admin.as_string())
+            
+            # Enviar al Usuario
+            server.sendmail(mail_cfg.REMITENTE_EMAIL, mail_contact, msg_user.as_string())
+
+            server.quit()
+            flash('Mensaje enviado correctamente. Gracias por contactar.', 'success')
+            
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            flash('Error enviando el mensaje. Inténtalo de nuevo más tarde.', 'danger')
+        
+        return redirect(url_for('contact'))
+
+    return redirect(url_for('contact'))
+
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5200)

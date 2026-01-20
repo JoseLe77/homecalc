@@ -1,0 +1,1 @@
+SELECT usrmail FROM usuarios WHERE usrrole='admin' and active=1;

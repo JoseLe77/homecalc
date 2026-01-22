@@ -15,6 +15,15 @@
     <h1 class="card">
         EDICION DE GASTO SELECCIONADO
     </h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+    {% endwith %}
    <form action="/update_expense" method="POST" class="card contenedor margen-inferior">
     <input type="hidden" name="id" value="{{ readed_query_executed_results.0 }}">
     <div class="margen-derecha">

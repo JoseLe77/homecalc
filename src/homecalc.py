@@ -577,24 +577,28 @@ def form():
 def add_movement():
     print('Adding movement...')
     if request.method == 'POST':
-        print('POST method detected')
+        daterror = False
+        #print('POST method detected')
         tipoEntrada = request.form['tipoEnt']
-        print(f'Tipo Entrada: {tipoEntrada}')
+        #print(f'Tipo Entrada: {tipoEntrada}')
         fecha = request.form['fecha']
-        fecha = datetime.datetime.strptime(fecha, '%Y-%m-%d').date()
-        print(f'Fecha Formatted: {fecha}')
+        if fecha == '' or fecha is None:
+            daterror = True
+            flash('La fecha es obligatoria. Inténtelo de nuevo.', 'danger')
+        else:
+            fecha = datetime.datetime.strptime(fecha, '%Y-%m-%d').date()
+        #print(f'Fecha Formatted: {fecha}')
         tipo = request.form['tipoAbono']
-        print(f'Tipo: {tipo}')
+        #print(f'Tipo: {tipo}')
         cantidad = request.form['cantidad']
         cantidad = cantidad.replace(',', '.')
-        print(f'Cantidad: {cantidad}')  
+        #print(f'Cantidad: {cantidad}')  
         if tipoEntrada == 'M':
             concepto = request.form['conceptoManual']
         else:
             concepto = request.form['conceptoSeleccion']
-        print(f'Concepto: {concepto}')
+        #print(f'Concepto: {concepto}')
         
-
         # ---- Database Connection ----
         connection, cursor = dbconnection()
 
@@ -608,8 +612,12 @@ def add_movement():
         try:
             cursor.execute(add_movement_query_2_execute)
             connection.commit()
+            if daterror!= True:
+                flash('Movimiento añadido correctamente.', 'success')
         except Exception as e:
-            print(f"Error at add movement SQL query: {e}")    
+            if daterror != True:
+                print(f"Error at add movement SQL query: {e}")
+                flash('Error al añadir el movimiento. Inténtelo de nuevo.', 'danger')
         finally:
             connection.close()
         
@@ -714,8 +722,10 @@ def delete_movement(movement_id):
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
         connection.commit()
+        flash('Movimiento eliminado correctamente.', 'success')
     except Exception as e:
-        print(f"Error at filtered month data SQL query: {e}")    
+        print(f"Error at filtered month data SQL query: {e}")  
+        flash('Error al eliminar el movimiento. Inténtelo de nuevo.', 'danger')  
     finally:
         connection.close()
     
@@ -1135,8 +1145,10 @@ def add_income():
             print(neto_anual)
             cursor.execute(add_periodic_income_salary_discount_query.format(company, año, anual_salary_up, neto_anual, irpf, resto_impuestos, bonus))
             connection.commit()
+        flash('Ingreso añadido correctamente.', 'success')
     except Exception as e:
-        print(f"Error at add income SQL query: {e}")    
+        print(f"Error at add income SQL query: {e}")  
+        flash('Error al añadir el ingreso. Revise los datos e inténtelo de nuevo.', 'danger')  
     finally:
         connection.close()
     
@@ -1357,13 +1369,13 @@ def update_income():
             qty2edit = request.form['cantidad']
             qty2edit = qty2edit.replace(',', '.')
 
-            print(f'ID: {id2edit}')
-            print(f'YEAR: {year2edit}')
-            print(f'MONTH: {month2edit}')
-            print(f'CONCEPT: {concept2edit}')
-            print(f'EXTRA COMPANY: {ExtraCompany2edit}')
-            print(f'TYPE: {incomeType}')
-            print(f'QUANTITY: {qty2edit}')
+            # print(f'ID: {id2edit}')
+            # print(f'YEAR: {year2edit}')
+            # print(f'MONTH: {month2edit}')
+            # print(f'CONCEPT: {concept2edit}')
+            # print(f'EXTRA COMPANY: {ExtraCompany2edit}')
+            # print(f'TYPE: {incomeType}')
+            # print(f'QUANTITY: {qty2edit}')
 
             if month2edit is not None and concept2edit is not None and qty2edit is not None and ExtraCompany2edit is not None:
                 webcall = open('src/db/webcalls/income/update_extra_income.sql', mode='r')
@@ -1382,8 +1394,10 @@ def update_income():
             connection.commit() 
         connection.close()
         print('ejecutado')
+        flash(f'Ingreso actualizado correctamente.', 'success')
     except Exception as e:
-        print(f'Error añadiendo {incomeType}. {e}') 
+        print(f'Error añadiendo Ingreso. {e}') 
+        flash(f'Error al actualizar el Ingreso. Inténtelo de nuevo.', 'danger')
 
     return redirect(url_for('manage_incomes'))
 
@@ -1424,10 +1438,11 @@ def delete_income(incomeid):
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
         connection.commit()
-        cursor.execute(readed_query_2_execute_2)
-        connection.commit()
+
+        flash('Ingreso eliminado correctamente.', 'success')
     except Exception as e:
-        print(f"Error at filtered month data SQL query: {e}")    
+        print(f"Error at filtered month data SQL query: {e}")  
+        flash('Error al eliminar el ingreso. Inténtelo de nuevo.', 'danger')      
     finally:
         connection.close()
     
@@ -1851,19 +1866,12 @@ def add_expense():
         #    HTML Form
         # ----------------
         year2add = request.form['año']
-        print(f'YEAR: {year2add}')
         month2add = request.form['mes']
-        #month2add = 'NULL' if month2add == '0' else month2add
-        print(f'NONTH: {month2add}')
         concept2add = request.form['concepto']
-        print(f'CONCEPT: {concept2add}')
         periodicity2add = request.form['periodicidad']
-        print(f'PERIODICITY: {periodicity2add}')
         expenseType = request.form['tipo']
-        print(f'TYPE: {expenseType}')
         qty2add = request.form['cantidad']
         qty2add = qty2add.replace(',', '.')
-        print(f'QUANTITY: {qty2add}')
 
         if expenseType == 'P':
             if periodicity2add == 'M':
@@ -1898,9 +1906,10 @@ def add_expense():
         cursor.execute(readed_query_2_execute)
         connection.commit()
         connection.close()
-        print('ejecutado')
+        flash(f'Gasto añadido correctamente.', 'success')
     except Exception as e:
-        print(f'Error añadiendo {expenseType}. {e}')
+        print(f'Error añadiendo gasto. {e}')
+        flash(f'Error al añadir el gasto. Inténtelo de nuevo.', 'danger')
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
@@ -2077,13 +2086,13 @@ def update_expense():
         qty2edit = request.form['cantidad']
         qty2edit = qty2edit.replace(',', '.')
 
-        print(f'ID: {id2edit}')
-        print(f'YEAR: {year2edit}')
-        print(f'MONTH: {month2edit}')
-        print(f'CONCEPT: {concept2edit}')
-        print(f'PERIODICITY: {periodicity2edit}')
-        print(f'TYPE: {expenseType}')
-        print(f'QUANTITY: {qty2edit}')
+        # print(f'ID: {id2edit}')
+        # print(f'YEAR: {year2edit}')
+        # print(f'MONTH: {month2edit}')
+        # print(f'CONCEPT: {concept2edit}')
+        # print(f'PERIODICITY: {periodicity2edit}')
+        # print(f'TYPE: {expenseType}')
+        # print(f'QUANTITY: {qty2edit}')
 
         if expenseType == 'P':
             if periodicity2edit == 'M':
@@ -2118,9 +2127,10 @@ def update_expense():
         cursor.execute(readed_query_2_execute)
         connection.commit()
         connection.close()
-        print('ejecutado')
+        flash(f'Gasto actualizado correctamente.', 'success')
     except Exception as e:
-        print(f'Error añadiendo {expenseType}. {e}')
+        print(f'Error añadiendo gasto. {e}')
+        flash(f'Error al actualizar el gasto. Inténtelo de nuevo.', 'danger')
 
     return redirect(url_for('manage_expenses'))
 
@@ -2147,8 +2157,10 @@ def delete_expenses(expenseid):
         connection, cursor = dbconnection()
         cursor.execute(readed_query_2_execute)
         connection.commit()
+        flash(f'Gasto eliminado correctamente.', 'success')
     except Exception as e:
-        print(f"Error at filtered month data SQL query: {e}")    
+        print(f"Error at filtered month data SQL query: {e}")
+        flash(f'Error al eliminar el gasto. Inténtelo de nuevo.', 'danger')    
     finally:
         connection.close()
     

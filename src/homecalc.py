@@ -587,39 +587,39 @@ def add_movement():
             flash('La fecha es obligatoria. Inténtelo de nuevo.', 'danger')
         else:
             fecha = datetime.datetime.strptime(fecha, '%Y-%m-%d').date()
-        #print(f'Fecha Formatted: {fecha}')
-        tipo = request.form['tipoAbono']
-        #print(f'Tipo: {tipo}')
-        cantidad = request.form['cantidad']
-        cantidad = cantidad.replace(',', '.')
-        #print(f'Cantidad: {cantidad}')  
-        if tipoEntrada == 'M':
-            concepto = request.form['conceptoManual']
-        else:
-            concepto = request.form['conceptoSeleccion']
-        #print(f'Concepto: {concepto}')
-        
-        # ---- Database Connection ----
-        connection, cursor = dbconnection()
+            #print(f'Fecha Formatted: {fecha}')
+            tipo = request.form['tipoAbono']
+            #print(f'Tipo: {tipo}')
+            cantidad = request.form['cantidad']
+            cantidad = cantidad.replace(',', '.')
+            #print(f'Cantidad: {cantidad}')  
+            if tipoEntrada == 'M':
+                concepto = request.form['conceptoManual']
+            else:
+                concepto = request.form['conceptoSeleccion']
+            #print(f'Concepto: {concepto}')
+            
+            # ---- Database Connection ----
+            connection, cursor = dbconnection()
 
-        # ---- Database add movement SQL Query (con parámetros seguros) ----
-        webcall = open('src/db/webcalls/movements/add_movement.sql', mode='r')
-        add_movement_query = webcall.read()
-        webcall.close()
-        add_movement_query_2_execute = add_movement_query.format(fecha, tipo, concepto, cantidad)
-        
-        # Usa parámetros en lugar de .format() para prevenir SQL injection
-        try:
-            cursor.execute(add_movement_query_2_execute)
-            connection.commit()
-            if daterror!= True:
-                flash('Movimiento añadido correctamente.', 'success')
-        except Exception as e:
-            if daterror != True:
-                print(f"Error at add movement SQL query: {e}")
-                flash('Error al añadir el movimiento. Inténtelo de nuevo.', 'danger')
-        finally:
-            connection.close()
+            # ---- Database add movement SQL Query (con parámetros seguros) ----
+            webcall = open('src/db/webcalls/movements/add_movement.sql', mode='r')
+            add_movement_query = webcall.read()
+            webcall.close()
+            add_movement_query_2_execute = add_movement_query.format(fecha, tipo, concepto, cantidad)
+            
+            # Usa parámetros en lugar de .format() para prevenir SQL injection
+            try:
+                cursor.execute(add_movement_query_2_execute)
+                connection.commit()
+                if daterror!= True:
+                    flash('Movimiento añadido correctamente.', 'success')
+            except Exception as e:
+                if daterror != True:
+                    print(f"Error at add movement SQL query: {e}")
+                    flash('Error al añadir el movimiento. Inténtelo de nuevo.', 'danger')
+            finally:
+                connection.close()
         
         return redirect(url_for('form'))
 

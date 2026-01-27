@@ -909,7 +909,26 @@ def periodic_income():
     # ---- Database companies SQL Query ----
     periodic_companies_list_query_results = income_periodic_companies_list()
 
-    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results)
+    year2filter = datetime.datetime.now().year
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database periodic filtered income list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_periodic_anual_all_companies.sql', mode='r')
+    periodic_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = periodic_query.format(year2filter)
+    filtered_data = f'Año ({year2filter}).'
+    try:
+        cursor.execute(readed_query_2_execute)
+        periodic_income_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
 
 @app.route("/periodic_income_filter", methods=['GET', 'POST'])
 def periodic_income_filter():
@@ -959,7 +978,33 @@ def extra_income():
     # ---- Database companies SQL Query ----
     extra_companies_list_query_results = income_extra_companies_list()
 
-    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results)
+    year2filter = datetime.datetime.now().year
+
+    month2filter = datetime.datetime.now().month
+    
+    for month in months_list_query_results:
+        if month[0] == month2filter:
+            month2filter = month[1]
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database extra filtered income  by month SQL Query ----
+    webcall = open('src/db/webcalls/income/income_extra_anual_by_month.sql', mode='r')
+    extra_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = extra_query.format(year2filter, month2filter)
+    filtered_data = f'Año ({year2filter}) y Mes ({month2filter}).'
+
+    try:
+        cursor.execute(readed_query_2_execute)
+        extra_income_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+
+    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
 
 @app.route('/extra_income_filter', methods=['GET', 'POST'])
 def extra_income_filter():
@@ -979,6 +1024,11 @@ def extra_income_filter():
 
     # ---- Database companies SQL Query ----
     extra_companies_list_query_results = income_extra_companies_list()
+
+    if month2filter is not None:
+        for month in months_list_query_results:
+            if month[0] == int(month2filter):
+                month2filter_text = month[1]
 
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -1003,14 +1053,14 @@ def extra_income_filter():
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(year2filter, month2filter)
-        filtered_data = f'Año ({year2filter}) y Mes ({month2filter}).'
+        filtered_data = f'Año ({year2filter}) y Mes ({month2filter_text}).'
     else:
         # ---- Database extra filtered income liby company and month SQL Query ----
         webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month.sql', mode='r')
         extra_query = webcall.read()
         webcall.close()
         readed_query_2_execute = extra_query.format(company2filter, year2filter, month2filter)
-        filtered_data = f'Compañia ({company2filter}), Año ({year2filter}) y Mes ({month2filter}).'
+        filtered_data = f'Compañia ({company2filter}), Año ({year2filter}) y Mes ({month2filter_text}).'
     try:
         cursor.execute(readed_query_2_execute)
         extra_income_query_results = cursor.fetchall()
@@ -1037,10 +1087,27 @@ def manage_incomes():
 
     # ---- Database months list SQL Query ----
     months_list_query_results = months_list()
+
+    years2filter = datetime.datetime.now().year
     
     income_types_descriptions = { 'P': 'Ingresos Periodicos', 'E': 'Ingresos Extraordinarios' }
 
-    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_types_descriptions=income_types_descriptions)
+    webcall = open('src/db/webcalls/income/income_periodic_anual_default.sql', mode='r')
+    periodic_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = periodic_query.format(years2filter)
+    filtered_data = f'Ingreso Periodico por Año ({years2filter}).'
+
+    connection, cursor = dbconnection()
+    try:
+        cursor.execute(readed_query_2_execute)
+        income_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at filtered income query: {e}")
+    finally:
+        connection.close()
+
+    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_types_descriptions=income_types_descriptions, income_query_results=income_query_results, filtered_data=filtered_data)
 
 @app.route("/record_income")
 def record_income():
@@ -1180,7 +1247,8 @@ def manage_income_filter():
             readed_query_2_execute = extra_query.format(año)
             filtered_data = f'Ingreso Extraordinario por Compañia ({company}) y Año ({año}).'
         else:
-            webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month_filter_filter.sql', mode='r')
+            webcall = open('src/db/webcalls/income/income_extra_anual_by_company_month_filter.sql', mode='r')
+            print('beca by month')
             extra_query = webcall.read()
             webcall.close()
             readed_query_2_execute = extra_query.format(company, año, mes)
@@ -1343,8 +1411,6 @@ def update_income():
             print(f'BONUS: {bonus2edit}')
             print(f'TYPE: {incomeType}')
             print(f'QUANTITY: {qty2edit}')
-
-            ## AQUI ME QUEDE!!!
 
             if PeriodicCompany2edit is not None and irpf2edit is not None and resto_impuestos2edit is not None and bonus2edit is not None and qty2edit is not None:
                 webcall = open('src/db/webcalls/income/update_periodic_income.sql', mode='r')

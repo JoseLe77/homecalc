@@ -36,8 +36,9 @@
         </div>
         <button class="boton" type="submit">Filtrar</button>
     </form>
-    <div class="contenedor">
-        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}
+    <div class="contenedor" style="display: flex; justify-content: space-between; align-items: center;">
+        <div><a style="font-weight: bold;">ULTIMO FILTRO: </a>{{Filtrered_data}}</div>
+        <button class="boton" id="export-csv-btn">Exportar</button>
     </div>
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
@@ -58,5 +59,49 @@
         </tbody>
     </table>
 </section>
+<script>
+document.getElementById('export-csv-btn').addEventListener('click', function() {
+    const table = document.getElementById('tabla');
+    let csv = [];
+    
+    // Agregar encabezados (excluyendo columnas con clase 'no-export')
+    const headers = [];
+    table.querySelectorAll('thead tr th').forEach((th, colIndex) => {
+        if (!th.classList.contains('no-export')) {
+            headers.push(th.textContent.trim());
+        }
+    });
+    csv.push(headers.join(','));
+    
+    // Agregar filas (excluyendo columnas con clase 'no-export')
+    table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = [];
+        row.querySelectorAll('td').forEach((td, colIndex) => {
+            // Obtener el encabezado correspondiente
+            const th = table.querySelectorAll('thead tr th')[colIndex];
+            // Omitir si tiene la clase 'no-export'
+            if (!th || !th.classList.contains('no-export')) {
+                cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+            }
+        });
+        if (cells.length > 0) {
+            csv.push(cells.join(','));
+        }
+    });
+    
+    // Crear blob y descargar
+    const csvContent = csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Gastos_Periodicos.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+</script>
 {% endblock %}
 

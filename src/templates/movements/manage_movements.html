@@ -54,9 +54,11 @@
         </ul>
         {% endif %}
     {% endwith %}
-    <div class="contenedor">
-        <a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}
+    <div class="contenedor" style="display: flex; justify-content: space-between; align-items: center;">
+        <div><a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}</div>
+        <button class="boton" id="export-csv-btn" style="margin-bottom: 15px;">Exportar</button>
     </div>
+    
     <table class="card tabla" id="tabla">
         <thead class="tabla-encabezado-fijo">
             <tr>
@@ -64,7 +66,7 @@
                 <th class="texto-centrado">CONCEPTO</td>
                 <th class="texto-centrado">TIPO</td>
                 <th class="texto-centrado">CANTIDAD</td>
-                <th class="texto-centrado">ACCIONES</td>       
+                <th class="texto-centrado no-export">ACCIONES</td>       
             </tr>
         </thead>
         <tbody class="tabla_con_encabezado">
@@ -74,7 +76,7 @@
                 <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.2 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
                 <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
-                <td class="texto-centrado">
+                <td class="texto-centrado no-export">
                     <!-- <a href="/selected_movement/{{ extracted_data.0 }}" class="boton">Editar</a> -->
                     <a href="/delete_movement/{{ extracted_data.0 }}" class="boton">Borrar</a>
                 </td>
@@ -83,6 +85,86 @@
         </tbody>
     </table>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form[action="/manage_expenses_filter"]');
+
+  const tipoSelect = form.querySelector('select[name="tipo"]');
+  const periodicidadSelect = form.querySelector('select[name="periodicidad"]');
+  const anioDiv = form.querySelector('select[name="año"]').closest('div');
+  const periodicidadDiv = periodicidadSelect.closest('div');
+  const mesDiv = form.querySelector('select[name="mes"]').closest('div');
+
+  const handleChange = () => {
+    const tipo = tipoSelect.value;
+    const periodicidad = periodicidadSelect.value;
+
+    // Mostrar todo por defecto
+    anioDiv.style.display = '';
+    periodicidadDiv.style.display = '';
+    mesDiv.style.display = '';
+
+    // Reglas
+    if (tipo === 'P') {
+      anioDiv.style.display = 'none'; // ocultar año
+      if (periodicidad === 'M') {
+        mesDiv.style.display = 'none'; // ocultar mes si periodicidad = M
+      }
+    } else if (tipo === 'E') {
+      periodicidadDiv.style.display = 'none'; // ocultar periodicidad
+    }
+  };
+
+  // Ejecutar al cargar
+  handleChange();
+
+  // Escuchar cambios
+  tipoSelect.addEventListener('change', handleChange);
+  periodicidadSelect.addEventListener('change', handleChange);
+});
+
+document.getElementById('export-csv-btn').addEventListener('click', function() {
+    const table = document.getElementById('tabla');
+    let csv = [];
+    
+    // Agregar encabezados (excluyendo columnas con clase 'no-export')
+    const headers = [];
+    table.querySelectorAll('thead tr th').forEach((th, colIndex) => {
+        if (!th.classList.contains('no-export')) {
+            headers.push(th.textContent.trim());
+        }
+    });
+    csv.push(headers.join(','));
+    
+    // Agregar filas (excluyendo columnas con clase 'no-export')
+    table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = [];
+        row.querySelectorAll('td').forEach((td, colIndex) => {
+            // Obtener el encabezado correspondiente
+            const th = table.querySelectorAll('thead tr th')[colIndex];
+            // Omitir si tiene la clase 'no-export'
+            if (!th || !th.classList.contains('no-export')) {
+                cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+            }
+        });
+        if (cells.length > 0) {
+            csv.push(cells.join(','));
+        }
+    });
+    
+    // Crear blob y descargar
+    const csvContent = csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'movimientos.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+</script>
 <!-- <script>
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('form[action="/manage_expenses_filter"]');

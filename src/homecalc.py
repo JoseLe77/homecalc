@@ -2285,6 +2285,7 @@ def update_password():
         #    HTML Form
         # ----------------
         session_username = session.get('username')
+        mail_session_user_name = request.form['name']
         mail_session_user = request.form['email']
         old_password = request.form['password_old']
         new_password = request.form['password_new']
@@ -2304,8 +2305,9 @@ def update_password():
                 readed_query_2_execute = readed_query.format(hashed_new_password, session_username, hashed_old_password)
 
 
-        print(f'USERNAME: {session_username}')
-        print(f'NEW PASSWORD: {new_password}')
+        # print(f'NAME: {mail_session_user_name}')
+        # print(f'USERNAME: {session_username}')
+        # print(f'NEW PASSWORD: {new_password}')
 
     try:
         connection, cursor = dbconnection()
@@ -2313,6 +2315,34 @@ def update_password():
         connection.commit()
         connection.close()
         print('ejecutado')
+
+        # 1. Preparar correo para el USUARIO (Confirmación)
+        user_subject = "HomeCalc: Confirmación de cambio de contraseña"
+        user_body = f"Hola {mail_session_user_name},\n\nTu contraseña ha sido actualizada correctamente.\n\n Esta es tu nueva contraseña: {new_password}.\n\nSi no has sido tú, por favor contacta con el administrador del sistema.\n\nSaludos,\nEquipo de HomeCalc."
+        msg_user = MIMEText(user_body)
+        msg_user['Subject'] = user_subject
+        msg_user['From'] = mail_cfg.REMITENTE_EMAIL
+        msg_user['To'] = mail_session_user
+
+        try:
+            # 4. Conexión y envío
+            if mail_cfg.SMTP_USE_SSL:
+                server = smtplib.SMTP_SSL(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+            else:
+                server = smtplib.SMTP(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                server.starttls()
+            
+            server.login(mail_cfg.REMITENTE_EMAIL, mail_cfg.REMITENTE_PASSWORD)
+            
+            # Enviar al Usuario
+            server.sendmail(mail_cfg.REMITENTE_EMAIL, mail_session_user, msg_user.as_string())
+
+            server.quit()
+            print('Correo enviado')
+            
+        except Exception as e:
+            print(f"Error sending email: {e}")
+
         flash('Contraseña actualizada correctamente.', 'success')
     except Exception as e:
         print(f'Error actualizando la contraseña del usuario {session_username}. {e}')
@@ -2406,7 +2436,7 @@ def send_contact():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5200)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

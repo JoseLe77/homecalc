@@ -1,0 +1,1 @@
+UPDATE policies SET policy_action = '{}' WHERE policy_name='REGISTRY_ACTIVATION' AND active=1

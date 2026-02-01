@@ -1,0 +1,1 @@
+SELECT policy_action FROM policies WHERE policy_name='REGISTRY_ACTIVATION' AND active=1

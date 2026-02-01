@@ -6,7 +6,7 @@
     <div class ="login_form">
       <div style="display:flex; border-bottom:1px solid #e4e4e4; margin-bottom:20px;">
         <a href="#" name="login" style="padding:15px 25px; border-bottom:3px solid var(--color-primario); font-weight:600; color:var(--color-primario); text-decoration: none;">Iniciar sesión</a>
-        <a href="#" name="register" style="padding:15px 25px; color:#777; text-decoration: none;">Registrarse</a>
+        <a href="#" name="register" class="{{registry_activation}}" style="padding:15px 25px; color:#777; text-decoration: none;">Registrarse</a>
       </div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -49,7 +49,7 @@
         {% endif %}
       {% endwith %}
 
-      <form action="{{ url_for('register') }}" method="POST">
+      <form action="{{ url_for('register') }}" method="POST" >
         <label for="name">Nombre</label>
         <input id="name" name="name" type="text" class="input" placeholder="Nombre">
 

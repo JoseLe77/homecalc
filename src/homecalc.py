@@ -352,10 +352,51 @@ def movements_month_list():
         connection.close()
     return existing_movement_months_list_query_results
 
+@app.route("/registry_check")
+def registry_check():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/login/registry_activation.sql', mode='r')
+    registry_activation = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(registry_activation)
+        existing_registry_activation_query_results = cursor.fetchone()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+        if existing_registry_activation_query_results[0] == 'disabled':
+            existing_registry_activation_query_results = 'ocultar'
+    
+    return existing_registry_activation_query_results
+
 @app.route("/")
 def login():
     session.clear()
-    return render_template('login.html')
+    flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
+    
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/login/registry_activation.sql', mode='r')
+    registry_activation = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(registry_activation)
+        existing_registry_activation_query_results = cursor.fetchone()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+
+    if existing_registry_activation_query_results[0] == 'disabled':
+        existing_registry_activation_query_results = 'ocultar'
+
+    return render_template('login.html', registry_activation=existing_registry_activation_query_results)
 
 @app.route("/login_check", methods=['POST'])
 def login_check():
@@ -391,23 +432,43 @@ def login_check():
                 try:
                     cursor.execute(auth_query_2_execute2)
                     auth_result = cursor.fetchone()
+                    print(f'Authentication result: {auth_result}')
+
                     if auth_result:
                         session['username'] = username
-                        flash('Inicio de sesión exitoso.', 'success')
+                        # flash('Inicio de sesión exitoso.', 'success')       
                         return redirect(url_for('home'))
                     else:
-                        flash('Credenciales inválidas. Inténtalo de nuevo.', 'danger')
-                        return redirect(url_for('login'))
+                        existing_registry_activation_query_results = registry_check()
+                        print('Authentication failed: Incorrect password')
+                        flash_text = 'Credenciales inválidas. Inténtalo de nuevo.'
+                        flash_reason = 'danger'
+                        return render_template('login.html', flash_text=flash_text, flash_reason=flash_reason, registry_activation=existing_registry_activation_query_results)
                 except Exception as e:
+                    existing_registry_activation_query_results = registry_check()
                     print(f"Error at user authentication_2 SQL query: {e}")
-            else:
-                flash('Credenciales inválidas. Inténtalo de nuevo.', 'danger')
-                return redirect(url_for('login'))
+                    flash_text = 'Credenciales inválidas. Inténtalo de nuevo.'
+                    flash_reason = 'danger'
+                    return render_template('login.html', flash_text=flash_text, flash_reason=flash_reason, registry_activation=existing_registry_activation_query_results)
+            elif user is None:
+                existing_registry_activation_query_results = registry_check()
+                print('Authentication failed: User not found')
+                flash_text = 'Credenciales inválidas. Inténtalo de nuevo.'
+                flash_reason = 'danger'
+                return render_template('login.html', flash_text=flash_text, flash_reason=flash_reason, registry_activation=existing_registry_activation_query_results)
+            else:   
+                existing_registry_activation_query_results = registry_check()
+                flash_text = 'Credenciales inválidas. Inténtalo de nuevo.'
+                flash_reason = 'danger'
+                return render_template('login.html', flash_text=flash_text, flash_reason=flash_reason, registry_activation=existing_registry_activation_query_results)
         except Exception as e:
-            print(f"Error at user authentication_1 SQL query: {e}")    
+            existing_registry_activation_query_results = registry_check()
+            print(f"Error at user authentication_1 SQL query: {e}")
+            flash_text = 'Credenciales inválidas. Inténtalo de nuevo.'
+            flash_reason = 'danger' 
+            return render_template('login.html', flash_text=flash_text, flash_reason=flash_reason, registry_activation=existing_registry_activation_query_results)
         finally:
             connection.close()
-        
 
 @app.route("/register", methods=['GET','POST'])
 def register():
@@ -456,6 +517,33 @@ def register():
                 return redirect(url_for('login'))
             finally:
                 connection.close()
+
+                # 1. Preparar correo para el USUARIO (Confirmación)
+                user_subject = "HomeCalc: Confirmación de registro"
+                user_body = f"Hola {username},\n\nTu contraseña ha sido actualizada correctamente.\n\n Esta es tu nueva contraseña: {password_confirm}.\n\nSi no has sido tú, por favor contacta con el administrador del sistema.\n\nSaludos,\nEquipo de HomeCalc."
+                msg_user = MIMEText(user_body)
+                msg_user['Subject'] = user_subject
+                msg_user['From'] = mail_cfg.REMITENTE_EMAIL
+                msg_user['To'] = usermail
+
+                try:
+                    # 4. Conexión y envío
+                    if mail_cfg.SMTP_USE_SSL:
+                        server = smtplib.SMTP_SSL(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                    else:
+                        server = smtplib.SMTP(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                        server.starttls()
+                    
+                    server.login(mail_cfg.REMITENTE_EMAIL, mail_cfg.REMITENTE_PASSWORD)
+                    
+                    # Enviar al Usuario
+                    server.sendmail(mail_cfg.REMITENTE_EMAIL, usermail, msg_user.as_string())
+
+                    server.quit()
+                    print('Correo enviado')
+                except Exception as e:
+                    print(f'Error al enviar el correo: {e}')
+
     return render_template('login.html')
 
 # ---- HOME ----  
@@ -2243,11 +2331,35 @@ def selected_expense_expense():
 # ---- ABOUT ---- 
 @app.route("/about")
 def about():
+    # ---- Session Data ----
+    session_username = session.get('username')
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+
+    print(f'Session username at ABOUT: {session_username}')
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/login/user_session_role.sql', mode='r')
+    user_session_role = webcall.read()
+    user_session_role=user_session_role.format(session_username)
+    webcall.close()
+    try:
+        cursor.execute(user_session_role)
+        user_session_role_query_results = cursor.fetchone()
+        if user_session_role_query_results[0] != 'admin':
+            user_session_config = 'ocultar'
+        else:
+            user_session_config = 'mostrar'
+    except Exception as e:
+        print(f"Error username query: {e}") 
+    finally:
+        connection.close()
     
-    return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results)
+    return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results, user_session_config=user_session_config if 'user_session_config' in locals() else None)
 
 @app.route("/change_password")
 def change_password():
@@ -2350,6 +2462,92 @@ def update_password():
 
     return redirect(url_for('change_password'))
 
+@app.route("/config")
+def config():
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+    
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/login/registry_activation.sql', mode='r')
+    registry_activation = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(registry_activation)
+        existing_registry_activation_query_results = cursor.fetchone()
+    except Exception as e:
+        print(f"Error at movement concepts query: {e}") 
+    finally:
+        connection.close()
+
+    if existing_registry_activation_query_results[0] != 'disabled':
+        existing_registry_activation_query_results1 = 'checked'
+        existing_registry_activation_query_results2 = '1'
+    else:
+        existing_registry_activation_query_results1 = ''
+        existing_registry_activation_query_results2 = '0'
+    
+    flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
+
+    return render_template('about/config.html', nav_buttons_query_results=nav_buttons_query_results, existing_registry_activation_query_results1=existing_registry_activation_query_results1, existing_registry_activation_query_results2=existing_registry_activation_query_results2)
+
+@app.route("/admin_registry_config", methods=['POST'])
+def admin_registry_config():
+    """
+    Módulo de Python que se ejecuta cuando se hace click en el checkbox del switch.
+    Realiza consultas a la base de datos SQLite para actualizar el estado de activación de registro.
+    """
+    try:
+        data = request.get_json()
+        status = data.get('status')
+        
+        # Convertir status a valor de base de datos
+        registry_action = 'enabled' if status == 1 else 'disabled'
+        
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+        
+        # Consulta 1: Verificar estado actual en la base de datos
+        webcall = open('src/db/webcalls/about/request_registry_config.sql', mode='r')
+        registry_config = webcall.read()
+        webcall.close()
+
+        cursor.execute(registry_config)
+        current_action = cursor.fetchone()
+
+        if current_action and current_action[0] != registry_action:
+            # Consulta 2: Actualizar el estado en la base de datos
+            webcall = open('src/db/webcalls/about/update_registry_config.sql', mode='r')
+            registry_change = webcall.read()
+            registry_change=registry_change.format(registry_action)
+            webcall.close()
+            cursor.execute(registry_change)
+            print(f"Registro de config actualizado de {current_action[0]} a {registry_action}")
+        
+        connection.commit()
+        connection.close()
+        if registry_action == 'enabled':
+            flash_text = 'Registro de usuarios habilitado.'
+            flash_reason = 'success'
+        else:
+            flash_text = 'Registro de usuarios deshabilitado.'
+            flash_reason = 'success'
+
+        return {
+            'success': True,
+            'message': f'Registro {registry_action}',
+            'status': registry_action
+        }
+
+    except Exception as e:
+        print(f"Error en admin_registry_config: {e}")
+        flash_text = 'Error en el cambio de estado del registro de usuarios.'
+        flash_reason = 'danger'
+    
+    return render_template('about/config.html', flash_text=flash_text, flash_reason=flash_reason)
+
 @app.route("/contact", methods=['GET', 'POST'])
 def contact():
     session_username = session.get('username')
@@ -2436,7 +2634,7 @@ def send_contact():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5100)
+    app.run(host='127.0.0.1', port=5300)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

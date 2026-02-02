@@ -1,5 +1,6 @@
 SELECT
-	CASE WHEN usuarios.usrmail IS NULL THEN  usr_temp.usrmail ELSE usuarios.usrmail END usrmail
+	CASE WHEN usuarios.usrmail IS NULL THEN  usr_temp.usrmail ELSE usuarios.usrmail END usrmail,
+	usuarios.usrpass
 FROM
 	usuarios
 LEFT JOIN 

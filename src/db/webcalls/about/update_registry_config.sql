@@ -1,1 +1,1 @@
-UPDATE policies SET policy_action = '{}' WHERE policy_name='REGISTRY_ACTIVATION' AND active=1
+UPDATE policies SET policy_action = '{}', modified_at = CURRENT_TIMESTAMP WHERE policy_name='REGISTRY_ACTIVATION' AND active=1

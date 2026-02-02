@@ -1,0 +1,1 @@
+DELETE FROM usr_temp WHERE usrmail= '{}';

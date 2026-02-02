@@ -1,0 +1,1 @@
+INSERT INTO usr_temp (usrmail, usrpass, created_at, active) VALUES ('{}', '{}', CURRENT_TIMESTAMP, 1);

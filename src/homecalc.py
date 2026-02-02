@@ -18,6 +18,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
+import random
 
 # -------------------------------------------------------------------------
 # Setup
@@ -373,8 +374,96 @@ def registry_check():
     
     return existing_registry_activation_query_results
 
+@app.route("/password_fortotten")
+def password_fortotten():
+
+    return render_template('password_recovery.html')
+
+@app.route("/password_recovery", methods=['GET','POST'])
+def password_recovery():
+    if request.method == 'POST':
+        usermail = request.form['email']
+        print(f'Usermail: {usermail}')
+        
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database user email check SQL Query ----
+        webcall = open('src/db/webcalls/login/authenticate_user.sql', mode='r')
+        user_check = webcall.read()
+        webcall.close()
+        user_check_query_2_execute = user_check.format(usermail)
+        
+        try:
+            cursor.execute(user_check_query_2_execute)
+            user = cursor.fetchone()
+            print(f'User fetched from DB: {user}')
+            if user and user[0] == usermail:
+                random_number = random.randint(1_000_000_000, 9_999_999_999)
+                print(f'Generated random number: {random_number}')
+                # ---- Database password recovery SQL Query ----
+                webcall2 = open('src/db/webcalls/login/password_recovery.sql', mode='r')
+                password_recovery_query = webcall2.read()
+                webcall2.close()
+                password_recovery_query_2_execute = password_recovery_query.format(usermail, random_number)
+                cursor.execute(password_recovery_query_2_execute)
+                connection.commit()
+                # 1. Preparar correo para el USUARIO (Recuperación de contraseña)
+                user_subject = "HomeCalc: Recuperación de contraseña"
+                user_body = f"Hola,\n\nSe ha solicitado la recuperación de la contraseña para tu cuenta.\n\n Esta es tu nueva contraseña temporal: {random_number}.\n\nPor favor, inicia sesión y cambia tu contraseña lo antes posible.\n\nSaludos,\nEquipo de HomeCalc."
+                msg_user = MIMEText(user_body)
+                msg_user['Subject'] = user_subject
+                msg_user['From'] = mail_cfg.REMITENTE_EMAIL
+                msg_user['To'] = usermail
+                try:
+                    # 4. Conexión y envío
+                    if mail_cfg.SMTP_USE_SSL:
+                        server = smtplib.SMTP_SSL(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                    else:
+                        server = smtplib.SMTP(mail_cfg.SMTP_SERVER, mail_cfg.SMTP_PORT)
+                        server.starttls()
+                    
+                    server.login(mail_cfg.REMITENTE_EMAIL, mail_cfg.REMITENTE_PASSWORD)
+                    
+                    # Enviar al Usuario
+                    server.sendmail(mail_cfg.REMITENTE_EMAIL, usermail, msg_user.as_string())
+
+                    server.quit()
+                    print('Correo enviado')
+                    flash('Se ha enviado un correo con las instrucciones para recuperar la contraseña.', 'success')       
+                except Exception as e:
+                    print(f'Error al enviar el correo: {e}')
+                    flash('Error al enviar el correo de recuperación de contraseña.', 'danger')
+            else:
+                print('Password recovery failed: User not found')
+                flash('El correo electrónico indicado no está registrado.', 'danger')
+        except Exception as e:
+            print(f"Error at password recovery SQL query: {e}")
+            flash('Error al procesar la solicitud. Inténtalo de nuevo.', 'danger')
+        finally:
+            connection.close()
+
+    return render_template('password_recovery.html')
+
 @app.route("/")
 def login():
+    session_username = session.get('username')
+
+    if session_username is not None:
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database user authentication SQL Query ----
+        webcall = open('src/db/webcalls/login/remove_temp_pass.sql', mode='r')
+        rem_query = webcall.read()
+        webcall.close()
+        auth_query_2_execute = rem_query.format(session_username)
+
+        cursor.execute(auth_query_2_execute)
+        connection.commit()
+        cursor.close()
+        print('password temp removed successfully')
+
     session.clear()
     flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
     
@@ -427,7 +516,7 @@ def login_check():
                 webcall2 = open('src/db/webcalls/login/authenticate_check_2.sql', mode='r')
                 auth_query2 = webcall2.read()
                 webcall2.close()
-                auth_query_2_execute2 = auth_query2.format(username, hashed_password)
+                auth_query_2_execute2 = auth_query2.format(username, hashed_password, password)
 
                 try:
                     cursor.execute(auth_query_2_execute2)
@@ -436,7 +525,8 @@ def login_check():
 
                     if auth_result:
                         session['username'] = username
-                        # flash('Inicio de sesión exitoso.', 'success')       
+                        # flash('Inicio de sesión exitoso.', 'success') 
+
                         return redirect(url_for('home'))
                     else:
                         existing_registry_activation_query_results = registry_check()
@@ -2386,9 +2476,24 @@ def change_password():
         flash('Error durante el checkeo de su usuario. Inténtalo de nuevo.', 'danger')
         return redirect(url_for('login'))
     finally:
-        connection.close()
+        # ---- Database user role SQL Query ----
+        webcall = open('src/db/webcalls/login/user_session_role.sql', mode='r')
+        user_session_role = webcall.read()
+        user_session_role=user_session_role.format(session_username)
+        webcall.close()
+        try:
+            cursor.execute(user_session_role)
+            user_session_role_query_results = cursor.fetchone()
+            if user_session_role_query_results[0] != 'admin':
+                user_session_config = 'ocultar'
+            else:
+                user_session_config = 'mostrar'
+        except Exception as e:
+            print(f"Error username query: {e}") 
+        finally:
+            connection.close()
     
-    return render_template('about/change.html', nav_buttons_query_results=nav_buttons_query_results,user_session_result=user_session_result)
+    return render_template('about/change.html', nav_buttons_query_results=nav_buttons_query_results,user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None)
 
 @app.route("/update_password", methods=['GET', 'POST'])
 def update_password():
@@ -2411,11 +2516,23 @@ def update_password():
             else:   
                 hashed_new_password = hashlib.sha1(new_password.encode()).hexdigest()
                 hashed_old_password = hashlib.sha1(old_password.encode()).hexdigest()
-                webcall = open('src/db/webcalls/session/update_user_password.sql', mode='r')
-                readed_query = webcall.read()
-                webcall.close()
-                readed_query_2_execute = readed_query.format(hashed_new_password, session_username, hashed_old_password)
 
+                webcall = open('src/db/webcalls/session/user_password_pre_check.sql', mode='r')
+                pre_check_query = webcall.read()
+                webcall.close()
+                pre_check_query_2_execute = pre_check_query.format(session_username, hashed_old_password, old_password)
+                connection, cursor = dbconnection()
+                cursor.execute(pre_check_query_2_execute)
+                pre_check_query_executed_results = cursor.fetchone()
+                connection.close()
+                if pre_check_query_executed_results is None:
+                    flash('La contraseña actual no es correcta. Inténtalo de nuevo.', 'danger')
+                    return redirect(url_for('change_password'))
+                else:   
+                    webcall = open('src/db/webcalls/session/update_user_password.sql', mode='r')
+                    readed_query = webcall.read()
+                    webcall.close()
+                    readed_query_2_execute = readed_query.format(hashed_new_password, session_username, pre_check_query_executed_results[1])
 
         # print(f'NAME: {mail_session_user_name}')
         # print(f'USERNAME: {session_username}')
@@ -2572,9 +2689,24 @@ def contact():
         flash('Error durante el checkeo de su usuario. Inténtalo de nuevo.', 'danger')
         return redirect(url_for('login'))
     finally:
-        connection.close()
+        # ---- Database user role SQL Query ----
+        webcall = open('src/db/webcalls/login/user_session_role.sql', mode='r')
+        user_session_role = webcall.read()
+        user_session_role=user_session_role.format(session_username)
+        webcall.close()
+        try:
+            cursor.execute(user_session_role)
+            user_session_role_query_results = cursor.fetchone()
+            if user_session_role_query_results[0] != 'admin':
+                user_session_config = 'ocultar'
+            else:
+                user_session_config = 'mostrar'
+        except Exception as e:
+            print(f"Error username query: {e}") 
+        finally:
+            connection.close()
 
-    return render_template('about/contact.html', nav_buttons_query_results=nav_buttons_query_results, user_session_result=user_session_result)
+    return render_template('about/contact.html', nav_buttons_query_results=nav_buttons_query_results, user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None)
 
 @app.route("/send_contact", methods=['GET', 'POST'])
 def send_contact():
@@ -2634,7 +2766,7 @@ def send_contact():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5300)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

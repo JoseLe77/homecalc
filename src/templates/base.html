@@ -25,6 +25,7 @@
                     {% if request.path == url_for('periodic_income') and button.1 == 'income' %}active{% endif %}
                     {% if request.path == url_for('extra_income') and button.1 == 'income' %}active{% endif %}
                     {% if request.path == url_for('manage_incomes') and button.1 == 'income' %}active{% endif %}
+                    {% if request.path == url_for('record_company') and button.1 == 'income' %}active{% endif %}
                     {% if request.path == url_for('record_income') and button.1 == 'income' %}active{% endif %}
                     {% if request.path == url_for('expenses') and button.1 == 'expenses' %}active{% endif %}
                     {% if request.path == url_for('periodic_expenses') and button.1 == 'expenses' %}active{% endif %}

@@ -6,6 +6,7 @@
         <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
         <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
             <ul>
+                <li><a href="{{url_for('record_company')}}">Crear Empresa</a></li>
                 <li><a href="{{url_for('record_income')}}" class="active">Crear Ingreso</a></li>
             </ul>
         </li>
@@ -37,7 +38,7 @@
             <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
             <select name="company_extra" class="input">
                 {% for extra_income_company in extra_companies_list_query_results %}
-                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.0 }}</option>
+                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.1 }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -48,7 +49,7 @@
             <!-- <input name="company_periodic" label="company_periodic" type="text" class="input"> -->
             <select name="company_periodic" class="input">
                 {% for periodic_income_company in periodic_companies_list_query_results %}
-                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.0 }}</option>
+                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.1 }}</option>
                 {% endfor %}
             </select>
         </div>

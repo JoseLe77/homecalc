@@ -13,7 +13,7 @@
             <label for="company" style="font-weight: bold;">COMPAÑIA</label>
             <select name="company" class="input">
                 {% for income_company in extra_companies_list_query_results%}
-                    <option name="selected_income_company" value="{{ income_company.0 }}">{{ income_company.0 }}</option>
+                    <option name="selected_income_company" value="{{ income_company.0 }}">{{ income_company.1 }}</option>
                 {% endfor %}
             </select>
         </div>

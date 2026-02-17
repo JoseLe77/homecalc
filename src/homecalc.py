@@ -62,6 +62,29 @@ def nav_buttons():
         connection.close()
         return nav_buttons_query_results
 
+def username():
+    # get logged in user
+    session_username = session.get('username')
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/session/session_user_data.sql', mode='r')
+    user_session = webcall.read()
+    user_session=user_session.format(session_username)
+    webcall.close()
+    try:
+        cursor.execute(user_session)
+        user_session_query_results = cursor.fetchall()
+        print(f'Username query results: {user_session_query_results[0][0]}')
+    except Exception as e:
+        print(f"Error username query: {e}") 
+    finally:
+        connection.close()
+
+    return user_session_query_results[0][0]
+
 def years_list():
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -129,6 +152,23 @@ def income_extra_companies_list():
     finally:
         connection.close()
         return extra_companies_list_query_results
+
+def income_companies_list():
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database year list SQL Query ----
+    webcall = open('src/db/webcalls/income/income_companies.sql', mode='r')
+    companies_list = webcall.read()
+    webcall.close()
+    try:
+        cursor.execute(companies_list)
+        income_companies_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at Years query: {e}") 
+    finally:
+        connection.close()
+        return income_companies_list_query_results
 
 def yearslist2filter():
     # ---- Database Connection ----
@@ -739,20 +779,32 @@ def home():
     Grafico_donuts = base64.b64encode(buffer.read()).decode()
     plt.close()
 
-    return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results, nowaday_month_data=nowaday_month_data,income_expense_list_query_results=income_expense_list_query_results, Grafico_Barras=Grafico_Barras, Grafico_donuts=Grafico_donuts)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('home.html', nav_buttons_query_results=nav_buttons_query_results, nowaday_month_data=nowaday_month_data,income_expense_list_query_results=income_expense_list_query_results, Grafico_Barras=Grafico_Barras, Grafico_donuts=Grafico_donuts,session_username=session_username)
 
 # ---- MOVEMENTS ----  
 @app.route("/form")
 def form():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
     movements_concept_list_query_results = movements_concept_list()
-        
-    return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results)
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:   
+        return render_template('form.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results)
 
 @app.route("/add_movement", methods=['GET','POST'])
 def add_movement():
+    # get logged in user
+    session_username = session.get('username')
+
     print('Adding movement...')
     if request.method == 'POST':
         daterror = False
@@ -799,10 +851,15 @@ def add_movement():
             finally:
                 connection.close()
         
-        return redirect(url_for('form'))
+        if session_username is None:
+            return redirect(url_for('login'))
+        else:
+            return redirect(url_for('form'))
 
 @app.route("/manage_movements")
 def manage_movements():
+    # get logged in user
+    session_username = session.get('username')
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
@@ -832,10 +889,16 @@ def manage_movements():
     year_now = year_now.year
     filtered_data = f'Año ({year_now}).'
 
-    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
 
 @app.route("/manage_movements_filter", methods=['GET', 'POST'])
 def manage_movements_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         concept2filter = request.form['concepto']
         type2filter = request.form['tipoAbono']
@@ -881,11 +944,17 @@ def manage_movements_filter():
     finally:
         connection.close()
 
-    return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('movements/manage_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results, existing_movement_months_list_query_results=existing_movement_months_list_query_results, movements_filter_list_query_results=movements_filter_list_query_results, filtered_data=filtered_data)
 
 @app.route("/delete_movement/<movement_id>")
 def delete_movement(movement_id):
-
+    # get logged in user
+    session_username = session.get('username')
+    
+    # ---- Database Connection ----
     connection, cursor = dbconnection()
     # print('DB connected successfully')
 
@@ -907,10 +976,16 @@ def delete_movement(movement_id):
     finally:
         connection.close()
     
-    return redirect(url_for('manage_movements'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_movements'))
 
 @app.route("/movements_analysis")
 def movements_analysis():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -962,10 +1037,16 @@ def movements_analysis():
     # Crear HTML con la imagen embebida
     html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
 
-    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=año, image_base64=image_base64)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=año, image_base64=image_base64)
 
 @app.route("/movements_analysis_filter", methods=['GET', 'POST'])
 def movements_analysis_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         concept2filter = request.form['concepto']
         type2filter = request.form['tipoAbono']
@@ -1053,12 +1134,17 @@ def movements_analysis_filter():
     # Crear HTML con la imagen embebida
     html_chart_image = f'<img src="data:image/png;base64,{image_base64}">'
 
-    return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=year2filter, image_base64=image_base64)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:    
+        return render_template('movements/analysis_movements.html', nav_buttons_query_results=nav_buttons_query_results, movements_concept_list_query_results=movements_concept_list_query_results, existing_movement_years_list_query_results=existing_movement_years_list_query_results ,movements_analysis_query_results=movements_analysis_query_results, año=year2filter, image_base64=image_base64)
 
 
 # ---- INCOME ----   
 @app.route("/income", methods=['GET', 'POST'])
 def income():
+    # get logged in user
+    session_username = session.get('username')
 
     # ---- Database years list SQL Query ----
     nav_buttons_query_results = nav_buttons()
@@ -1074,10 +1160,16 @@ def income():
     
     filtered_data = monthintext()
         
-    return render_template('incomes/income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, filtered_data=filtered_data)
 
 @app.route("/periodic_income")
 def periodic_income():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database buttons list SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1106,10 +1198,16 @@ def periodic_income():
     finally:
         connection.close()
 
-    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
 
 @app.route("/periodic_income_filter", methods=['GET', 'POST'])
 def periodic_income_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         company2filter = request.form['company']
         year2filter = request.form['año']
@@ -1140,10 +1238,16 @@ def periodic_income_filter():
     finally:
         connection.close()
 
-    return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/periodic_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, periodic_income_query_results=periodic_income_query_results, filtered_data=filtered_data)
 
 @app.route("/extra_income")
 def extra_income():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database buttons list SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1161,8 +1265,8 @@ def extra_income():
     month2filter = datetime.datetime.now().month
     
     for month in months_list_query_results:
-        if month[0] == month2filter:
-            month2filter = month[1]
+         if month[0] == month2filter:
+             month2showfilter = month[1]
 
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -1172,20 +1276,27 @@ def extra_income():
     extra_query = webcall.read()
     webcall.close()
     readed_query_2_execute = extra_query.format(year2filter, month2filter)
-    filtered_data = f'Año ({year2filter}) y Mes ({month2filter}).'
+    filtered_data = f'Año ({year2filter}) y Mes ({month2showfilter}).'
 
     try:
         cursor.execute(readed_query_2_execute)
         extra_income_query_results = cursor.fetchall()
+        print(extra_income_query_results)
     except Exception as e:
         print(f"Error at Years query: {e}") 
     finally:
         connection.close()
 
-    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
 
 @app.route('/extra_income_filter', methods=['GET', 'POST'])
 def extra_income_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         company2filter = request.form['company']
         year2filter = request.form['año']
@@ -1247,10 +1358,16 @@ def extra_income_filter():
     finally:
         connection.close()
 
-    return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/extra_income.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results,extra_companies_list_query_results=extra_companies_list_query_results, extra_income_query_results=extra_income_query_results, filtered_data=filtered_data)
 
 @app.route("/manage_incomes")
 def manage_incomes():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1285,10 +1402,99 @@ def manage_incomes():
     finally:
         connection.close()
 
-    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_types_descriptions=income_types_descriptions, income_query_results=income_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_types_descriptions=income_types_descriptions, income_query_results=income_query_results, filtered_data=filtered_data)
+
+@app.route("/record_company")
+def record_company():
+    # get logged in user
+    session_username = session.get('username')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    income_companies_detail_list = income_companies_list()
+    print(income_companies_detail_list)
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/record_income_company.html', nav_buttons_query_results=nav_buttons_query_results, income_companies_detail_list=income_companies_detail_list)
+
+@app.route("/add_income_company", methods=['GET','POST'])
+def add_income_company():
+    # get logged in user
+    session_username = session.get('username')
+    print('Adding income company...')
+
+    if request.method == 'POST':
+        company = request.form['company']
+        company_name = request.form['company_name']
+        company_type = request.form['tipo']
+        print(f'Company: {company}, Company Name: {company_name}, Company Type: {company_type}')
+
+        # ---- Database Connection ----
+        connection, cursor = dbconnection()
+
+        # ---- Database add income company SQL Query ----
+        webcall = open('src/db/webcalls/income/add_company.sql', mode='r')
+        add_income_company_query = webcall.read()
+        webcall.close()
+        add_income_company_query_2_execute = add_income_company_query.format(company,company_name, company_type)
+        print(add_income_company_query_2_execute)
+        try:
+            cursor.execute(add_income_company_query_2_execute)
+            connection.commit()
+            flash('Compañía añadida correctamente.', 'success')
+        except Exception as e:
+            print(f"Error at add income company SQL query: {e}")  
+            flash('Error al añadir la compañía. Inténtelo de nuevo.', 'danger')  
+        finally:
+            connection.close()
+    
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('record_company'))
+
+@app.route("/delete_company/<company_id>")
+def delete_company(company_id):
+    # get logged in user
+    session_username = session.get('username')
+    
+    company_id=company_id.replace("'", "")
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    webcall = open('src/db/webcalls/income/delete_company.sql', mode='r')
+    readed_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = readed_query.format(company_id)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        flash(f'Compañía eliminada correctamente.', 'success')
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")
+        flash(f'Error al eliminar la compañía. Inténtelo de nuevo.', 'danger')    
+    finally:
+        connection.close()
+    
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('record_company'))
 
 @app.route("/record_income")
 def record_income():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1301,10 +1507,16 @@ def record_income():
     # ---- Database months list SQL Query ----
     months_list_query_results = months_list()[1:]
     
-    return render_template('incomes/record_income.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, months_list_query_results=months_list_query_results)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/record_income.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, months_list_query_results=months_list_query_results)
 
 @app.route("/add_income", methods=['GET','POST'])
 def add_income():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         tipo = request.form['tipo']
         año = request.form['año']
@@ -1397,10 +1609,16 @@ def add_income():
     finally:
         connection.close()
     
-    return redirect(url_for('record_income'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('record_income'))
 
 @app.route("/manage_income_filter", methods=['GET', 'POST'])
 def manage_income_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         tipo = request.form['tipo']
         año = request.form['año']
@@ -1465,13 +1683,18 @@ def manage_income_filter():
     else:
         income_types_descriptions = income_types_descriptions
 
+    #print(income_query_results)    
 
-    print(income_query_results)    
-
-    return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/manage_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, extra_companies_list_query_results=extra_companies_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, income_query_results=income_query_results, filtered_data=filtered_data, income_types_descriptions=income_types_descriptions)
 
 @app.route("/selected_income/<selected_income>")
 def selected_income(selected_income):
+    # get logged in user
+    session_username = session.get('username')
+
     income_type=selected_income[:1]
     print(income_type)
     selected_income_id=selected_income[1:]
@@ -1550,15 +1773,21 @@ def selected_income(selected_income):
     else:
         income_types_descriptions = income_types_descriptions
 
-    if income_type == 'P':
-        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_from_list_query_results=months_from_list_query_results, months_to_list_query_results=months_to_list_query_results)
-    if income_type == 'E':
-        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_extra_list_query_results=months_extra_list_query_results)    
+    if session_username is None:
+        return redirect(url_for('login'))
     else:
-        return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions)
+        if income_type == 'P':
+            return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_from_list_query_results=months_from_list_query_results, months_to_list_query_results=months_to_list_query_results)
+        if income_type == 'E':
+            return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions, months_extra_list_query_results=months_extra_list_query_results)    
+        else:
+            return render_template('incomes/edit_selected_income.html', nav_buttons_query_results=nav_buttons_query_results, selected_income_query_results=selected_income_query_results, income_type=income_type, income_types_descriptions=income_types_descriptions)
 
 @app.route("/update_income", methods=['GET', 'POST'])
 def update_income():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         # ----------------
         #    HTML Form
@@ -1643,18 +1872,36 @@ def update_income():
         print(f'Error añadiendo Ingreso. {e}') 
         flash(f'Error al actualizar el Ingreso. Inténtelo de nuevo.', 'danger')
 
-    return redirect(url_for('manage_incomes'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_incomes'))
 
 @app.route("/selected_income/income")
 def selected_income_income():
-    return redirect(url_for('income'))
+    # get logged in user
+    session_username = session.get('username')
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('income'))
 
 @app.route("/selected_income/expenses")
 def selected_income_expense():
-    return redirect(url_for('expenses'))
+    # get logged in user
+    session_username = session.get('username')
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('expenses'))
 
 @app.route("/delete_income/<incomeid>")
 def delete_income(incomeid):
+    # get logged in user
+    session_username = session.get('username')
+
     income_type=incomeid[:1]
     income_id=incomeid[1:]
 
@@ -1690,11 +1937,17 @@ def delete_income(incomeid):
     finally:
         connection.close()
     
-    return redirect(url_for('manage_incomes'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_incomes'))
 
 # ---- EXPENSES ---- 
 @app.route("/expenses", methods=['GET', 'POST'])
 def expenses():
+    # get logged in user
+    session_username = session.get('username')
+    
     # ---- Database years list SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1709,10 +1962,16 @@ def expenses():
 
     Filtrered_data = monthintext()
     
-    return render_template('expenses/expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, Filtrered_data=Filtrered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/expenses.html', nav_buttons_query_results=nav_buttons_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, basic_data_query_results=basic_data_query_results, Filtrered_data=Filtrered_data)
 
 @app.route("/periodic_expenses", methods=['GET', 'POST'])
 def periodic_expenses():
+    # get logged in user
+    session_username = session.get('username')
+
      # ---- Database Menu buttons SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1837,10 +2096,16 @@ def periodic_expenses():
     finally:
         connection.close()
 
-    return render_template('expenses/periodic_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results, readed_query_executed_results =readed_query_executed_results, month2filter=month2filter, concept2filter=concept2filter, periodicity2filter=periodicity2filter, Filtrered_data=Filtrered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/periodic_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results, readed_query_executed_results =readed_query_executed_results, month2filter=month2filter, concept2filter=concept2filter, periodicity2filter=periodicity2filter, Filtrered_data=Filtrered_data)
 
 @app.route("/extra_expenses", methods=['GET', 'POST'])
 def extra_expenses():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database Menu buttons SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1952,10 +2217,16 @@ def extra_expenses():
     finally:
         connection.close()
 
-    return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/extra_expenses.html', nav_buttons_query_results=nav_buttons_query_results, expenses_concepts_list_query_results=expenses_concepts_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, year2filter=year2filter, month2filter=month2filter, concept2filter=concept2filter, Filtered_data=Filtered_data, readed_query_executed_results=readed_query_executed_results)
 
 @app.route("/summary_expenses")
 def summary_expenses():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1973,11 +2244,17 @@ def summary_expenses():
         print(f"Error at Income | Expense query: {e}") 
     finally:
         connection.close()
-
-    return render_template('expenses/summary_expenses.html', nav_buttons_query_results=nav_buttons_query_results, summary_expense_list_query_results=summary_expense_list_query_results)
+    
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/summary_expenses.html', nav_buttons_query_results=nav_buttons_query_results, summary_expense_list_query_results=summary_expense_list_query_results)
 
 @app.route("/manage_expenses")
 def manage_expenses():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -1990,10 +2267,16 @@ def manage_expenses():
     # ---- Database months list SQL Query ----
     months_list_query_results = months_list()
     
-    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:    
+        return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
 
 @app.route("/manage_expenses_filter", methods=['GET', 'POST'])
 def manage_expenses_filter():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -2088,10 +2371,16 @@ def manage_expenses_filter():
         print(readed_query_executed_results)
         print(filtered_data)
 
-    return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, readed_query_executed_results=readed_query_executed_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, filtered_data=filtered_data)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:    
+        return render_template('expenses/manage_expenses.html', nav_buttons_query_results=nav_buttons_query_results, readed_query_executed_results=readed_query_executed_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results, filtered_data=filtered_data)
 
 @app.route("/record_expenses")
 def record_expenses():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
 
@@ -2101,10 +2390,16 @@ def record_expenses():
     # ---- Database months list SQL Query ----
     months_list_query_results = months_list()[1:]
     
-    return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
 
 @app.route("/add_expense", methods=['GET', 'POST'])
 def add_expense():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         # ----------------
         #    HTML Form
@@ -2164,10 +2459,16 @@ def add_expense():
     # ---- Database months list SQL Query ----
     months_list_query_results = months_list()
     
-    return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('expenses/record_expenses.html', nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results, months_list_query_results=months_list_query_results)
 
 @app.route("/selected_expense/<selected_expense>")
 def selected_expense(selected_expense):
+    # get logged in user
+    session_username = session.get('username')
+
     expense_type=selected_expense[:1]
     print(expense_type)
     selected_expense_id=selected_expense[1:]
@@ -2310,13 +2611,19 @@ def selected_expense(selected_expense):
         finally:
             connection.close()
 
-    if expense_type == 'E':
-        return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results[1:], years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+    if session_username is None:
+        return redirect(url_for('login'))
     else:
-        return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+        if expense_type == 'E':
+            return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results, periodicity_list_query_results=periodicity_list_query_results[1:], years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
+        else:
+            return render_template('expenses/edit_selected_expenses.html', expense_type=expense_type, readed_query_executed_results=readed_query_executed_results, nav_buttons_query_results=nav_buttons_query_results,  periodicity_list_query_results=periodicity_list_query_results, years_list_query_results=years_list_query_results, months_list_query_results=months_list_query_results)
 
 @app.route("/update_expense", methods=['GET', 'POST'])
 def update_expense():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         # ----------------
         #    HTML Form
@@ -2376,10 +2683,16 @@ def update_expense():
         print(f'Error añadiendo gasto. {e}')
         flash(f'Error al actualizar el gasto. Inténtelo de nuevo.', 'danger')
 
-    return redirect(url_for('manage_expenses'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_expenses'))
 
 @app.route("/delete_expenses/<expenseid>")
 def delete_expenses(expenseid):
+    # get logged in user
+    session_username = session.get('username')
+
     expense_type=expenseid[:1]
     expense_id=expenseid[1:]
 
@@ -2408,15 +2721,30 @@ def delete_expenses(expenseid):
     finally:
         connection.close()
     
-    return redirect(url_for('manage_expenses'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_expenses'))
 
 @app.route("/selected_expense/income")
 def selected_expense_income():
-    return redirect(url_for('income'))
+    # get logged in user
+    session_username = session.get('username')
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('income'))
 
 @app.route("/selected_expense/expenses")
 def selected_expense_expense():
-    return redirect(url_for('expenses'))
+    # get logged in user
+    session_username = session.get('username')
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('expenses'))
+
 
 # ---- ABOUT ---- 
 @app.route("/about")
@@ -2426,6 +2754,7 @@ def about():
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+    username_active = username()
 
     print(f'Session username at ABOUT: {session_username}')
 
@@ -2449,15 +2778,20 @@ def about():
     finally:
         connection.close()
     
-    return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results, user_session_config=user_session_config if 'user_session_config' in locals() else None)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about.html', nav_buttons_query_results=nav_buttons_query_results, user_session_config=user_session_config if 'user_session_config' in locals() else None, username_active=username_active)
 
 @app.route("/change_password")
 def change_password():
     session_username = session.get('username')
+
     flash(f'Es Necesario disponer de la contraseña actual para cambiarla.', 'info')
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+    username_active = username()
 
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -2493,10 +2827,16 @@ def change_password():
         finally:
             connection.close()
     
-    return render_template('about/change.html', nav_buttons_query_results=nav_buttons_query_results,user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about/change.html', nav_buttons_query_results=nav_buttons_query_results,user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None, username_active=username_active)
 
 @app.route("/update_password", methods=['GET', 'POST'])
 def update_password():
+    # get logged in user
+    session_username = session.get('username')
+
     if request.method == 'POST':
         # ----------------
         #    HTML Form
@@ -2532,7 +2872,7 @@ def update_password():
                     webcall = open('src/db/webcalls/session/update_user_password.sql', mode='r')
                     readed_query = webcall.read()
                     webcall.close()
-                    readed_query_2_execute = readed_query.format(hashed_new_password, session_username, pre_check_query_executed_results[1])
+                    readed_query_2_execute = readed_query.format(hashed_new_password, mail_session_user_name, session_username, pre_check_query_executed_results[1])
 
         # print(f'NAME: {mail_session_user_name}')
         # print(f'USERNAME: {session_username}')
@@ -2581,8 +2921,12 @@ def update_password():
 
 @app.route("/config")
 def config():
+    # get logged in user
+    session_username = session.get('username')
+
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+    username_active = username()
     
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -2608,10 +2952,16 @@ def config():
     
     flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
 
-    return render_template('about/config.html', nav_buttons_query_results=nav_buttons_query_results, existing_registry_activation_query_results1=existing_registry_activation_query_results1, existing_registry_activation_query_results2=existing_registry_activation_query_results2)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about/config.html', nav_buttons_query_results=nav_buttons_query_results, existing_registry_activation_query_results1=existing_registry_activation_query_results1, existing_registry_activation_query_results2=existing_registry_activation_query_results2,username_active=username_active)
 
 @app.route("/admin_registry_config", methods=['POST'])
 def admin_registry_config():
+    # get logged in user
+    session_username = session.get('username')
+
     """
     Módulo de Python que se ejecuta cuando se hace click en el checkbox del switch.
     Realiza consultas a la base de datos SQLite para actualizar el estado de activación de registro.
@@ -2663,7 +3013,10 @@ def admin_registry_config():
         flash_text = 'Error en el cambio de estado del registro de usuarios.'
         flash_reason = 'danger'
     
-    return render_template('about/config.html', flash_text=flash_text, flash_reason=flash_reason)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about/config.html', flash_text=flash_text, flash_reason=flash_reason)
 
 @app.route("/contact", methods=['GET', 'POST'])
 def contact():
@@ -2671,6 +3024,7 @@ def contact():
 
     # ---- Database SQL Query ----
     nav_buttons_query_results = nav_buttons()
+    username_active = username()
 
     # ---- Database Connection ----
     connection, cursor = dbconnection()
@@ -2706,10 +3060,16 @@ def contact():
         finally:
             connection.close()
 
-    return render_template('about/contact.html', nav_buttons_query_results=nav_buttons_query_results, user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None)
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about/contact.html', nav_buttons_query_results=nav_buttons_query_results, user_session_result=user_session_result, user_session_config=user_session_config if 'user_session_config' in locals() else None, username_active=username_active)
 
 @app.route("/send_contact", methods=['GET', 'POST'])
 def send_contact():
+    # get logged in user
+    session_username = session.get('username')
+    
     if request.method == 'POST':
         # ----------------
         #    HTML Form
@@ -2762,11 +3122,14 @@ def send_contact():
         
         return redirect(url_for('contact'))
 
-    return redirect(url_for('contact'))
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('contact'))
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5100)
+    app.run(host='127.0.0.1', port=5400)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

@@ -1,0 +1,1 @@
+DELETE FROM empresas WHERE id = {};

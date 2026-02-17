@@ -2,6 +2,7 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda shadow">
     <ul>
+        <li><p style="font-weight: bold; color:#e3c75f; margin-left:20px;  font-size: 20px;">Usuario:<br/>{{username_active}}</p></li>
         <li><a href="{{ url_for('about') }}">Manual</a></li>
         <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
         <li class="active"><a href="{{ url_for('config') }}">Configuración</a></li>

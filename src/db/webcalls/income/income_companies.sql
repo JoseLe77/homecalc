@@ -1,0 +1,1 @@
+select id, CASE WHEN tipo = 'P' THEN 'Periódico' ELSE 'Extraordinario' END AS tipo_nombre, empresa, nombreEmpresa FROM empresas where activo=1;

@@ -43,7 +43,7 @@
             <label for="tipo" style="font-weight: bold;">TIPO</label>
             <select name="tipo" class="input">
                 <option name="selected_expense_concept" value="{{ 'E' if expense_type == 'E' else 'P' }}">{{ "Gasto Extraordinario" if expense_type == "E" else "Gasto Periodico" }}</option>
-                <option name="selected_expense_concept" value="{{ 'P' if expense_type == 'E' else 'E' }}">{{ "Gasto Periodico" if expense_type == "E" else "Gasto Extraordinario" }}</option>
+                <!-- <option name="selected_expense_concept" value="{{ 'P' if expense_type == 'E' else 'E' }}">{{ "Gasto Periodico" if expense_type == "E" else "Gasto Extraordinario" }}</option> -->
             </select>
         </div>
     </div>  

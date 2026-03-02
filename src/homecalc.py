@@ -31,6 +31,18 @@ def dbconnection():
     connection = sqlite3.connect('src/db/database/homecalc.db')
     cursor = connection.cursor()
     return connection, cursor
+
+
+def safe_float(raw):
+    """Convertir un valor a float manejando comas decimales y separadores de miles.
+    Devuelve 0.0 si no es convertible."""
+    try:
+        return float(str(raw).replace(',', '.'))
+    except Exception:
+        try:
+            return float(str(raw).replace('.', '').replace(',', '.'))
+        except Exception:
+            return 0.0
   
 
 """ def tmpl_show_menu():
@@ -707,8 +719,8 @@ def home():
 
     """Gráfico de barras: Ingresos vs Gastos por Mes"""
     meses = tuple(meses[1][:3] for meses in income_expense_list_query_results)
-    ingresos = tuple(ingresos[2] for ingresos in income_expense_list_query_results)
-    gastos = tuple(gastos[3] for gastos in income_expense_list_query_results)
+    ingresos = tuple(safe_float(ingresos[2]) for ingresos in income_expense_list_query_results)
+    gastos = tuple(safe_float(gastos[3]) for gastos in income_expense_list_query_results)
 
     x = np.arange(len(meses))
     width = 0.35
@@ -748,7 +760,7 @@ def home():
         connection.close()
 
     categorias = tuple(categoria[0] for categoria in current_month_expense_list_query_results)
-    valores = tuple(cantidad[1] for cantidad in current_month_expense_list_query_results)
+    valores = tuple(safe_float(cantidad[1]) for cantidad in current_month_expense_list_query_results)
     colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
     # colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
 
@@ -1016,10 +1028,10 @@ def movements_analysis():
         connection.close()
         print(movements_analysis_query_results)
     
-    x_values = [row[0] for row in movements_analysis_query_results] 
-    y_values = [row[1] for row in movements_analysis_query_results]
+    x_values = [row[0] for row in movements_analysis_query_results]
+    y_values = [safe_float(row[1]) for row in movements_analysis_query_results]
     plt.figure()  # Crear nueva figura
-    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
+    plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales')
     plt.xlabel(f'Meses año {año}')
     plt.ylabel('Cantidad Total')
     plt.title(f'Analisis de Movimientos - {año}')
@@ -1105,11 +1117,23 @@ def movements_analysis_filter():
         connection.close()
         print(movements_analysis_query_results)
     
-    x_values = [row[0] for row in movements_analysis_query_results] 
-    y_values = [row[1] for row in movements_analysis_query_results]
+    x_values = [row[0] for row in movements_analysis_query_results]
+    # Convertir y_values a floats, manejando separadores decimales con coma
+    y_values = []
+    for row in movements_analysis_query_results:
+        raw = row[1]
+        try:
+            y = float(str(raw).replace(',', '.'))
+        except Exception:
+            try:
+                # Intentar eliminar separadores de miles y convertir
+                y = float(str(raw).replace('.', '').replace(',', '.'))
+            except Exception:
+                y = 0.0
+        y_values.append(y)
 
     # Calcular la media
-    media = np.mean(y_values)  
+    media = np.mean(y_values)
 
     plt.figure()  # Crear nueva figura
     plt.plot(x_values, y_values, marker='o', label='Movimientos Mensuales'  )
@@ -1613,6 +1637,109 @@ def add_income():
         return redirect(url_for('login'))
     else:
         return redirect(url_for('record_income'))
+
+@app.route("/manage_periodic_extra_incomes")
+def manage_periodic_extra_incomes():
+    # get logged in user
+    session_username = session.get('username')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+
+    # ---- Database income periodic companies list SQL Query ----
+    periodic_companies_list_query_results = income_periodic_companies_list()
+
+    # ---- Database months list SQL Query ----
+    months_list_query_results = months_list()
+    months_list_query_results = months_list_query_results[1:]
+
+    # ---- Database extra periodic incomes list SQL Query ----
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    webcall = open('src/db/webcalls/income/extra_periodic_incomes.sql', mode='r')
+    periodic_extra_incomes_list_query = webcall.read()
+    webcall.close()
+    try:        
+        cursor.execute(periodic_extra_incomes_list_query)
+        periodic_extra_incomes_list_query_results = cursor.fetchall()
+    except Exception as e:
+        print(f"Error at periodic extra incomes list query: {e}") 
+    finally:        
+        connection.close()  
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('incomes/manage_periodic_extra_incomes.html', nav_buttons_query_results=nav_buttons_query_results, periodic_companies_list_query_results=periodic_companies_list_query_results, months_list_query_results=months_list_query_results, periodic_extra_incomes_list_query_results=periodic_extra_incomes_list_query_results)
+
+@app.route("/add_extra_periodic_income", methods=['GET','POST'])
+def add_extra_periodic_income():
+    # get logged in user
+    session_username = session.get('username')
+    print('Adding extra periodic income...')
+
+    if request.method == 'POST':
+        company = request.form['company']
+        mes = request.form['mes']
+        tipo = request.form['tipo_extra']
+
+        print(f'Company: {company}, Tipo: {tipo}, Month: {mes}')
+
+        connection, cursor = dbconnection()
+        # print('DB connected successfully')
+
+        # ---- Database add extra periodic income SQL Query ----
+        webcall = open('src/db/webcalls/income/add_extra_periodic_income.sql', mode='r')
+        add_extra_periodic_income_query = webcall.read()
+        webcall.close()
+        add_extra_periodic_income_query_2_execute = add_extra_periodic_income_query.format(company, tipo, int(mes))
+        print(add_extra_periodic_income_query_2_execute)
+        try:
+            cursor.execute(add_extra_periodic_income_query_2_execute)
+            connection.commit()
+            flash('Ingreso periódico extraordinario añadido correctamente.', 'success')
+        except Exception as e:
+            print(f"Error at add extra periodic income SQL query: {e}")  
+            flash('Error al añadir el ingreso periódico extraordinario. Revise los datos e inténtelo de nuevo.', 'danger')  
+        finally:
+            connection.close()
+    
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_periodic_extra_incomes'))
+
+@app.route("/delete_extra_periodic_income/<company_id>")
+def delete_extra_periodic_income(company_id):
+    # get logged in user
+    session_username = session.get('username')
+    
+    company_id=company_id.replace("'", "")
+
+    connection, cursor = dbconnection()
+    # print('DB connected successfully')
+
+    webcall = open('src/db/webcalls/income/delete_extra_periodic_income.sql', mode='r')
+    readed_query = webcall.read()
+    webcall.close()
+    readed_query_2_execute = readed_query.format(company_id)
+
+    try:
+        connection, cursor = dbconnection()
+        cursor.execute(readed_query_2_execute)
+        connection.commit()
+        flash(f'Ingreso periódico extraordinario eliminado correctamente.', 'success')
+    except Exception as e:
+        print(f"Error at filtered month data SQL query: {e}")
+        flash(f'Error al eliminar el ingreso periódico extraordinario. Inténtelo de nuevo.', 'danger')    
+    finally:
+        connection.close()
+    
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return redirect(url_for('manage_periodic_extra_incomes'))
 
 @app.route("/manage_income_filter", methods=['GET', 'POST'])
 def manage_income_filter():
@@ -3129,7 +3256,7 @@ def send_contact():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5400)
+    app.run(host='127.0.0.1', port=5100)
 
 # ---- CONFIG ----
 DEVELOPMENT = {

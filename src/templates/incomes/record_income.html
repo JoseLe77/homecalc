@@ -60,6 +60,9 @@
                 <option name="selected_paga_extra" value="N">NO</option>
             </select>
         </div>
+        <div>
+            <a href="/manage_periodic_extra_incomes" name="extrpagas" class="boton">Gestion Pagas extraordinarias</a>
+        </div>
     </div>
     <div class="filter-form">
         <div class="margen-derecha">
@@ -123,9 +126,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tipoSelect = document.querySelector('select[name="tipo"]');
+    // Guardamos la referencia del select de paga_extra para escuchar su cambio
+    const pagaExtraSelect = document.querySelector('select[name="paga_extra"]');
+    
     const company_periodic = document.querySelector('select[name="company_periodic"]').closest('div');
-    const paga_extra = document.querySelector('select[name="paga_extra"]').closest('div');
-    const company_extra = document.querySelector('select[name="company_extra"]').closest('div')
+    const paga_extra_div = pagaExtraSelect.closest('div');
+    const PeriodicExtra = document.querySelector('a[name="extrpagas"]').closest('div');
+    const company_extra = document.querySelector('select[name="company_extra"]').closest('div');
     const anioDiv = document.querySelector('input[name="año"]').closest('div');
     const mesDiv = document.querySelector('select[name="mes"]').closest('div');
     const mes_desdeDiv = document.querySelector('select[name="mes_desde"]').closest('div');
@@ -135,43 +142,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const restoImpuestosDiv = document.querySelector('input[name="resto_impuestos"]').closest('div');
     const bonusDiv = document.querySelector('input[name="bonus"]').closest('div');  
 
-  const handleChange = () => {
-    const tipo = tipoSelect.value;
+    const handleChange = () => {
+        const tipo = tipoSelect.value;
+        const pagaExtra = pagaExtraSelect.value;
 
-    // Mostrar todos por defecto
-    anioDiv.style.display = '';
-    company_periodic.style.display = '';
-    paga_extra.style.display = '';
-    company_extra.style.display = '';  
-    mesDiv.style.display = '';
-    mes_desdeDiv.style.display = '';
-    mes_hastaDiv.style.display = '';   
-    conceptoDiv.style.display = ''; 
-    bonusDiv.style.display = '';
-    irpfDiv.style.display = '';
-    restoImpuestosDiv.style.display = '';   
+        // Resetear visibilidad (Mostrar todos)
+        [anioDiv, company_periodic, paga_extra_div, PeriodicExtra, company_extra, 
+         mesDiv, mes_desdeDiv, mes_hastaDiv, conceptoDiv, bonusDiv, irpfDiv, restoImpuestosDiv]
+        .forEach(div => div.style.display = '');
 
-    // Reglas de tipo
-    if (tipo === 'P') {
-      company_extra.style.display = 'none'; // ocultar compañia extra
-      mesDiv.style.display = 'none'; // ocultar MES si es mensual
-      conceptoDiv.style.display = 'none'; // counltar concepto
-    } else if (tipo === 'E') {
-      company_periodic.style.display = 'none'; // ocultar compañia periodica
-      mes_desdeDiv.style.display = 'none'; // ocultar MES DESDE
-      mes_hastaDiv.style.display = 'none'; // ocultar MES HASTA
-      paga_extra.style.display = 'none'; // ocultar PAGA EXTRA
-      irpfDiv.style.display = 'none'; // ocultar IRPF
-      restoImpuestosDiv.style.display = 'none'; // ocultar RESTO IMPUESTOS  
-      bonusDiv.style.display = 'none'; // ocultar BONUS
-    }
-  };
+        if (tipo === 'P') {
+            company_extra.style.display = 'none';
+            mesDiv.style.display = 'none';
+            conceptoDiv.style.display = 'none';
+            
+            // Lógica específica para Paga Extra dentro de Periódico
+            if (pagaExtra === 'N') {
+                PeriodicExtra.style.display = 'none';
+            }
+        } else if (tipo === 'E') {
+            company_periodic.style.display = 'none';
+            mes_desdeDiv.style.display = 'none';
+            mes_hastaDiv.style.display = 'none';
+            paga_extra_div.style.display = 'none';
+            PeriodicExtra.style.display = 'none';
+            irpfDiv.style.display = 'none';
+            restoImpuestosDiv.style.display = 'none';  
+            bonusDiv.style.display = 'none';
+        }
+    };
 
-  // Ejecutar al cargar la página
-  handleChange();
+    // Ejecutar al inicio
+    handleChange();
 
-  // Escuchar cambios en ambos selects
-  tipoSelect.addEventListener('change', handleChange);
+    // ESCUCHAR AMBOS SELECTS
+    tipoSelect.addEventListener('change', handleChange);
+    pagaExtraSelect.addEventListener('change', handleChange);
 });
 </script>
 

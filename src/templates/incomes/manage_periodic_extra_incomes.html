@@ -1,0 +1,85 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
+        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
+        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
+            <ul>
+                <li><a href="{{url_for('record_company')}}" class="active">Crear Empresa</a></li>
+                <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <h1 class="card">
+        GESTION DE INGRESOS EXTRAORDINARIOS PERIODICOS
+    </h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+    {% endwith %}
+   <form action="/add_extra_periodic_income" method="POST" class="card contenedor margen-inferior">
+    <div class="filter-form">
+        <div class="margen-derecha">
+            <label for="company" style="font-weight: bold;">COMPAÑIA</label>
+            <select name="company" class="input">
+                {% for periodic_company in periodic_companies_list_query_results %}
+                    <option name="selected_income_company" value="{{ periodic_company.0 }}">{{ periodic_company.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="mes" style="font-weight: bold;">MES</label>
+            <select name="mes" class="input">
+                {% for month in months_list_query_results %}
+                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="tipo_extra" style="font-weight: bold;">TIPO</label>
+            <select name="tipo_extra" class="input">
+                <option name="selected_tipo_extra" value="EXTRA">Extraordinaria</option>
+                <option name="selected_tipo_extra" value="BONUS">Bonus</option>
+            </select>
+        </div>
+    </div> 
+    <div>
+        <button class="boton" type="submit">Guardar</button>
+        <button class="boton" type="reset">Refrescar</button>
+    </div>
+</form>
+<table class="card tabla periodic_table" id="tabla income_periodic">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">EMPRESA</td>
+                    <th class="texto-centrado">TIPO</td>
+                <th class="texto-centrado">MES</td> 
+                <th class="texto-centrado no-export">ACCIONES</td>      
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in periodic_extra_incomes_list_query_results %}
+            <tr>
+                <td style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario);">{{ extracted_data.3 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario); text-transform: capitalize;">{{ extracted_data.4 }}</td>
+                <td class="texto-centrado no-export">
+                    <!-- <a href="/disable_company/{{ extracted_data.0 }}" class="boton">Desactivar</a> -->
+                    <a href="/delete_extra_periodic_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endblock %}
+

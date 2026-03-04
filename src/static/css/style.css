@@ -161,6 +161,24 @@ right: auto;
     font-weight: bold;
 }
 
+.width-change{
+    width: 90%; 
+    margin: auto;
+}
+
+.flex-direction_change{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+.boton_config_top{
+    margin-top: 30px;
+    display: flex;
+    align-self: self-end;
+}
+
 @media screen and (min-width: 1024px) {
   .top-header {
     height: var(--header-hight);
@@ -210,6 +228,22 @@ right: auto;
     gap: 20px;
     align-items: center;
   }
+
+  .width-change{
+    width: 60%; 
+    margin: auto;
+}
+
+  .flex-direction_change{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .boton_config_top{
+    margin-top: 0;
+}
 }
 
 

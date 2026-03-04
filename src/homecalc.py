@@ -3165,6 +3165,7 @@ def change_role():
         role2change = request.form['role']
         if session_username == mail_user_name:
             flash('No puedes cambiar tu propio rol. Si necesitas cambiar tu rol, contacta con otro administrador.', 'danger')
+            return redirect(url_for('config'))
         else:
             # ---- Database Connection ----
             connection, cursor = dbconnection()

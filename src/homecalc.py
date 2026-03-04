@@ -704,6 +704,7 @@ def home():
     webcall = open('src/db/webcalls/home/income-expenses_current_year_formatted.sql', mode='r')
     income_expense_list = webcall.read()
     webcall.close()
+    income_expense_list_query_results = []
     try:
         cursor.execute(income_expense_list)
         income_expense_list_query_results = cursor.fetchall()
@@ -716,6 +717,9 @@ def home():
     month_now = get_now.month
 
     nowaday_month_data = next((fila for fila in income_expense_list_query_results if fila[0] == month_now), None)
+    # Ensure we always have a tuple for the current month to avoid Jinja indexing errors
+    if not nowaday_month_data:
+        nowaday_month_data = (month_now, '', '0.00', '0.00', '0.00')
 
     """Gráfico de barras: Ingresos vs Gastos por Mes"""
     meses = tuple(meses[1][:3] for meses in income_expense_list_query_results)
@@ -751,6 +755,7 @@ def home():
     webcall = open('src/db/webcalls/home/expenses_by_current_month.sql', mode='r')
     current_month_expense_list = webcall.read()
     webcall.close()
+    current_month_expense_list_query_results = []
     try:
         cursor.execute(current_month_expense_list)
         current_month_expense_list_query_results = cursor.fetchall()

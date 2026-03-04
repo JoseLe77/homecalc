@@ -21,12 +21,25 @@
             </ul>
         {% endif %}
     {% endwith %}
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+        <div class="card margen-inferior" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
             <h2 class="no-margen-inferior">Formulario de Registro</h2>
             <label class="switch">
                 <input type="checkbox" id="registry_switch" {{existing_registry_activation_query_results1}} value="{{existing_registry_activation_query_results2}}">
                 <span class="slider"></span>
             </label>
+        </div>
+        <div class="card">
+            <h2 class="no-margen-inferior">Promocion de Rol de Usuario</h2>
+            <form action="{{ url_for('change_role') }}" method="POST" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: flex-start; gap: 20px;">
+                    <input type="text" name="usermail" size="40" placeholder="Correo del usuario">
+                    <select name="role" id="role" length="30">
+                        <option name="userrole" value="user">Usuario</option>
+                        <option name="adminrole" value="admin">Administrador</option>
+                    </select>
+                </div>
+                <button class="boton">Cambiar Rol</button>
+            </form>
         </div>
     </article>
 </section>

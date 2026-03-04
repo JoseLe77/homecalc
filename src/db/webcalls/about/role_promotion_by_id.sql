@@ -1,0 +1,1 @@
+update usuarios set usrrole = '{}' where usr_id = '{}';

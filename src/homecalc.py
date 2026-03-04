@@ -940,6 +940,7 @@ def manage_movements_filter():
     movement_filter_list = webcall.read()
     webcall.close()
     readed_query_2_execute = movement_filter_list.format(concept2filter, concept2filter, type2filter, type2filter, year2filter, month2filter, month2filter)
+    print(f'Executing SQL Query: {readed_query_2_execute}')
 
     if type2filter == 'T':
         filtered_type = 'TARJETA'
@@ -3149,6 +3150,57 @@ def admin_registry_config():
         return redirect(url_for('login'))
     else:
         return render_template('about/config.html', flash_text=flash_text, flash_reason=flash_reason)
+
+@app.route("/change_role", methods=['GET', 'POST'])
+def change_role():
+    # get logged in user
+    session_username = session.get('username')
+
+    if request.method == 'POST':
+        # ----------------
+        #    HTML Form
+        # ----------------
+        session_username = session.get('username')
+        mail_user_name = request.form['usermail']
+        role2change = request.form['role']
+        if session_username == mail_user_name:
+            flash('No puedes cambiar tu propio rol. Si necesitas cambiar tu rol, contacta con otro administrador.', 'danger')
+        else:
+            # ---- Database Connection ----
+            connection, cursor = dbconnection()
+            
+            webcall= open('src/db/webcalls/about/existing_user_id_check.sql', mode='r')
+            existing_user_query = webcall.read()
+            webcall.close()
+            existing_user_query_2_execute = existing_user_query.format(mail_user_name)
+            print(existing_user_query_2_execute)
+            try:
+                cursor.execute(existing_user_query_2_execute)
+                existing_user_query_results = cursor.fetchone()
+                if existing_user_query_results is None:
+                    flash(f'No existe ningún usuario con el email {mail_user_name}. Inténtalo de nuevo.', 'danger')
+                    return redirect(url_for('config'))
+                else:
+                    webcall = open('src/db/webcalls/about/role_promotion_by_id.sql', mode='r')
+                    update_user_role_query = webcall.read()
+                    update_user_role_query=update_user_role_query.format(role2change, existing_user_query_results[0])
+                    webcall.close()
+                    cursor.execute(update_user_role_query)
+                    connection.commit()
+                    flash(f'Rol del usuario {mail_user_name} actualizado correctamente a {role2change}.', 'success')
+
+            except Exception as e:
+                print(f"Error at existing user check SQL query: {e}")    
+                flash('Error durante el checkeo del usuario. Inténtalo de nuevo.', 'danger')
+                return redirect(url_for('config'))  
+            finally:
+                connection.close()
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        return render_template('about/config.html')
+
 
 @app.route("/contact", methods=['GET', 'POST'])
 def contact():

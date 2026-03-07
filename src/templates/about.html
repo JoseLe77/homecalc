@@ -2,34 +2,93 @@
 {% block main %}
 <nav class="nav-main menu menu-izquierda shadow">
     <ul>
+        <li><p style="font-weight: bold; color:#e3c75f; margin-left:20px;  font-size: 20px;">Usuario:</p><p style="color:#fff; margin-left:20px; margin-top: -25px;">{{username_active}}</p></li>
         <li class="active"><a href="{{ url_for('about') }}">Manual</a></li>
-        <li><a href="#">Contacto</a></li>
+        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+        <li class = "{{ user_session_config }}"><a href="{{ url_for('config') }}">Configuración</a></li>
+        <li><a href="{{ url_for('contact') }}">Contacto</a></li>
     </ul>
 </nav>
 <section class="contenedor">
     <article class="manual">
         <h1 class="card">MANUAL DE USUARIO</h1>
         <div class="card">
-            <p>Bienvenido a HomeCalc. Este sencillo manual explica las funcionalidades principales y cómo consultarlas paso a paso.</p>
+            <p>Bienvenido a <strong>HomeCalc</strong>, tu aplicación personal para gestionar ingresos, gastos y análisis financiero. Este manual explica todas las funcionalidades disponibles.</p>
 
-            <h2>Funciones principales 🔧</h2>
+            <h2>📊 Panel Principal</h2>
+            <p>Accede a <a href="{{ url_for('home') }}">Home</a> para ver un resumen de tus movimientos financieros actuales. Aquí encontrarás:</p>
             <ul>
-                <li><strong>Registrar movimiento:</strong> Use el formulario en <a href="{{ url_for('form') }}">Registro</a> para añadir ingresos o gastos (manual o por selección).</li>
-                <li><strong>Gestionar movimientos:</strong> En <a href="{{ url_for('manage_movements') }}">Gestionar movimientos</a> puede filtrar, editar y eliminar entradas.</li>
-                <li><strong>Ingresos y Gastos:</strong> Pestañas dedicadas para ver y gestionar ingresos (extra y periódicos) y gastos (extra y periódicos).</li>
-                <li><strong>Resumen y análisis:</strong> Gráficos y resúmenes en la pantalla principal permiten ver la distribución por mes y por categoría.</li>
-                <li><strong>Periodos y filtros:</strong> Use filtros por año/mes/periodicidad para ver datos específicos.</li>
+                <li>Resumen de ingresos y gastos del período</li>
+                <li>Gráficos de distribución por categoría</li>
+                <li>Acceso rápido a las principales funciones</li>
             </ul>
 
-            <h2>Consejos rápidos 💡</h2>
+            <h2>💰 Gestión de Movimientos</h2>
+            <p><strong>Registrar movimientos:</strong></p>
             <ul>
-                <li>Use la opción de conceptos predefinidos para mantener consistencia en reportes.</li>
-                <li>Para importes con decimales, use punto o coma; el sistema normaliza ambos.</li>
-                <li>Revise el <em>Histórico</em> antes de eliminar movimientos irreversibles.</li>
+                <li>Usa <a href="{{ url_for('form') }}">Registro</a> para registrar nuevos movimientos (ingresos o gastos)</li>
+                <li>Ingresa el concepto, importe, fecha y periodicidad si aplica</li>
+            </ul>
+            <p><strong>Gestionar movimientos:</strong></p>
+            <ul>
+                <li><a href="{{ url_for('manage_movements') }}">Gestionar Movimientos</a> - Filtra, edita y elimina movimientos registrados</li>
+                <li><a href="{{ url_for('movements_analysis') }}">Análisis de Movimientos</a> - Visualiza análisis detallados de tus transacciones</li>
+            </ul>
+
+            <h2>📈 Gestión de Ingresos</h2>
+            <p>Accede a <a href="{{ url_for('income') }}">Ingresos</a> para gestionar:</p>
+            <ul>
+                <li><strong><a href="{{ url_for('periodic_income') }}">Ingresos Periódicos</a></strong> - Ingresos recurrentes (sueldos, pensiones, etc.)</li>
+                <li><strong><a href="{{ url_for('extra_income') }}">Ingresos Extra</a></strong> - Ingresos puntuales o esporádicos</li>
+                <li><strong><a href="{{ url_for('manage_incomes') }}">Gestionar Ingresos</a></strong> - Edita, actualiza y elimina tus ingresos registrados</li>
+                <li><strong><a href="{{ url_for('record_income') }}">Registrar Ingreso</a></strong> - Formulario para añadir nuevos ingresos</li>
+            </ul>
+
+            <h2>💸 Gestión de Gastos</h2>
+            <p>Accede a <a href="{{ url_for('expenses') }}">Gastos</a> para gestionar:</p>
+            <ul>
+                <li><strong><a href="{{ url_for('periodic_expenses') }}">Gastos Periódicos</a></strong> - Gastos recurrentes (alquiler, servicios, etc.)</li>
+                <li><strong><a href="{{ url_for('extra_expenses') }}">Gastos Extra</a></strong> - Gastos puntuales o inesperados</li>
+                <li><strong><a href="{{ url_for('summary_expenses') }}">Resumen de Gastos</a></strong> - Visualiza un resumen completo de gastos</li>
+                <li><strong><a href="{{ url_for('manage_expenses') }}">Gestionar Gastos</a></strong> - Edita, actualiza y elimina gastos registrados</li>
+                <li><strong><a href="{{ url_for('record_expenses') }}">Registrar Gasto</a></strong> - Formulario para añadir nuevos gastos</li>
+            </ul>
+
+            <h2>🔍 Filtros y Búsqueda</h2>
+            <p>En la mayoría de páginas puedes filtrar datos por:</p>
+            <ul>
+                <li><strong>Año:</strong> Selecciona el año de los movimientos a visualizar</li>
+                <li><strong>Mes:</strong> Filtra por mes específico</li>
+                <li><strong>Concepto:</strong> Busca por categoría o descripción</li>
+                <li><strong>Periodicidad:</strong> Filtra entre movimientos periódicos, mensuales, etc.</li>
+            </ul>
+
+            <h2>👤 Configuración de Cuenta</h2>
+            <ul>
+                <li><strong><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></strong> - Actualiza tu contraseña de acceso</li>
+                <li><strong><a href="{{ url_for('contact') }}">Contacto</a></strong> - Envía sugerencias, reporta problemas o contacta al soporte</li>
+            </ul>
+
+            <h2>💡 Consejos Útiles</h2>
+            <ul>
+                <li>✓ Usa categorías/conceptos consistentes para mejor análisis de datos</li>
+                <li>✓ Registra tus movimientos regularmente para mantener actualizado el historial</li>
+                <li>✓ Utiliza los filtros para analizar períodos específicos</li>
+                <li>✓ Los gastos y ingresos periódicos se reflejan automáticamente en análisis</li>
+                <li>✓ Puedes importar decimales con punto (.) o coma (,) - el sistema los normaliza</li>
+                <li>✓ Revisa siempre antes de eliminar movimientos, esta acción no se puede deshacer</li>
+            </ul>
+
+            <h2>⚠️ Información Importante</h2>
+            <ul>
+                <li>Solo el usuario autenticado puede ver sus datos</li>
+                <li>Los cambios se guardan inmediatamente en la base de datos</li>
+                <li>Puedes cambiar tu contraseña en cualquier momento desde tu cuenta</li>
+                <li>Para soporte o sugerencias, utiliza la página de Contacto</li>
             </ul>
         </div>
 
-        <p class="nota"><strong>Nota:</strong> Para encontrar movimientos o conceptos, use las páginas de Registro o Gestionar Movimientos.</p>
+        <p class="nota"><strong>¿Necesitas ayuda?</strong> Contacta con nosotros desde la página <a href="{{ url_for('contact') }}">Contacto</a>.</p>
     </article>
 
     <style>

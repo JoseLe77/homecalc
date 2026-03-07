@@ -1,0 +1,118 @@
+{% extends './base.html' %}
+{% block main %}
+<section class="contenedor margen-superior">
+  <article class="card width-change">
+    <!-- Left: Login -->
+    <div class ="login_form">
+      <div style="display:flex; border-bottom:1px solid #e4e4e4; margin-bottom:20px;">
+        <a href="#" name="login" style="padding:15px 25px; border-bottom:3px solid var(--color-primario); font-weight:600; color:var(--color-primario); text-decoration: none;">Iniciar sesión</a>
+        <a href="#" name="register" class="{{registry_activation}}" style="padding:15px 25px; color:#777; text-decoration: none;">Registrarse</a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login_check') }}">
+        <label for="username">Correo electrónico</label>
+        <input id="username" name="username" type="text" class="input" placeholder="Correo electrónico" required autofocus>
+
+        <label for="password">Contraseña</label>
+        <input id="password" name="password" type="password" class="input" placeholder="Contraseña" required>
+
+        <button type="submit" class="boton oscuro">Entrar</button>
+
+        <p class="margen-superior"><a href="{{ url_for('password_recovery') }}" style="text-decoration: none;">¿Olvidaste tu contraseña? <!--📩--></a></p>
+      </form>
+    </div>
+
+    <!-- Right: Register -->
+    <div class="register_form ocultar">
+      <div style="display:flex; border-bottom:1px solid #e4e4e4; margin-bottom:20px;">
+        <a href="#" name="login" style="padding:15px 25px; color:#777; text-decoration: none;">Iniciar sesión</a>
+        <a href="#" name="register" style="padding:15px 25px; border-bottom:3px solid var(--color-primario); font-weight:600; color:var(--color-primario); text-decoration: none;">Registrarse</a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form action="{{ url_for('register') }}" method="POST" >
+        <label for="name">Nombre</label>
+        <input id="name" name="name" type="text" class="input" placeholder="Nombre">
+
+        <label for="email">Correo electrónico</label>
+        <input id="email" name="email" type="email" class="input" placeholder="Correo electrónico">
+
+        <label for="password_reg">Contraseña</label>
+        <input id="password_reg" name="password" type="password" class="input" placeholder="Contraseña">
+
+        <label for="password_confirm">Confirmar contraseña</label>
+        <input id="password_confirm" name="password_confirm" type="password" class="input" placeholder="Confirmar contraseña">
+
+        <button type="submit" class="boton oscuro">Crear cuenta</button>
+      </form>
+    </div>
+
+  </article>
+</section>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.querySelector('.login_form');
+    const registerForm = document.querySelector('.register_form');
+    const loginLabels = document.querySelectorAll('a[name="login"]');
+    const registerLabels = document.querySelectorAll('a[name="register"]');
+
+    function activateLogin(e){
+      e.preventDefault();
+      loginForm.classList.remove('ocultar');
+      registerForm.classList.add('ocultar');
+      loginLabels.forEach(l => {
+        l.style.borderBottom = '3px solid var(--color-primario)';
+        l.style.color = 'var(--color-primario)';
+      });
+      registerLabels.forEach(l => {
+        l.style.borderBottom = 'none';
+        l.style.color = '#777';
+      });
+    }
+
+    function activateRegister(e){
+      e.preventDefault();
+      registerForm.classList.remove('ocultar');
+      loginForm.classList.add('ocultar');
+      registerLabels.forEach(l => {
+        l.style.borderBottom = '3px solid var(--color-primario)';
+        l.style.color = 'var(--color-primario)';
+      });
+      loginLabels.forEach(l => {
+        l.style.borderBottom = 'none';
+        l.style.color = '#777';
+      });
+    }
+
+    loginLabels.forEach(l => l.addEventListener('click', activateLogin));
+    registerLabels.forEach(l => l.addEventListener('click', activateRegister));
+
+    // Activar según hash al cargar
+    if(location.hash === '#register'){
+      registerLabels[0] && registerLabels[0].click();
+    } else {
+      loginLabels[0] && loginLabels[0].click();
+    }
+  });
+</script>
+{% endblock %}
+

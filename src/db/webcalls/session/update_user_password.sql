@@ -1,0 +1,1 @@
+UPDATE usuarios set usrpass='{}', usrnam='{}', moddte = CURRENT_TIMESTAMP where usrmail='{}' and usrpass='{}';

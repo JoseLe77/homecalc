@@ -1,0 +1,77 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda">
+    <ul>
+        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
+        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
+        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
+            <ul>
+                <li><a href="{{url_for('record_company')}}" class="active">Crear Empresa</a></li>
+                <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<section class="contenedor">
+    <h1 class="card">
+        CREACION DE NUEVAS COMPAÑIAS
+    </h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+    {% endwith %}
+   <form action="/add_income_company" method="POST" class="card contenedor margen-inferior">
+    <div class="filter-form">
+        <div>
+            <label for="tipo" style="font-weight: bold;">TIPO</label>
+            <select name="tipo" class="input">
+                <option name="selected_company_type" value="P">Ingreso Periodico</option>
+                <option name="selected_company_type" value="E">Ingreso Extraordinario</option>
+            </select>
+        </div>
+        <div class="margen-derecha">
+            <label for="company" style="font-weight: bold;">COMPAÑIA</label>
+            <input name="company" label="company" type="text" class="input">
+        </div>
+        <div class="margen-derecha">
+            <label for="company_name" style="font-weight: bold;">NOMBRE COMPAÑIA</label>
+            <input name="company_name" label="company_name" type="text" class="input">
+        </div>
+    </div> 
+    <div>
+        <button class="boton" type="submit">Guardar</button>
+        <button class="boton" type="reset">Refrescar</button>
+    </div>
+</form>
+<table class="card tabla periodic_table" id="tabla income_periodic">
+        <thead class="tabla-encabezado-fijo">
+            <tr>
+                <th class="texto-centrado">TIPO</td>
+                <th class="texto-centrado">EMPRESA</td>
+                <th class="texto-centrado">NOMBRE EMPRESA</td> 
+                <th class="texto-centrado no-export">ACCIONES</td>      
+            </tr>
+        </thead>
+        <tbody class="tabla_con_encabezado">
+        {% for extracted_data in income_companies_detail_list %}
+            <tr>
+                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
+                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
+                <td class="texto-centrado no-export">
+                    <!-- <a href="/disable_company/{{ extracted_data.0 }}" class="boton">Desactivar</a> -->
+                    <a href="/delete_company/{{ extracted_data.0 }}" class="boton">Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endblock %}
+

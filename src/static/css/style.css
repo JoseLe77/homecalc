@@ -55,7 +55,7 @@
 
 .nav-main{
   background: var(--color-1);
-  max-width: 300px;
+  max-width: 350px;
   align-self: center;
   border-bottom-right-radius: 20px 20px;
 
@@ -64,6 +64,69 @@
       flex-direction: column;
   }
 }
+
+/* Contenedor del interruptor */
+.switch {
+position: relative;
+display: inline-block;
+width: 60px;
+height: 34px;
+}
+
+/* Ocultar el checkbox original */
+.switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+/* Estilo de la pista del interruptor */
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0; left: 0; right: 0; bottom: 0;
+background-color: #ccc;
+transition: 0.4s;
+border-radius: 34px;
+}
+
+/* Botón circular */
+.slider:before {
+position: absolute;
+content: "";
+height: 26px; width: 26px;
+left: 4px; bottom: 4px;
+background-color: white;
+transition: 0.4s;
+border-radius: 50%;
+}
+
+/* Estado ON */
+input:checked + .slider {
+background-color: #4CAF50;
+}
+
+/* Movimiento del botón circular */
+input:checked + .slider:before {
+transform: translateX(26px);
+}
+
+/* Texto ON/OFF opcional */
+.slider::after {
+content: "OFF";
+color: white;
+position: absolute;
+right: 10px;
+top: 7px;
+font-size: 12px;
+font-family: sans-serif;
+}
+
+input:checked + .slider::after {
+content: "ON";
+left: 10px;
+right: auto;
+}  
 
 .input-moneda{
     position: relative;
@@ -81,6 +144,39 @@
     pointer-events: none;
     color: var(--color-2);
     font-size: 1.2rem;
+}
+
+.info{
+    color: black;
+    margin-top: 10px;
+}
+
+.danger{
+    color: red;
+    font-weight: bold;
+}
+
+.success{
+    color: green;
+    font-weight: bold;
+}
+
+.width-change{
+    width: 90%; 
+    margin: auto;
+}
+
+.flex-direction_change{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+.boton_config_top{
+    margin-top: 20px;
+    display: flex;
+    align-self: self-start;
 }
 
 @media screen and (min-width: 1024px) {
@@ -132,6 +228,22 @@
     gap: 20px;
     align-items: center;
   }
+
+  .width-change{
+    width: 60%; 
+    margin: auto;
+}
+
+  .flex-direction_change{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .boton_config_top{
+    margin-top: 0;
+}
 }
 
 

@@ -15,6 +15,15 @@
     <h1 class="card">
         EDICION DE GASTO SELECCIONADO
     </h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes card alert">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+    {% endwith %}
    <form action="/update_expense" method="POST" class="card contenedor margen-inferior">
     <input type="hidden" name="id" value="{{ readed_query_executed_results.0 }}">
     <div class="margen-derecha">
@@ -34,7 +43,7 @@
             <label for="tipo" style="font-weight: bold;">TIPO</label>
             <select name="tipo" class="input">
                 <option name="selected_expense_concept" value="{{ 'E' if expense_type == 'E' else 'P' }}">{{ "Gasto Extraordinario" if expense_type == "E" else "Gasto Periodico" }}</option>
-                <option name="selected_expense_concept" value="{{ 'P' if expense_type == 'E' else 'E' }}">{{ "Gasto Periodico" if expense_type == "E" else "Gasto Extraordinario" }}</option>
+                <!-- <option name="selected_expense_concept" value="{{ 'P' if expense_type == 'E' else 'E' }}">{{ "Gasto Periodico" if expense_type == "E" else "Gasto Extraordinario" }}</option> -->
             </select>
         </div>
     </div>  

@@ -6,6 +6,7 @@
         <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
         <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
             <ul>
+                <li><a href="{{url_for('record_company')}}">Crear Empresa</a></li>
                 <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
             </ul>
         </li>
@@ -42,6 +43,9 @@
                 <option name="selected_paga_extra" value="S">SI</option>
                 <option name="selected_paga_extra" value="N">NO</option>
             </select>
+        </div>
+        <div>
+            <a href="/manage_periodic_extra_incomes" name="extrpagas" class="boton">Gestion Pagas extraordinarias</a>
         </div>
     </div>
     <div class="filter-form">
@@ -106,8 +110,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tipoSelect = document.querySelector('select[name="tipo"]');
+    // Guardamos la referencia del select de paga_extra para escuchar su cambio
+    const pagaExtraSelect = document.querySelector('select[name="paga_extra"]');
     const company_periodic = document.querySelector('input[name="company_periodic"]').closest('div');
     const paga_extra = document.querySelector('select[name="paga_extra"]').closest('div');
+    const PeriodicExtra = document.querySelector('a[name="extrpagas"]').closest('div');
     const company_extra = document.querySelector('input[name="company_extra"]').closest('div')
     const anioDiv = document.querySelector('input[name="año"]').closest('div');
     const mesDiv = document.querySelector('select[name="mes"]').closest('div');
@@ -120,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const handleChange = () => {
     const tipo = tipoSelect.value;
+    const pagaExtra = pagaExtraSelect.value;
 
     // Mostrar todos por defecto
     anioDiv.style.display = '';
@@ -136,17 +144,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reglas de tipo
     if (tipo === 'P') {
-      company_extra.style.display = 'none'; // ocultar compañia extra
-      mesDiv.style.display = 'none'; // ocultar MES si es mensual
-      conceptoDiv.style.display = 'none'; // counltar concepto
+        company_extra.style.display = 'none'; // ocultar compañia extra
+        mesDiv.style.display = 'none'; // ocultar MES si es mensual
+        conceptoDiv.style.display = 'none'; // counltar concepto
+        // Lógica específica para Paga Extra dentro de Periódico
+        if (pagaExtra === 'N') {
+            PeriodicExtra.style.display = 'none';
+        }
     } else if (tipo === 'E') {
-      company_periodic.style.display = 'none'; // ocultar compañia periodica
-      mes_desdeDiv.style.display = 'none'; // ocultar MES DESDE
-      mes_hastaDiv.style.display = 'none'; // ocultar MES HASTA
-      paga_extra.style.display = 'none'; // ocultar PAGA EXTRA
-      irpfDiv.style.display = 'none'; // ocultar IRPF
-      restoImpuestosDiv.style.display = 'none'; // ocultar RESTO IMPUESTOS  
-      bonusDiv.style.display = 'none'; // ocultar BONUS
+        company_periodic.style.display = 'none'; // ocultar compañia periodica
+        mes_desdeDiv.style.display = 'none'; // ocultar MES DESDE
+        mes_hastaDiv.style.display = 'none'; // ocultar MES HASTA
+        paga_extra.style.display = 'none'; // ocultar PAGA EXTRA
+        irpfDiv.style.display = 'none'; // ocultar IRPF
+        restoImpuestosDiv.style.display = 'none'; // ocultar RESTO IMPUESTOS  
+        bonusDiv.style.display = 'none'; // ocultar BONUS
     }
   };
 

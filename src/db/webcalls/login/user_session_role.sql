@@ -1,0 +1,1 @@
+SELECT usrrole FROM usuarios WHERE usrmail = '{}' and active = 1;

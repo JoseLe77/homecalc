@@ -1,0 +1,1 @@
+SELECT usr_id FROM usuarios WHERE usrmail = '{}';

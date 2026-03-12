@@ -1,1 +1,1 @@
-update usuarios set usrrole = '{}' where usr_id = '{}';
+update usuarios set usrrole = '{}', moddte = CURRENT_TIMESTAMP, active = '{}' where usr_id = '{}';

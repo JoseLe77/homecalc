@@ -1,0 +1,157 @@
+{% extends './base.html' %}
+{% block main %}
+<nav class="nav-main menu menu-izquierda shadow">
+    <ul>
+        <li><p style="font-weight: bold; color:#e3c75f; margin-left:20px;  font-size: 20px;">Usuario:</p><p style="color:#fff; margin-left:20px; margin-top: -25px;">{{username_active}}</p></li>
+        <li><a href="{{ url_for('about') }}">Manual</a></li>
+        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
+        <li class="active"><a href="{{ url_for('config') }}">Configuración</a></li>
+        <li><a href="{{ url_for('contact') }}">Contacto</a></li>
+    </ul>
+</nav>
+<section class="contenedor-ancho">
+    <article class="manual">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes card alert">
+        {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %} 
+        {% endwith %}
+    <article class="card">
+        <h2 class="no-margen-inferior margen-izquierda">Editor SQL</h2>
+        <div class="card margen-inferior" style="padding:16px;">
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                <button id="run-sql" class="boton">Ejecutar</button>
+                <button id="clear-sql" class="boton">Limpiar</button>
+                <select id="templates-sql" style="padding:6px;">
+                    <option value="">-- Plantillas --</option>
+                    <option value="SELECT name FROM sqlite_master WHERE type='table';">Listar tablas</option>
+                    <!-- <option value="SELECT * FROM sqlite_master LIMIT 50;">Mostrar sqlite_master</option> -->
+                    <option value="SELECT t1.id, 
+t1.name Nombre_tabla, 
+t1.description Decription_tabla, 
+t2.name Campo, 
+t2.description Descripcion_campo 
+FROM DB_TABLES t1, DB_TABLES_FIELDS t2 
+WHERE t1.id=t2.table_id 
+AND t1.name='--TABLA--';">Listar Campos de Tablas</option>
+                </select>
+                <label style="margin-left:auto; color:#666; font-size:0.9em">Solo consultas <strong>SELECT</strong></label>
+            </div>
+
+            <textarea id="sql-editor" style="max-width:100%; height:260px;">SELECT name FROM sqlite_master WHERE type='table';</textarea>
+        </div>
+    </article>
+    <article class="card margen-superior" style="padding:0;">
+        <div id="query-result" style="margin-top:12px; max-height:320px; overflow:auto; background:#fff; border:1px solid #eee; padding:8px"></div>
+    </article>
+</section>
+
+<script>
+    document.getElementById('registry_switch').addEventListener('change', function() {
+        const value = this.checked ? 1 : 0;
+        
+        fetch('{{ url_for("admin_registry_config") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({status: value})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                this.checked = !this.checked;
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            this.checked = !this.checked;
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+<!-- CodeMirror (CDN) for SQL editing -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+<script>
+    // Inicializar CodeMirror a partir del textarea
+    var cm = CodeMirror.fromTextArea(document.getElementById('sql-editor'), {
+        mode: 'text/x-sql',
+        lineNumbers: true,
+        indentWithTabs: true,
+        matchBrackets: true,
+        autofocus: false
+    });
+
+    document.getElementById('clear-sql').addEventListener('click', function(){
+        cm.setValue('');
+        document.getElementById('query-result').innerHTML = '';
+    });
+
+    document.getElementById('templates-sql').addEventListener('change', function(){
+        if(this.value) cm.setValue(this.value);
+    });
+
+    document.getElementById('run-sql').addEventListener('click', function(){
+        runQuery();
+    });
+
+    function runQuery(){
+        var query = cm.getValue().trim();
+        if(!query){
+            alert('Escribe una consulta SQL.');
+            return;
+        }
+
+        // Validación simple: permitir sólo SELECT/PRAGMA/WITH
+        var ql = query.replace(/^\s+/, '').toLowerCase();
+        if(!(ql.startsWith('select') || ql.startsWith('pragma') || ql.startsWith('with'))){
+            document.getElementById('query-result').innerHTML = '<div class="card alert" style="color:#900">Solo consultas de lectura (SELECT/PRAGMA) están permitidas.</div>';
+            return;
+        }
+
+        fetch('{{ url_for("execute_sql_query") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query })
+        })
+        .then(function(resp){ return resp.json(); })
+        .then(function(data){
+            var container = document.getElementById('query-result');
+            if(!data.success){
+                container.innerHTML = '<div class="card alert" style="color:#900">Error: ' + (data.error || 'Error desconocido') + '</div>';
+                return;
+            }
+
+            var cols = data.columns || [];
+            var rows = data.rows || [];
+            if(rows.length === 0){
+                container.innerHTML = '<div class="card" style="padding:10px">Consulta ejecutada correctamente. Sin filas devueltas.</div>';
+                return;
+            }
+
+            var html = '<table style="width:100%; border-collapse:collapse">';
+            html += '<thead><tr>' + cols.map(function(c){ return '<th style="border:1px solid #ddd; padding:6px; text-align:left">'+escapeHtml(c)+'</th>'; }).join('') + '</tr></thead>';
+            html += '<tbody>' + rows.map(function(r){ return '<tr>' + r.map(function(cell){ return '<td style="border:1px solid #eee; padding:6px">'+escapeHtml(String(cell))+'</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+            html += '</table>';
+            container.innerHTML = html;
+        })
+        .catch(function(err){
+            document.getElementById('query-result').innerHTML = '<div class="card alert" style="color:#900">Error de conexión.</div>';
+            console.error(err);
+        });
+    }
+
+    function escapeHtml(s){
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+</script>
+
+{% endblock %}
+

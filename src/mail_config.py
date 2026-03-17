@@ -15,8 +15,8 @@ SMTP_PORT = 465  # 465 para SSL, 587 para TLS
 SMTP_USE_SSL = True  # True para SSL, False para TLS
 
 # Credenciales (reemplaza con tus datos)
-REMITENTE_EMAIL = "arimotla@gmail.com"
-REMITENTE_PASSWORD = "ekly oylr tgxr byzz"  # Usa contraseña de aplicación si es Gmail
+REMITENTE_EMAIL = "homecalcapp@gmail.com"
+REMITENTE_PASSWORD = "vojr tpcl dmeb wfiy" #"ekly oylr tgxr byzz"  # Usa contraseña de aplicación si es Gmail
 
 
 # ---- Database Connection ----

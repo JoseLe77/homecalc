@@ -28,7 +28,7 @@ app.secret_key = "homecalc2025"
 
 def dbconnection():
     # Connects to the specified SQLite database and returns a connection and cursor.
-    connection = sqlite3.connect('src/db/database/homecalc.db')
+    connection = sqlite3.connect('src/db/database/homecalc_empty.db')
     cursor = connection.cursor()
     return connection, cursor
 
@@ -112,6 +112,11 @@ def years_list():
         print(f"Error at Years query: {e}") 
     finally:
         connection.close()
+        if len(years_list_query_results) == 0:
+            current_year = datetime.datetime.now().year
+            years = [current_year]
+            years_list_query_results = [years]
+
         return years_list_query_results
 
 def income_years_list():
@@ -197,6 +202,10 @@ def yearslist2filter():
         print(f"Error at Years 2 filter query: {e}") 
     finally:
         connection.close()
+        print(f'Years list to filter query results: {years_list_2_filter_query_results}')
+        if years_list_2_filter_query_results is None:
+            years_list_2_filter_query_results = datetime.datetime.now().year 
+
         return years_list_2_filter_query_results
 
 def months_list():
@@ -3065,30 +3074,50 @@ def config():
     connection, cursor = dbconnection()
 
     # ---- Database month list SQL Query ----
-    webcall = open('src/db/webcalls/login/registry_activation.sql', mode='r')
-    registry_activation = webcall.read()
+    webcall = open('src/db/webcalls/login/user_session_role.sql', mode='r')
+    user_session_role = webcall.read()
+    user_session_role=user_session_role.format(session_username)
     webcall.close()
     try:
-        cursor.execute(registry_activation)
-        existing_registry_activation_query_results = cursor.fetchone()
+        cursor.execute(user_session_role)
+        user_session_role_query_results = cursor.fetchone()
     except Exception as e:
-        print(f"Error at movement concepts query: {e}") 
+        print(f"Error username query: {e}") 
     finally:
-        connection.close()
+        if user_session_role_query_results[0] != 'admin':
+            connection.close()
+            flash('No tienes permisos para acceder a esta sección. Contacta con un administrador si crees que es un error.', 'danger')
+            return redirect(url_for('about'))
+        else:
+            # ---- Database month list SQL Query ----
+            webcall = open('src/db/webcalls/login/registry_activation.sql', mode='r')
+            registry_activation = webcall.read()
+            webcall.close()
+            try:
+                cursor.execute(registry_activation)
+                existing_registry_activation_query_results = cursor.fetchone()
+            except Exception as e:
+                print(f"Error at movement concepts query: {e}") 
+            finally:
+                connection.close()
 
-    if existing_registry_activation_query_results[0] != 'disabled':
-        existing_registry_activation_query_results1 = 'checked'
-        existing_registry_activation_query_results2 = '1'
-    else:
-        existing_registry_activation_query_results1 = ''
-        existing_registry_activation_query_results2 = '0'
+            if existing_registry_activation_query_results[0] != 'disabled':
+                existing_registry_activation_query_results1 = 'checked'
+                existing_registry_activation_query_results2 = '1'
+            else:
+                existing_registry_activation_query_results1 = ''
+                existing_registry_activation_query_results2 = '0'
     
-    flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
+                flash(flash_text, flash_reason) if 'flash_text' in globals() and 'flash_reason' in globals() else None
 
     if session_username is None:
         return redirect(url_for('login'))
     else:
-        return render_template('about/config.html', nav_buttons_query_results=nav_buttons_query_results, existing_registry_activation_query_results1=existing_registry_activation_query_results1, existing_registry_activation_query_results2=existing_registry_activation_query_results2,username_active=username_active)
+        if user_session_role_query_results[0] != 'admin':
+            flash('No tienes permisos para acceder a esta sección. Contacta con un administrador si crees que es un error.', 'danger')
+            return redirect(url_for('about'))
+        else:
+            return render_template('about/config.html', nav_buttons_query_results=nav_buttons_query_results, existing_registry_activation_query_results1=existing_registry_activation_query_results1, existing_registry_activation_query_results2=existing_registry_activation_query_results2,username_active=username_active)
 
 @app.route("/admin_registry_config", methods=['POST'])
 def admin_registry_config():
@@ -3163,6 +3192,8 @@ def change_role():
         session_username = session.get('username')
         mail_user_name = request.form['usermail']
         role2change = request.form['role']
+        status2change = request.form['status']
+
         if session_username == mail_user_name:
             flash('No puedes cambiar tu propio rol. Si necesitas cambiar tu rol, contacta con otro administrador.', 'danger')
             return redirect(url_for('config'))
@@ -3184,11 +3215,15 @@ def change_role():
                 else:
                     webcall = open('src/db/webcalls/about/role_promotion_by_id.sql', mode='r')
                     update_user_role_query = webcall.read()
-                    update_user_role_query=update_user_role_query.format(role2change, existing_user_query_results[0])
+                    update_user_role_query=update_user_role_query.format(role2change, status2change, existing_user_query_results[0])
                     webcall.close()
                     cursor.execute(update_user_role_query)
                     connection.commit()
-                    flash(f'Rol del usuario {mail_user_name} actualizado correctamente a {role2change}.', 'success')
+                    if status2change == '1':
+                        status2change_translated = 'habilitado'
+                    else:
+                        status2change_translated = 'deshabilitado'
+                    flash(f'El usuario {mail_user_name} actualizado correctamente al Rol {role2change} y estado {status2change_translated}.', 'success')
 
             except Exception as e:
                 print(f"Error at existing user check SQL query: {e}")    
@@ -3199,9 +3234,75 @@ def change_role():
 
     if session_username is None:
         return redirect(url_for('login'))
-    else:
-        return render_template('about/config.html')
+    else: 
+        return redirect(url_for('config'))
 
+@app.route("/editor")
+def editor():
+    # get logged in user
+    session_username = session.get('username')
+
+    # ---- Database SQL Query ----
+    nav_buttons_query_results = nav_buttons()
+    username_active = username()
+
+    # ---- Database Connection ----
+    connection, cursor = dbconnection()
+
+    # ---- Database month list SQL Query ----
+    webcall = open('src/db/webcalls/login/user_session_role.sql', mode='r')
+    user_session_role = webcall.read()
+    user_session_role=user_session_role.format(session_username)
+    webcall.close()
+    try:
+        cursor.execute(user_session_role)
+        user_session_role_query_results = cursor.fetchone()
+    except Exception as e:
+        print(f"Error username query: {e}") 
+    finally:
+        connection.close()
+
+    if session_username is None:
+        return redirect(url_for('login'))
+    else:
+        if user_session_role_query_results[0] != 'admin':
+            flash('No tienes permisos para acceder a esta sección.', 'danger')
+            return redirect(url_for('about'))
+        else:
+            return render_template('about/editor.html', nav_buttons_query_results=nav_buttons_query_results, username_active=username_active)
+
+
+@app.route('/execute_sql_query', methods=['POST'])
+def execute_sql_query():
+    # Verificar que el usuario esté autenticado
+    session_username = session.get('username')
+    if session_username is None:
+        return {'success': False, 'error': 'No autorizado'}, 401
+
+    try:
+        data = request.get_json()
+        query = (data.get('query') or '').strip()
+        if not query:
+            return {'success': False, 'error': 'Consulta vacía'}
+
+        # Permitir sólo consultas de lectura básicas
+        ql = query.lstrip().lower()
+        if not (ql.startswith('select') or ql.startswith('pragma') or ql.startswith('with')):
+            return {'success': False, 'error': 'Sólo consultas SELECT/PRAGMA están permitidas'}
+
+        connection, cursor = dbconnection()
+        try:
+            cursor.execute(query)
+            columns = [d[0] for d in cursor.description] if cursor.description else []
+            rows = cursor.fetchall()
+            rows_list = [list(r) for r in rows]
+            return {'success': True, 'columns': columns, 'rows': rows_list}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+        finally:
+            connection.close()
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
 
 @app.route("/contact", methods=['GET', 'POST'])
 def contact():

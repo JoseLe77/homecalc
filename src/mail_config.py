@@ -16,7 +16,7 @@ SMTP_USE_SSL = True  # True para SSL, False para TLS
 
 # Credenciales (reemplaza con tus datos)
 REMITENTE_EMAIL = "homecalcapp@gmail.com"
-REMITENTE_PASSWORD = "vojr tpcl dmeb wfiy" #"ekly oylr tgxr byzz"  # Usa contraseña de aplicación si es Gmail
+REMITENTE_PASSWORD = ""  # Usa contraseña de aplicación si es Gmail
 
 
 # ---- Database Connection ----

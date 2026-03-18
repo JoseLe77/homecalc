@@ -1,1 +1,1 @@
-select id check_discount_id from "descuentosNomina" WHERE empresa={} AND año={};
+select id check_discount_id from "descuentosNomina" WHERE empresa='{}' AND año={};

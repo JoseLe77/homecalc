@@ -1579,12 +1579,10 @@ def add_income():
             resto_impuestos = resto_impuestos.replace(',', '.')
             bonus = request.form['bonus']
             bonus = bonus.replace(',', '.') 
-            print(f'Adding periodic income... Type: {tipo}, Company: {company}, Year: {año}, Amount: {cantidad}, Paga Extra: {paga_extra}, Mes Desde: {mes_desde}, Mes Hasta: {mes_hasta}, IRPF: {irpf}, Resto Impuestos: {resto_impuestos}, Bonus: {bonus}')
         else:
             company = request.form['company_extra']
             concepto = request.form['concepto']
             mes = request.form['mes']
-            print(f'Adding extra income... Type: {tipo}, Company: {company}, Year: {año}, Month: {mes}, Amount: {cantidad}, Concept: {concepto}')
         
     connection, cursor = dbconnection()
     # print('DB connected successfully')
@@ -1595,9 +1593,8 @@ def add_income():
             paga_extra_value = 1
         else:
             paga_extra_value = 0
-        print(f'Paga Extra Value: {paga_extra_value}')
 
-        mensualidades = ((int(mes_hasta) - int(mes_desde)) + 1)
+        mensualidades = (int(mes_hasta) - int(mes_desde) + 1)
         print(f'Initial Mensualidades Calculated: {mensualidades}')
         if mensualidades >= 6:
             if int(mes_hasta)<12:
@@ -1616,7 +1613,6 @@ def add_income():
         add_periodic_income_query = webcall.read()
         webcall.close()
         add_income_query_2_execute = add_periodic_income_query.format(company, año, mes_desde, mes_hasta, cantidad, mensualidades)
-        print(add_income_query_2_execute)
         webcall = open('src/db/webcalls/income/check_existing_salary_discount.sql', mode='r')
         check_existing_salary_discount_query = webcall.read()
         webcall = open('src/db/webcalls/income/add_periodic_income_calculation.sql', mode='r')
@@ -1631,42 +1627,23 @@ def add_income():
         add_extra_income_query = webcall.read()
         webcall.close()
         add_income_query_2_execute = add_extra_income_query.format(company, año, mes, cantidad, concepto)
-        print(add_income_query_2_execute)
-
+        
     try:
         cursor.execute(add_income_query_2_execute)
         connection.commit()
         if (tipo == 'P'):
-            check_existing_salary_discount_query = check_existing_salary_discount_query.format(company, año)
-            print(check_existing_salary_discount_query)
-            cursor.execute(check_existing_salary_discount_query)
-            existing_salary_discount = cursor.fetchone()
-            print(f'Existing Salary Discount ID: {existing_salary_discount}')
-            
-            if existing_salary_discount:
-                existing_salary_discount = existing_salary_discount[0]
-            else:
-                existing_salary_discount = None
-            
-            print(f'Existing Salary Discount ID2: {existing_salary_discount}')
-
+            cursor.execute(check_existing_salary_discount_query.format(company, año))
+            existing_salary_discount = cursor.fetchone()[0]
+            print(existing_salary_discount)
             if existing_salary_discount is not None:
                 delete_existing_salary_discount_query = f'DELETE FROM descuentosNomina WHERE id = {existing_salary_discount};'
                 cursor.execute(delete_existing_salary_discount_query)
                 connection.commit()
                 print('Existing salary discount deleted.')
 
-
             cursor.execute(add_periodic_income_calculation_query)
-            anual_salary_up = cursor.fetchone()
-            print(f'Anual Salary Up Query Result: {anual_salary_up}')
-            if anual_salary_up and anual_salary_up[0] is not None:
-                anual_salary_up = anual_salary_up[0]
-            else:
-                anual_salary_up = 0
-
-            print(f'Anual Salary Up: {anual_salary_up}')
-
+            anual_salary_up = cursor.fetchone()[0]
+            print(anual_salary_up)
             neto_anual = 100 - (float(irpf) + float(resto_impuestos))
             print(neto_anual)
             cursor.execute(add_periodic_income_salary_discount_query.format(company, año, anual_salary_up, neto_anual, irpf, resto_impuestos, bonus))

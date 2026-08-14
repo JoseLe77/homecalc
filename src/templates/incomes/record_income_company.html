@@ -1,77 +1,94 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda">
-    <ul>
-        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
-        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
-        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
-            <ul>
-                <li><a href="{{url_for('record_company')}}" class="active">Crear Empresa</a></li>
-                <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <h1 class="card">
-        CREACION DE NUEVAS COMPAÑIAS
-    </h1>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Ingresos</li>
+            <li><a href="{{url_for('income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">table_view</span>Resumen</a></li>
+            <li><a href="{{url_for('periodic_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('periodic_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">event_repeat</span>Ingresos Periódicos</a></li>
+            <li><a href="{{url_for('extra_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('extra_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_card</span>Ingresos Extra</a></li>
+            <li><a href="{{url_for('manage_incomes')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [url_for('manage_incomes'), url_for('record_company'), url_for('record_income')] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">edit_note</span>Registros</a></li>
+        </ul>
+    </nav>
+
+    <!-- Submenú de Registros -->
+    <div class="flex flex-wrap gap-2 bg-white rounded-xl shadow-md p-4 border border-slate-200">
+        <a href="{{url_for('record_company')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_company') %}bg-amber-400 text-slate-900 shadow{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">business</span> Crear Empresa
+        </a>
+        <a href="{{url_for('record_income')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">add_circle</span> Crear Ingreso
+        </a>
+    </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <ul class="flashes card alert">
+          <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
               <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
           </ul>
         {% endif %}
     {% endwith %}
-   <form action="/add_income_company" method="POST" class="card contenedor margen-inferior">
-    <div class="filter-form">
-        <div>
-            <label for="tipo" style="font-weight: bold;">TIPO</label>
-            <select name="tipo" class="input">
-                <option name="selected_company_type" value="P">Ingreso Periodico</option>
-                <option name="selected_company_type" value="E">Ingreso Extraordinario</option>
-            </select>
-        </div>
-        <div class="margen-derecha">
-            <label for="company" style="font-weight: bold;">COMPAÑIA</label>
-            <input name="company" label="company" type="text" class="input">
-        </div>
-        <div class="margen-derecha">
-            <label for="company_name" style="font-weight: bold;">NOMBRE COMPAÑIA</label>
-            <input name="company_name" label="company_name" type="text" class="input">
-        </div>
-    </div> 
-    <div>
-        <button class="boton" type="submit">Guardar</button>
-        <button class="boton" type="reset">Refrescar</button>
+
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+        <h1 class="text-xl font-extrabold text-slate-900 mb-6 pb-3 border-b border-slate-200 uppercase tracking-tight flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500">business</span>
+            Creación de Nuevas Compañías
+        </h1>
+        <form action="/add_income_company" method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                    <label for="tipo" class="block text-xs font-bold uppercase text-slate-500 mb-2">Tipo</label>
+                    <select name="tipo" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        <option value="P">Ingreso Periódico</option>
+                        <option value="E">Ingreso Extraordinario</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="company" class="block text-xs font-bold uppercase text-slate-500 mb-2">Compañía</label>
+                    <input name="company" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Código / Siglas">
+                </div>
+                <div>
+                    <label for="company_name" class="block text-xs font-bold uppercase text-slate-500 mb-2">Nombre Compañía</label>
+                    <input name="company_name" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Nombre completo">
+                </div>
+            </div> 
+            <div class="flex items-center gap-4 pt-4 border-t border-slate-200">
+                <button class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow" type="submit">Guardar</button>
+                <button class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm" type="reset">Refrescar</button>
+            </div>
+        </form>
     </div>
-</form>
-<table class="card tabla periodic_table" id="tabla income_periodic">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">TIPO</td>
-                <th class="texto-centrado">EMPRESA</td>
-                <th class="texto-centrado">NOMBRE EMPRESA</td> 
-                <th class="texto-centrado no-export">ACCIONES</td>      
-            </tr>
-        </thead>
-        <tbody class="tabla_con_encabezado">
-        {% for extracted_data in income_companies_detail_list %}
-            <tr>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
-                <td class="texto-centrado no-export">
-                    <!-- <a href="/disable_company/{{ extracted_data.0 }}" class="boton">Desactivar</a> -->
-                    <a href="/delete_company/{{ extracted_data.0 }}" class="boton">Borrar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="tabla">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase text-xs tracking-wider">
+                        <th class="py-3 px-4 text-left pl-6">Tipo</th>
+                        <th class="py-3 px-4 text-center">Empresa</th>
+                        <th class="py-3 px-4">Nombre Empresa</th> 
+                        <th class="py-3 px-4 text-center no-export">Acciones</th>      
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 text-sm">
+                {% for extracted_data in income_companies_detail_list %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-left pl-6 font-bold text-slate-900 uppercase whitespace-nowrap">{{ extracted_data.1 }}</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-900 uppercase whitespace-nowrap">{{ extracted_data.2 }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">{{ extracted_data.3 }}</td>
+                        <td class="py-3 px-4 text-center no-export whitespace-nowrap">
+                            <a href="/delete_company/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span> Borrar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </section>
-
 {% endblock %}
-

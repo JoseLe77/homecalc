@@ -2,7 +2,7 @@
 # Imports
 # -------------------------------------------------------------------------
 import mail_config as mail_cfg
-from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string
+from flask import Flask, render_template, request, redirect, url_for, session, flash, render_template_string, send_from_directory
 import sqlite3
 import datetime
 import os
@@ -28,7 +28,7 @@ app.secret_key = "homecalc2025"
 
 def dbconnection():
     # Connects to the specified SQLite database and returns a connection and cursor.
-    connection = sqlite3.connect('src/db/database/homecalc_empty.db')
+    connection = sqlite3.connect('src/db/database/homecalc.db')
     cursor = connection.cursor()
     return connection, cursor
 
@@ -414,6 +414,14 @@ def movements_month_list():
         connection.close()
     return existing_movement_months_list_query_results
 
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js', mimetype='application/javascript')
+
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+
 @app.route("/registry_check")
 def registry_check():
     # ---- Database Connection ----
@@ -775,26 +783,25 @@ def home():
 
     categorias = tuple(categoria[0] for categoria in current_month_expense_list_query_results)
     valores = tuple(safe_float(cantidad[1]) for cantidad in current_month_expense_list_query_results)
-    colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
-    # colores = ['#FF9999', '#66B3FF', '#99FF99', '#FFCC99', '#C2C2F0', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#FFA07A']
-
+    
     fig, ax = plt.subplots(figsize=(9, 7))
     
-    # Crear donut
-    wedges, texts, autotexts = ax.pie(valores, labels=categorias, colors=colores,
-                                        autopct='%1.0f%%', startangle=90,
-                                        pctdistance=0.75, 
-                                        labeldistance=1.2)
-    
-    for autotext in autotexts:
-        autotext.set_color('black')
-        autotext.set_fontsize(10)
-        # autotext.set_weight('bold')
+    if len(valores) > 0 and sum(valores) > 0:
+        colores = plt.cm.Paired(np.linspace(0, 1, len(categorias)))
+        wedges, texts, autotexts = ax.pie(valores, labels=categorias, colors=colores,
+                                            autopct='%1.0f%%', startangle=90,
+                                            pctdistance=0.75, 
+                                            labeldistance=1.2)
+        
+        for autotext in autotexts:
+            autotext.set_color('black')
+            autotext.set_fontsize(10)
 
-    # Añadir círculo en el centro para hacer donut
-    centre_circle = plt.Circle((0, 0), 0.50, fc='white')
-    fig.gca().add_artist(centre_circle)
-    
+        centre_circle = plt.Circle((0, 0), 0.50, fc='white')
+        fig.gca().add_artist(centre_circle)
+    else:
+        ax.text(0, 0, 'Sin datos de gastos', horizontalalignment='center', verticalalignment='center', fontsize=12, fontweight='bold', color='gray')
+
     ax.set_title('Distribución de Gastos')
     
     # Convertir a base64

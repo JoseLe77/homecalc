@@ -1,17 +1,17 @@
 {% extends './base.html' %}
 {% block main %}
-<section class="contenedor margen-superior">
-  <article class="card width-change">
+<section class="max-w-2xl mx-auto px-4 py-8">
+  <article class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200">
     <!-- Left: Login -->
-    <div class ="login_form">
-      <div style="display:flex; border-bottom:1px solid #e4e4e4; margin-bottom:20px;">
-        <a href="#" name="login" style="padding:15px 25px; border-bottom:3px solid var(--color-primario); font-weight:600; color:var(--color-primario); text-decoration: none;">Iniciar sesión</a>
-        <a href="#" name="register" class="{{registry_activation}}" style="padding:15px 25px; color:#777; text-decoration: none;">Registrarse</a>
+    <div class="login_form">
+      <div class="flex border-b border-slate-200 mb-6 gap-2">
+        <a href="#" name="login" class="px-4 py-3 border-b-2 border-slate-900 font-semibold text-slate-900 text-sm sm:text-base transition-all">Iniciar sesión</a>
+        <a href="#" name="register" class="{{registry_activation}} px-4 py-3 text-slate-500 font-medium text-sm sm:text-base hover:text-slate-900 transition-all {% if registry_activation == 'ocultar' %}hidden{% endif %}" style="{% if registry_activation == 'ocultar' %}display: none !important;{% endif %}">Registrarse</a>
       </div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <ul class="flashes card alert">
+          <ul class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
               <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
@@ -19,29 +19,35 @@
         {% endif %}
       {% endwith %}
 
-      <form method="POST" action="{{ url_for('login_check') }}">
-        <label for="username">Correo electrónico</label>
-        <input id="username" name="username" type="text" class="input" placeholder="Correo electrónico" required autofocus>
+      <form method="POST" action="{{ url_for('login_check') }}" class="space-y-4">
+        <div>
+          <label for="username" class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo electrónico</label>
+          <input id="username" name="username" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Correo electrónico" required autofocus>
+        </div>
 
-        <label for="password">Contraseña</label>
-        <input id="password" name="password" type="password" class="input" placeholder="Contraseña" required>
+        <div>
+          <label for="password" class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña</label>
+          <input id="password" name="password" type="password" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Contraseña" required>
+        </div>
 
-        <button type="submit" class="boton oscuro">Entrar</button>
+        <button type="submit" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm shadow">Entrar</button>
 
-        <p class="margen-superior"><a href="{{ url_for('password_recovery') }}" style="text-decoration: none;">¿Olvidaste tu contraseña? <!--📩--></a></p>
+        <div class="pt-2">
+          <a href="{{ url_for('password_recovery') }}" class="text-sm text-teal-600 hover:underline">¿Olvidaste tu contraseña?</a>
+        </div>
       </form>
     </div>
 
     <!-- Right: Register -->
-    <div class="register_form ocultar">
-      <div style="display:flex; border-bottom:1px solid #e4e4e4; margin-bottom:20px;">
-        <a href="#" name="login" style="padding:15px 25px; color:#777; text-decoration: none;">Iniciar sesión</a>
-        <a href="#" name="register" style="padding:15px 25px; border-bottom:3px solid var(--color-primario); font-weight:600; color:var(--color-primario); text-decoration: none;">Registrarse</a>
+    <div class="register_form hidden" {% if registry_activation == 'ocultar' %}style="display: none !important;"{% endif %}>
+      <div class="flex border-b border-slate-200 mb-6 gap-2">
+        <a href="#" name="login" class="px-4 py-3 text-slate-500 font-medium text-sm sm:text-base hover:text-slate-900 transition-all">Iniciar sesión</a>
+        <a href="#" name="register" class="px-4 py-3 border-b-2 border-slate-900 font-semibold text-slate-900 text-sm sm:text-base transition-all">Registrarse</a>
       </div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <ul class="flashes card alert">
+          <ul class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
               <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
@@ -49,20 +55,28 @@
         {% endif %}
       {% endwith %}
 
-      <form action="{{ url_for('register') }}" method="POST" >
-        <label for="name">Nombre</label>
-        <input id="name" name="name" type="text" class="input" placeholder="Nombre">
+      <form action="{{ url_for('register') }}" method="POST" class="space-y-4">
+        <div>
+          <label for="name" class="block text-xs font-bold uppercase text-slate-500 mb-1">Nombre</label>
+          <input id="name" name="name" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Nombre">
+        </div>
 
-        <label for="email">Correo electrónico</label>
-        <input id="email" name="email" type="email" class="input" placeholder="Correo electrónico">
+        <div>
+          <label for="email" class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo electrónico</label>
+          <input id="email" name="email" type="email" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Correo electrónico">
+        </div>
 
-        <label for="password_reg">Contraseña</label>
-        <input id="password_reg" name="password" type="password" class="input" placeholder="Contraseña">
+        <div>
+          <label for="password_reg" class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña</label>
+          <input id="password_reg" name="password" type="password" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Contraseña">
+        </div>
 
-        <label for="password_confirm">Confirmar contraseña</label>
-        <input id="password_confirm" name="password_confirm" type="password" class="input" placeholder="Confirmar contraseña">
+        <div>
+          <label for="password_confirm" class="block text-xs font-bold uppercase text-slate-500 mb-1">Confirmar contraseña</label>
+          <input id="password_confirm" name="password_confirm" type="password" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Confirmar contraseña">
+        </div>
 
-        <button type="submit" class="boton oscuro">Crear cuenta</button>
+        <button type="submit" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm shadow">Crear cuenta</button>
       </form>
     </div>
 
@@ -75,31 +89,33 @@
     const loginLabels = document.querySelectorAll('a[name="login"]');
     const registerLabels = document.querySelectorAll('a[name="register"]');
 
+    if (!loginForm || !registerForm) return;
+
     function activateLogin(e){
       e.preventDefault();
-      loginForm.classList.remove('ocultar');
-      registerForm.classList.add('ocultar');
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
       loginLabels.forEach(l => {
-        l.style.borderBottom = '3px solid var(--color-primario)';
-        l.style.color = 'var(--color-primario)';
+        l.classList.add('border-b-2', 'border-slate-900', 'font-semibold', 'text-slate-900');
+        l.classList.remove('text-slate-500', 'font-medium');
       });
       registerLabels.forEach(l => {
-        l.style.borderBottom = 'none';
-        l.style.color = '#777';
+        l.classList.remove('border-b-2', 'border-slate-900', 'font-semibold', 'text-slate-900');
+        l.classList.add('text-slate-500', 'font-medium');
       });
     }
 
     function activateRegister(e){
       e.preventDefault();
-      registerForm.classList.remove('ocultar');
-      loginForm.classList.add('ocultar');
+      registerForm.classList.remove('hidden');
+      loginForm.classList.add('hidden');
       registerLabels.forEach(l => {
-        l.style.borderBottom = '3px solid var(--color-primario)';
-        l.style.color = 'var(--color-primario)';
+        l.classList.add('border-b-2', 'border-slate-900', 'font-semibold', 'text-slate-900');
+        l.classList.remove('text-slate-500', 'font-medium');
       });
       loginLabels.forEach(l => {
-        l.style.borderBottom = 'none';
-        l.style.color = '#777';
+        l.classList.remove('border-b-2', 'border-slate-900', 'font-semibold', 'text-slate-900');
+        l.classList.add('text-slate-500', 'font-medium');
       });
     }
 
@@ -107,7 +123,7 @@
     registerLabels.forEach(l => l.addEventListener('click', activateRegister));
 
     // Activar según hash al cargar
-    if(location.hash === '#register'){
+    if(location.hash === '#register' && registerForm.style.display !== 'none'){
       registerLabels[0] && registerLabels[0].click();
     } else {
       loginLabels[0] && loginLabels[0].click();

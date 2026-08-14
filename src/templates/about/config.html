@@ -1,57 +1,99 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda shadow">
-    <ul>
-        <li><p style="font-weight: bold; color:#e3c75f; margin-left:20px;  font-size: 20px;">Usuario:</p><p style="color:#fff; margin-left:20px; margin-top: -25px;">{{username_active}}</p></li>
-        <li><a href="{{ url_for('about') }}">Manual</a></li>
-        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
-        <li class="active"><a href="{{ url_for('config') }}">Configuración</a></li>
-        <li><a href="{{ url_for('contact') }}">Contacto</a></li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <article class="manual">
-        <h1 class="card">CONFIGURACION</h1>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class="flashes card alert">
-        {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Usuario: <span class="text-amber-400">{{username_active}}</span></li>
+            <li><a href="{{ url_for('about') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('about') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">menu_book</span>Manual</a></li>
+            <li><a href="{{ url_for('change_password') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('change_password') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">key</span>Cambiar Contraseña</a></li>
+            {% if user_session_config != 'ocultar' and user_session_config != 'no-visible' %}
+            <li><a href="{{ url_for('config') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('config') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">admin_panel_settings</span>Configuración</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('contact') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('contact') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">mail</span>Contacto</a></li>
+        </ul>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
-            </ul>
+          </ul>
         {% endif %}
     {% endwith %}
-        <div class="card margen-inferior" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
-            <h2 class="no-margen-inferior margen-izquierda">Formulario de Registro</h2>
+
+    <div class="space-y-6">
+        <h1 class="text-2xl font-extrabold text-slate-900 uppercase tracking-tight flex items-center gap-2 pb-2 border-b border-slate-200">
+            <span class="material-symbols-outlined text-amber-500 text-3xl">settings</span>
+            Configuración
+        </h1>
+
+        <!-- Formulario de Registro Switch -->
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-teal-600">toggle_on</span>
+                    Formulario de Registro
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">Activa o desactiva la visibilidad del formulario de registro público.</p>
+            </div>
             <label class="switch">
                 <input type="checkbox" id="registry_switch" {{existing_registry_activation_query_results1}} value="{{existing_registry_activation_query_results2}}">
                 <span class="slider"></span>
             </label>
         </div>
-        <div class="card margen-inferior">
-            <h2 class="margen-inferior">Gestion de Rol y estado de Usuario</h2>
-            <form class="flex-direction_change" action="{{ url_for('change_role') }}" method="POST">
-                <div style="display: flex; justify-content: flex-start; gap: 20px;">
-                    <input type="text" name="usermail" size="40" placeholder="Correo del usuario">
-                    <select name="role" id="role" length="30">
-                        <option name="userrole" value="user">Usuario</option>
-                        <option name="adminrole" value="admin">Administrador</option>
-                    </select>
-                    <select name="status" id="status" length="30">
-                        <option name="enabledstatus" value="1">Habilitado</option>
-                        <option name="disabledstatus" value="0">Deshabilitado</option>
-                    </select>
+
+        <!-- Gestión de Rol y estado de Usuario -->
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200 space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-teal-600">manage_accounts</span>
+                Gestión de Rol y Estado de Usuario
+            </h2>
+            <form action="{{ url_for('change_role') }}" method="POST" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="usermail" class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo del usuario</label>
+                        <input type="text" name="usermail" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="usuario@email.com" required>
+                    </div>
+                    <div>
+                        <label for="role" class="block text-xs font-bold uppercase text-slate-500 mb-1">Rol</label>
+                        <select name="role" id="role" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-xs font-bold uppercase text-slate-500 mb-1">Estado</label>
+                        <select name="status" id="status" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                            <option value="1">Habilitado</option>
+                            <option value="0">Deshabilitado</option>
+                        </select>
+                    </div>
                 </div>
-                <button class="boton boton_config_top">Cambiar</button>
+                <div>
+                    <button type="submit" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow">Cambiar</button>
+                </div>
             </form>
         </div>
-    </article>
-    <article class="card" style="display: flex; justify-content: space-between;">
-        <h2 class="no-margen-inferior margen-izquierda">Extraccion de Datos</h2>
-        <div class="buttons">
-            <a class="boton" href="{{ url_for('editor') }}">Editor SQL</a>
+
+        <!-- Extracción de Datos -->
+        <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-teal-600">database</span>
+                    Extracción de Datos
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">Accede a la consola SQL avanzada para consultas directas.</p>
+            </div>
+            <div>
+                <a href="{{ url_for('editor') }}" class="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-5 py-2.5 rounded-lg transition-colors text-sm shadow">
+                    <span class="material-symbols-outlined text-lg">code</span> Editor SQL
+                </a>
+            </div>
         </div>
-    </article>
+    </div>
 </section>
 
 <script>
@@ -78,6 +120,4 @@
         });
     });
 </script>
-
 {% endblock %}
-

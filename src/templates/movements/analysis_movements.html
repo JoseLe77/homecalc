@@ -1,83 +1,51 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda">
-    <ul>
-        <li><a href="{{url_for('form')}}">Registro</a></li>
-        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
-        <li><a href="{{url_for('movements_analysis')}}" class="active">Analisis</a></li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <form action="/movements_analysis_filter" method="POST" class="card filter-form margen-inferior">
-        <div class="margen-derecha">
-            <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-            <select name="concepto" class="input">
-                <option name="selected_year" value="TODOS">TODOS</option>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Movimientos</li>
+            <li><a href="{{url_for('form')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('form') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_circle</span>Registro</a></li>
+            <li><a href="{{url_for('manage_movements')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('manage_movements') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">visibility</span>Visualizar</a></li>
+            <li><a href="{{url_for('movements_analysis')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [url_for('movements_analysis'), url_for('movements_analysis_filter')] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">analytics</span>Análisis</a></li>
+        </ul>
+    </nav>
+
+    <!-- Formulario de Filtros -->
+    <form action="/movements_analysis_filter" method="POST" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div>
+            <label for="concepto" class="block text-xs font-bold uppercase text-slate-500 mb-1">Concepto</label>
+            <select name="concepto" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                <option value="TODOS">TODOS</option>
                 {% for movement_concept in movements_concept_list_query_results%}
-                    <option name="selected_movement_concept" value="{{ movement_concept.0 }}">{{ movement_concept.0 }}</option>
+                    <option value="{{ movement_concept.0 }}">{{ movement_concept.0 }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label for="tipoAbono" style="font-weight: bold;">TIPO</label>
-            <select name="tipoAbono" class="input">
-                <option name="selected_year" value="TODOS">TODOS</option>
-                <option name="tipoAbonoTarjeta" value="T">TARJETA</option>
-                <option name="tipoAbonoEfectivo" value="E">EFECTIVO</option>
+            <label for="tipoAbono" class="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo</label>
+            <select name="tipoAbono" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                <option value="TODOS">TODOS</option>
+                <option value="T">TARJETA</option>
+                <option value="E">EFECTIVO</option>
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="año" style="font-weight: bold;">AÑO</label>
-            <select name="año" class="input">
+        <div>
+            <label for="año" class="block text-xs font-bold uppercase text-slate-500 mb-1">Año</label>
+            <select name="año" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for year in existing_movement_years_list_query_results%}
-                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                    <option value="{{ year.0 }}">{{ year.0 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <button class="boton" type="submit">Filtrar</button>
+        <div>
+            <button class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors text-sm shadow" type="submit">Filtrar</button>
+        </div>
     </form>
-    <article class="card">
-        <img src="data:image/png;base64,{{ image_base64 }}" alt="Gráfico">
-    </article>
+
+    <!-- Gráfico de Análisis -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200 flex flex-col items-center justify-center">
+        <img src="data:image/png;base64,{{ image_base64 }}" alt="Gráfico de Análisis" class="max-h-[500px] w-auto object-contain">
+    </div>
 </section>
-
-<!-- <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form[action="/manage_expenses_filter"]');
-
-  const tipoSelect = form.querySelector('select[name="tipo"]');
-  const periodicidadSelect = form.querySelector('select[name="periodicidad"]');
-  const anioDiv = form.querySelector('select[name="año"]').closest('div');
-  const periodicidadDiv = periodicidadSelect.closest('div');
-  const mesDiv = form.querySelector('select[name="mes"]').closest('div');
-
-  const handleChange = () => {
-    const tipo = tipoSelect.value;
-    const periodicidad = periodicidadSelect.value;
-
-    // Mostrar todo por defecto
-    anioDiv.style.display = '';
-    periodicidadDiv.style.display = '';
-    mesDiv.style.display = '';
-
-    // Reglas
-    if (tipo === 'P') {
-      anioDiv.style.display = 'none'; // ocultar año
-      if (periodicidad === 'M') {
-        mesDiv.style.display = 'none'; // ocultar mes si periodicidad = M
-      }
-    } else if (tipo === 'E') {
-      periodicidadDiv.style.display = 'none'; // ocultar periodicidad
-    }
-  };
-
-  // Ejecutar al cargar
-  handleChange();
-
-  // Escuchar cambios
-  tipoSelect.addEventListener('change', handleChange);
-  periodicidadSelect.addEventListener('change', handleChange);
-});
-</script> -->
 {% endblock %}
-

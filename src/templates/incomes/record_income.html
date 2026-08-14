@@ -1,185 +1,200 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda">
-    <ul>
-        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
-        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
-        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
-            <ul>
-                <li><a href="{{url_for('record_company')}}">Crear Empresa</a></li>
-                <li><a href="{{url_for('record_income')}}" class="active">Crear Ingreso</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <h1 class="card">
-        CREACION DE NUEVOS INGRESOS
-    </h1>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Ingresos</li>
+            <li><a href="{{url_for('income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">table_view</span>Resumen</a></li>
+            <li><a href="{{url_for('periodic_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('periodic_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">event_repeat</span>Ingresos Periódicos</a></li>
+            <li><a href="{{url_for('extra_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('extra_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_card</span>Ingresos Extra</a></li>
+            <li><a href="{{url_for('manage_incomes')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [url_for('manage_incomes'), url_for('record_company'), url_for('record_income')] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">edit_note</span>Registros</a></li>
+        </ul>
+    </nav>
+
+    <!-- Submenú de Registros -->
+    <div class="flex flex-wrap gap-2 bg-white rounded-xl shadow-md p-4 border border-slate-200">
+        <a href="{{url_for('record_company')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_company') %}bg-amber-400 text-slate-900 shadow{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">business</span> Crear Empresa
+        </a>
+        <a href="{{url_for('record_income')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_income') %}bg-amber-400 text-slate-900 shadow{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">add_circle</span> Crear Ingreso
+        </a>
+    </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <ul class="flashes card alert">
+          <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
               <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
           </ul>
         {% endif %}
     {% endwith %}
-   <form action="/add_income" method="POST" class="card contenedor margen-inferior">
-    <div class="filter-form">
-        <div>
-            <label for="tipo" style="font-weight: bold;">TIPO</label>
-            <select name="tipo" class="input">
-                <option name="selected_expense_concept" value="P">Ingreso Periodico</option>
-                <option name="selected_expense_concept" value="E">Ingreso Extraordinario</option>
-            </select>
-        </div>
-        <div class="margen-derecha">
-            <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
-            <select name="company_extra" class="input">
-                {% for extra_income_company in extra_companies_list_query_results %}
-                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div> 
-    <div class="filter-form">
-        <div class="margen-derecha">
-            <label for="company_periodic" style="font-weight: bold;">COMPAÑIA</label>
-            <!-- <input name="company_periodic" label="company_periodic" type="text" class="input"> -->
-            <select name="company_periodic" class="input">
-                {% for periodic_income_company in periodic_companies_list_query_results %}
-                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="paga_extra" style="font-weight: bold;">PAGA EXTRAORDINARIA</label>
-            <select name="paga_extra" class="input">
-                <option name="selected_paga_extra" value="S">SI</option>
-                <option name="selected_paga_extra" value="N">NO</option>
-            </select>
-        </div>
-        <div>
-            <a href="/manage_periodic_extra_incomes" name="extrpagas" class="boton">Gestion Pagas extraordinarias</a>
-        </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+        <h1 class="text-xl font-extrabold text-slate-900 mb-6 pb-3 border-b border-slate-200 uppercase tracking-tight flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500">add_circle</span>
+            Creación de Nuevos Ingresos
+        </h1>
+
+        <form action="/add_income" method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="tipo" class="block text-xs font-bold uppercase text-slate-500 mb-2">Tipo</label>
+                    <select name="tipo" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        <option value="P">Ingreso Periódico</option>
+                        <option value="E">Ingreso Extraordinario</option>
+                    </select>
+                </div>
+                <div id="divCompanyExtra">
+                    <label for="company_extra" class="block text-xs font-bold uppercase text-slate-500 mb-2">Compañía</label>
+                    <select name="company_extra" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        {% for extra_income_company in extra_companies_list_query_results %}
+                            <option value="{{ extra_income_company.0 }}">{{ extra_income_company.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div id="divCompanyPeriodic">
+                    <label for="company_periodic" class="block text-xs font-bold uppercase text-slate-500 mb-2">Compañía</label>
+                    <select name="company_periodic" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        {% for periodic_income_company in periodic_companies_list_query_results %}
+                            <option value="{{ periodic_income_company.0 }}">{{ periodic_income_company.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="divPagaExtra">
+                    <label for="paga_extra" class="block text-xs font-bold uppercase text-slate-500 mb-2">Paga Extraordinaria</label>
+                    <select name="paga_extra" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        <option value="S">SI</option>
+                        <option value="N">NO</option>
+                    </select>
+                </div>
+                <div id="divBtnPagas">
+                    <a href="/manage_periodic_extra_incomes" name="extrpagas" class="inline-flex items-center justify-center gap-2 w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors">
+                        <span class="material-symbols-outlined text-base">list_alt</span> Gestión Pagas Extra
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div id="divIrpf">
+                    <label for="irpf" class="block text-xs font-bold uppercase text-slate-500 mb-2">IRPF %</label>
+                    <input name="irpf" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="0.0">
+                </div>
+                <div id="divRestoImpuestos">
+                    <label for="resto_impuestos" class="block text-xs font-bold uppercase text-slate-500 mb-2">Resto Impuestos %</label>
+                    <input name="resto_impuestos" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="0.0">
+                </div>
+                <div id="divBonus">
+                    <label for="bonus" class="block text-xs font-bold uppercase text-slate-500 mb-2">Bonus %</label>
+                    <input name="bonus" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="0.0">
+                </div>
+            </div>
+
+            <div id="divConcepto">
+                <label for="concepto" class="block text-xs font-bold uppercase text-slate-500 mb-2">Concepto</label>
+                <input name="concepto" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Concepto del ingreso extra">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
+                <div id="divAnio">
+                    <label for="año" class="block text-xs font-bold uppercase text-slate-500 mb-2">Año</label>
+                    <input name="año" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm text-center" placeholder="2026">
+                </div>
+                <div id="divMesDesde">
+                    <label for="mes_desde" class="block text-xs font-bold uppercase text-slate-500 mb-2">Mes Desde</label>
+                    <select name="mes_desde" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        {% for month in months_list_query_results%}
+                            <option value="{{ month.0 }}">{{ month.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="divMesHasta">
+                    <label for="mes_hasta" class="block text-xs font-bold uppercase text-slate-500 mb-2">Mes Hasta</label>
+                    <select name="mes_hasta" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        {% for month in months_list_query_results%}
+                            <option value="{{ month.0 }}">{{ month.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="divMes">
+                    <label for="mes" class="block text-xs font-bold uppercase text-slate-500 mb-2">Mes</label>
+                    <select name="mes" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        {% for month in months_list_query_results%}
+                            <option value="{{ month.0 }}">{{ month.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="cantidad" class="block text-xs font-bold uppercase text-slate-500 mb-2">Cantidad</label>   
+                    <div class="relative">
+                        <input name="cantidad" type="text" class="w-full px-4 py-2.5 pr-8 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm text-right" placeholder="0.00">
+                        <span class="absolute right-3 top-2.5 text-slate-400 font-semibold">€</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 pt-4 border-t border-slate-200">
+                <button class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow" type="submit">Guardar</button>
+                <button class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm" type="reset">Refrescar</button>
+            </div>
+        </form>
     </div>
-    <div class="filter-form">
-        <div class="margen-derecha">
-            <label for="irpf" style="font-weight: bold;">IRPF %</label>
-            <input name="irpf" label="irpf" type="text" class="input">
-        </div>
-        <div class="margen-derecha">
-            <label for="resto_impuestos" style="font-weight: bold;">RESTO IMPUESTOS %</label>
-            <input name="resto_impuestos" label="resto_impuestos" type="text" class="input">
-        </div>
-        <div class="margen-derecha">
-            <label for="bonus" style="font-weight: bold;">BONUS %</label>
-            <input name="bonus" label="bonus" type="text" class="input">
-        </div>
-    </div>
-    <div class="margen-derecha">
-        <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-        <input name="concepto" label="concepto" type="text" class="input">
-    </div> 
-    <div class="filter-form">
-        <div>
-            <label for="año" style="font-weight: bold;">AÑO</label>
-            <input name="año" label="año" type="text" class="input texto-centrado">
-        </div>
-        <div>
-            <label for="mes_desde" style="font-weight: bold;">MES DESDE</label>
-            <select name="mes_desde" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_from_month" value="{{ month.0 }}">{{ month.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="mes_hasta" style="font-weight: bold;">MES HASTA</label>
-            <select name="mes_hasta" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_to_month" value="{{ month.0 }}">{{ month.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="mes" style="font-weight: bold;">MES</label>
-            <select name="mes" class="input">
-                {% for month in months_list_query_results%}
-                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="input-moneda">
-            <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>   
-            <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
-            <span class="moneda">€</span>
-        </div>
-    </div>
-    <div>
-        <button class="boton" type="submit">Guardar</button>
-        <button class="boton" type="reset">Refrescar</button>
-    </div>
-</form>
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tipoSelect = document.querySelector('select[name="tipo"]');
-    // Guardamos la referencia del select de paga_extra para escuchar su cambio
     const pagaExtraSelect = document.querySelector('select[name="paga_extra"]');
+    if (!tipoSelect || !pagaExtraSelect) return;
     
-    const company_periodic = document.querySelector('select[name="company_periodic"]').closest('div');
-    const paga_extra_div = pagaExtraSelect.closest('div');
-    const PeriodicExtra = document.querySelector('a[name="extrpagas"]').closest('div');
-    const company_extra = document.querySelector('select[name="company_extra"]').closest('div');
-    const anioDiv = document.querySelector('input[name="año"]').closest('div');
-    const mesDiv = document.querySelector('select[name="mes"]').closest('div');
-    const mes_desdeDiv = document.querySelector('select[name="mes_desde"]').closest('div');
-    const mes_hastaDiv = document.querySelector('select[name="mes_hasta"]').closest('div');   
-    const conceptoDiv = document.querySelector('input[name="concepto"]').closest('div');
-    const irpfDiv = document.querySelector('input[name="irpf"]').closest('div');
-    const restoImpuestosDiv = document.querySelector('input[name="resto_impuestos"]').closest('div');
-    const bonusDiv = document.querySelector('input[name="bonus"]').closest('div');  
+    const company_periodic = document.getElementById('divCompanyPeriodic');
+    const paga_extra_div = document.getElementById('divPagaExtra');
+    const PeriodicExtra = document.getElementById('divBtnPagas');
+    const company_extra = document.getElementById('divCompanyExtra');
+    const anioDiv = document.getElementById('divAnio');
+    const mesDiv = document.getElementById('divMes');
+    const mes_desdeDiv = document.getElementById('divMesDesde');
+    const mes_hastaDiv = document.getElementById('divMesHasta');   
+    const conceptoDiv = document.getElementById('divConcepto');
+    const irpfDiv = document.getElementById('divIrpf');
+    const restoImpuestosDiv = document.getElementById('divRestoImpuestos');
+    const bonusDiv = document.getElementById('divBonus');  
 
     const handleChange = () => {
         const tipo = tipoSelect.value;
         const pagaExtra = pagaExtraSelect.value;
 
-        // Resetear visibilidad (Mostrar todos)
         [anioDiv, company_periodic, paga_extra_div, PeriodicExtra, company_extra, 
          mesDiv, mes_desdeDiv, mes_hastaDiv, conceptoDiv, bonusDiv, irpfDiv, restoImpuestosDiv]
-        .forEach(div => div.style.display = '');
+        .forEach(div => { if(div) div.style.display = ''; });
 
         if (tipo === 'P') {
-            company_extra.style.display = 'none';
-            mesDiv.style.display = 'none';
-            conceptoDiv.style.display = 'none';
+            if (company_extra) company_extra.style.display = 'none';
+            if (mesDiv) mesDiv.style.display = 'none';
+            if (conceptoDiv) conceptoDiv.style.display = 'none';
             
-            // Lógica específica para Paga Extra dentro de Periódico
             if (pagaExtra === 'N') {
-                PeriodicExtra.style.display = 'none';
+                if (PeriodicExtra) PeriodicExtra.style.display = 'none';
             }
         } else if (tipo === 'E') {
-            company_periodic.style.display = 'none';
-            mes_desdeDiv.style.display = 'none';
-            mes_hastaDiv.style.display = 'none';
-            paga_extra_div.style.display = 'none';
-            PeriodicExtra.style.display = 'none';
-            irpfDiv.style.display = 'none';
-            restoImpuestosDiv.style.display = 'none';  
-            bonusDiv.style.display = 'none';
+            if (company_periodic) company_periodic.style.display = 'none';
+            if (mes_desdeDiv) mes_desdeDiv.style.display = 'none';
+            if (mes_hastaDiv) mes_hastaDiv.style.display = 'none';
+            if (paga_extra_div) paga_extra_div.style.display = 'none';
+            if (PeriodicExtra) PeriodicExtra.style.display = 'none';
+            if (irpfDiv) irpfDiv.style.display = 'none';
+            if (restoImpuestosDiv) restoImpuestosDiv.style.display = 'none';  
+            if (bonusDiv) bonusDiv.style.display = 'none';
         }
     };
 
-    // Ejecutar al inicio
     handleChange();
-
-    // ESCUCHAR AMBOS SELECTS
     tipoSelect.addEventListener('change', handleChange);
     pagaExtraSelect.addEventListener('change', handleChange);
 });
 </script>
-
 {% endblock %}
-

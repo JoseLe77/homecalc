@@ -1,134 +1,169 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda">
-    <ul>
-        <li><a href="{{url_for('periodic_income')}}">Ingresos Periodicos</a></li>
-        <li><a href="{{url_for('extra_income')}}">Ingresos Extra</a></li>
-        <li><a href="{{url_for('manage_incomes')}}" class="active">Registros</a>
-            <ul>
-                <li><a href="{{url_for('record_company')}}">Crear Empresa</a></li>
-                <li><a href="{{url_for('record_income')}}">Crear Ingreso</a></li>
-            </ul>
-        </li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <form action="/manage_income_filter" method="POST" class="card filter-form margen-inferior">
-        <div class="margen-derecha">
-            <label for="tipo" style="font-weight: bold;">TIPO</label>
-            <select name="tipo" class="input">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Ingresos</li>
+            <li><a href="{{url_for('income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">table_view</span>Resumen</a></li>
+            <li><a href="{{url_for('periodic_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('periodic_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">event_repeat</span>Ingresos Periódicos</a></li>
+            <li><a href="{{url_for('extra_income')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('extra_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_card</span>Ingresos Extra</a></li>
+            <li><a href="{{url_for('manage_incomes')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [url_for('manage_incomes'), url_for('record_company'), url_for('record_income'), url_for('manage_income_filter')] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">edit_note</span>Registros</a></li>
+        </ul>
+    </nav>
+
+    <!-- Submenú de Registros -->
+    <div class="flex flex-wrap gap-2 bg-white rounded-xl shadow-md p-4 border border-slate-200">
+        <a href="{{url_for('record_company')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_company') %}bg-amber-400 text-slate-900 shadow-md{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">business</span> Crear Empresa
+        </a>
+        <a href="{{url_for('record_income')}}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all {% if request.path == url_for('record_income') %}bg-amber-400 text-slate-900 shadow-md{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">add_circle</span> Crear Ingreso
+        </a>
+    </div>
+
+    <!-- Formulario de Filtros -->
+    <form action="/manage_income_filter" method="POST" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <div>
+            <label for="tipo" class="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo</label>
+            <select name="tipo" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for tipo_value, tipo_description in income_types_descriptions.items() %}
-                    <option name="selected_income_concept" value="{{ tipo_value }}">{{ tipo_description }}</option>
+                    <option value="{{ tipo_value }}">{{ tipo_description }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="company_periodic" style="font-weight: bold;">COMPAÑIA</label>
-            <select name="company_periodic" class="input">
+        <div>
+            <label for="company_periodic" class="block text-xs font-bold uppercase text-slate-500 mb-1">Compañía</label>
+            <select name="company_periodic" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for periodic_income_company in periodic_companies_list_query_results %}
-                    <option name="selected_periodic_income_company" value="{{ periodic_income_company.0 }}">{{ periodic_income_company.1 }}</option>
+                    <option value="{{ periodic_income_company.0 }}">{{ periodic_income_company.1 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="company_extra" style="font-weight: bold;">COMPAÑIA</label>
-            <select name="company_extra" class="input">
+        <div>
+            <label for="company_extra" class="block text-xs font-bold uppercase text-slate-500 mb-1">Compañía</label>
+            <select name="company_extra" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for extra_income_company in extra_companies_list_query_results %}
-                    <option name="selected_extra_income_company" value="{{ extra_income_company.0 }}">{{ extra_income_company.1 }}</option>
+                    <option value="{{ extra_income_company.0 }}">{{ extra_income_company.1 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="año" style="font-weight: bold;">AÑO</label>
-            <select name="año" class="input">
+        <div>
+            <label for="año" class="block text-xs font-bold uppercase text-slate-500 mb-1">Año</label>
+            <select name="año" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for year in years_list_query_results %}
-                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                    <option value="{{ year.0 }}">{{ year.0 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="mes" style="font-weight: bold;">MES</label>
-            <select name="mes" class="input">
+        <div>
+            <label for="mes" class="block text-xs font-bold uppercase text-slate-500 mb-1">Mes</label>
+            <select name="mes" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for month in months_list_query_results %}
-                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                    <option value="{{ month.0 }}">{{ month.1 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <button class="boton" type="submit">Filtrar</button>
+        <div>
+            <button class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors text-sm shadow" type="submit">Filtrar</button>
+        </div>
     </form>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <ul class="flashes card alert">
+          <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
               <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
           </ul>
         {% endif %}
-      {% endwith %}
-    <div class="contenedor" style="margin-bottom: 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
-            <div><a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}</div>
-            <button class="boton" id="export-csv-btn" style="margin-bottom: 0;">Exportar ↧</button>
-        </div>  
+    {% endwith %}
+
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white rounded-xl shadow-md p-4 border border-slate-200">
+        <div class="text-sm font-semibold text-slate-700"><span class="text-slate-400 uppercase text-xs">Último filtro:</span> {{ filtered_data }}</div>
+        <button class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors text-sm shadow flex items-center gap-1.5" id="export-csv-btn">
+            <span class="material-symbols-outlined text-lg">download</span> Exportar CSV
+        </button>
     </div>
-    <table class="card tabla periodic_table" id="tabla income_periodic">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">COMPAÑIA</td>
-                <th class="texto-centrado">AÑO</td>
-                <th class="texto-centrado">RANGO MESES</td> 
-                <th class="texto-centrado">BRUTO | NETO  | BONUS</td>
-                <th class="texto-centrado">MENSUALIDAD</td>
-                <th class="texto-centrado no-export">ACCIONES</td>      
-            </tr>
-        </thead>
-        <tbody class="tabla_con_encabezado">
-        {% for extracted_data in income_query_results %}
-            <tr>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }} <br> ({{ extracted_data.6 }})</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} € <br> {{ extracted_data.5 }} € <br> {{ extracted_data.8 }} €</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.7 }} €</td>
-                <td class="texto-centrado no-export">
-                    <a href="/selected_income/{{ extracted_data.0 }}" class="boton">Editar</a>
-                    <a href="/delete_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <table class="card tabla extra_table" id="tabla income_extra">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">COMPAÑIA</td>
-                <th class="texto-centrado">AÑO</td>
-                <th class="texto-centrado">MES</td> 
-                <th class="texto-centrado">CONCEPTO</td>
-                <th class="texto-centrado">CANTIDAD</td>
-                <th class="texto-centrado no-export">ACCIONES</td>         
-            </tr>
-        </thead>
-        <tbody class="tabla_con_encabezado">
-        {% for extracted_data in income_query_results %}
-            <tr>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.4 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.5 }} €</td>
-                <td class="texto-centrado no-export">
-                    <a href="/selected_income/{{ extracted_data.0 }}" class="boton">Editar</a>
-                    <a href="/delete_income/{{ extracted_data.0 }}" class="boton">Borrar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+    <!-- Tabla Periódicos -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 periodic_table">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="tabla_periodic">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase text-xs tracking-wider">
+                        <th class="py-3 px-4 text-left pl-6">Compañía</th>
+                        <th class="py-3 px-4 text-center">Año</th>
+                        <th class="py-3 px-4 text-center">Rango Meses</th> 
+                        <th class="py-3 px-4 text-center">Bruto | Neto | Bonus</th>
+                        <th class="py-3 px-4 text-center">Mensualidad</th>
+                        <th class="py-3 px-4 text-center no-export">Acciones</th>      
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 text-sm">
+                {% for extracted_data in income_query_results %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-left pl-6 font-bold text-slate-900 uppercase whitespace-nowrap">{{ extracted_data.1 }}</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-900 whitespace-nowrap">{{ extracted_data.2 }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-slate-600 whitespace-nowrap">{{ extracted_data.3 }} <br> ({{ extracted_data.6 }})</td>
+                        <td class="py-3 px-4 text-center font-semibold text-slate-600 whitespace-nowrap uppercase">{{ extracted_data.4 }} € <br> {{ extracted_data.5 }} € <br> {{ extracted_data.8 }} €</td>
+                        <td class="py-3 px-4 text-center font-bold text-emerald-600 whitespace-nowrap">{{ extracted_data.7 }} €</td>
+                        <td class="py-3 px-4 text-center no-export whitespace-nowrap space-x-2">
+                            <a href="/selected_income/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">edit</span> Editar
+                            </a>
+                            <a href="/delete_income/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span> Borrar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tabla Extra -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 extra_table">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="tabla_extra">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase text-xs tracking-wider">
+                        <th class="py-3 px-4 text-left pl-6">Compañía</th>
+                        <th class="py-3 px-4 text-center">Año</th>
+                        <th class="py-3 px-4 text-center">Mes</th> 
+                        <th class="py-3 px-4">Concepto</th>
+                        <th class="py-3 px-4 text-center">Cantidad</th>
+                        <th class="py-3 px-4 text-center no-export">Acciones</th>         
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 text-sm">
+                {% for extracted_data in income_query_results %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-left pl-6 font-bold text-slate-900 uppercase whitespace-nowrap">{{ extracted_data.1 }}</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-900 whitespace-nowrap">{{ extracted_data.2 }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-slate-600 whitespace-nowrap">{{ extracted_data.3 }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">{{ extracted_data.4 }}</td>
+                        <td class="py-3 px-4 text-center font-bold text-emerald-600 whitespace-nowrap">{{ extracted_data.5 }} €</td>
+                        <td class="py-3 px-4 text-center no-export whitespace-nowrap space-x-2">
+                            <a href="/selected_income/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">edit</span> Editar
+                            </a>
+                            <a href="/delete_income/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span> Borrar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form[action="/manage_income_filter"]');
+    if (!form) return;
 
     const tipoSelect = form.querySelector('select[name="tipo"]');
     const anioDiv = form.querySelector('select[name="año"]').closest('div');
@@ -141,37 +176,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleChange = () => {
         const tipo = tipoSelect.value;
 
-        // Mostrar todo por defecto
         anioDiv.style.display = '';
         company_periodic.style.display = '';
         company_extra.style.display = '';
         mesDiv.style.display = '';
         periodicTable.style.display = '';
         extraTable.style.display = '';
-  
 
-        // Reglas
         if (tipo === 'P') {
-            company_extra.style.display = 'none'; // ocultar compañia extra
-            mesDiv.style.display = 'none'; // ocultar mes
-            extraTable.style.display = 'none'; // ocultar tabla extra
-            extraTable.querySelector("tbody").innerHTML=""; // limpiar tabla extra
+            company_extra.style.display = 'none';
+            mesDiv.style.display = 'none';
+            extraTable.style.display = 'none';
+            extraTable.querySelector("tbody").innerHTML="";
         } else {
-            company_periodic.style.display = 'none'; // ocultar compañia periodica
-            periodicTable.style.display = 'none'; // ocultar tabla periodica  
-            periodicTable.querySelector("tbody").innerHTML=""; // limpiar tabla periodica
+            company_periodic.style.display = 'none';
+            periodicTable.style.display = 'none';
+            periodicTable.querySelector("tbody").innerHTML="";
         }
-};
+    };
 
-// Ejecutar al cargar
-handleChange();
-
-  // Escuchar cambios
-  tipoSelect.addEventListener('change', handleChange);
+    handleChange();
+    tipoSelect.addEventListener('change', handleChange);
 });
 
 document.getElementById('export-csv-btn').addEventListener('click', function() {
-    // Determinar qué tabla está visible
     const periodicTable = document.querySelector('.periodic_table');
     const extraTable = document.querySelector('.extra_table');
     
@@ -179,10 +207,10 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
     let filename;
     
     if (periodicTable.style.display !== 'none') {
-        table = periodicTable;
+        table = periodicTable.querySelector('table');
         filename = 'Ingresos_Periodicos_filtrados.csv';
     } else if (extraTable.style.display !== 'none') {
-        table = extraTable;
+        table = extraTable.querySelector('table');
         filename = 'Ingresos_Extra_filtrados.csv';
     } else {
         alert('No hay tabla visible para exportar');
@@ -190,8 +218,6 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
     }
     
     let csv = [];
-    
-    // Agregar encabezados (excluyendo columnas con clase 'no-export')
     const headers = [];
     table.querySelectorAll('thead tr th').forEach((th) => {
         if (!th.classList.contains('no-export')) {
@@ -200,14 +226,11 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
     });
     csv.push(headers.join(','));
     
-    // Agregar filas (excluyendo columnas con clase 'no-export')
     table.querySelectorAll('tbody tr').forEach(row => {
         const cells = [];
         let colIndex = 0;
         row.querySelectorAll('td').forEach((td) => {
-            // Obtener el encabezado correspondiente
             const th = table.querySelectorAll('thead tr th')[colIndex];
-            // Omitir si tiene la clase 'no-export'
             if (th && !th.classList.contains('no-export')) {
                 cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
             }
@@ -218,7 +241,6 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
         }
     });
     
-    // Crear blob y descargar
     const csvContent = csv.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -232,4 +254,3 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
 });
 </script>
 {% endblock %}
-

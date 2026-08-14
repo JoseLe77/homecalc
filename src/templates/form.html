@@ -1,90 +1,101 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda shadow">
-    <ul>
-        <li><a href="{{url_for('form')}}" class="active">Registro</a></li>
-        <li><a href="{{url_for('manage_movements')}}">Visualizar</a></li>
-        <li><a href="{{url_for('movements_analysis')}}">Analisis</a></li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <h1 class="card">
-        REGISTRO DE GASTOS DIARIOS
-    </h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <ul class="flashes card alert">
-            {% for category, message in messages %}
-              <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-    {% endwith %}
-    <form action="/add_movement" method="POST" class="card contenedor margen-inferior">
-        <div class="filter-form">
-            <div>
-                <label for="tipoEnt" style="font-weight: bold;">TIPO ENTRADA</label>
-                <select name="tipoEnt" class="input">
-                    <option name="tipoEntrada" value="E">Existente</option>
-                    <option name="tipoEntrada" value="M">Manual</option>
-                </select>
-            </div>
-            <div>
-                <label for="fecha" style="font-weight: bold;">FECHA</label>
-                <input name="fecha" label="fecha" type="date" class="input">
-            </div>
-        </div>  
-        <div>
-            <label for="conceptoManual" style="font-weight: bold;">CONCEPTO</label>
-            <input name="conceptoManual" label="conceptoManual" type="text" class="input">
-        </div>
-        <div>
-            <label for="conceptoSeleccion" style="font-weight: bold;">CONCEPTO</label>
-            <select name="conceptoSeleccion" class="input">
-                {% for concept in movements_concept_list_query_results%}
-                    <option name="selected_concept" value="{{ concept.0 }}">{{ concept.0 }}</option>
+<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Movimientos</li>
+            <li><a href="{{url_for('form')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('form') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_circle</span>Registro</a></li>
+            <li><a href="{{url_for('manage_movements')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('manage_movements') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">visibility</span>Visualizar</a></li>
+            <li><a href="{{url_for('movements_analysis')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('movements_analysis') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">analytics</span>Análisis</a></li>
+        </ul>
+    </nav>
+
+    <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200">
+        <h1 class="text-xl font-extrabold text-slate-900 mb-6 pb-3 border-b border-slate-200 uppercase tracking-tight flex items-center gap-2">
+            <span class="material-symbols-outlined text-teal-600">receipt_long</span>
+            Registro de Gastos Diarios
+        </h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <ul class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm space-y-1">
+                {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
-            </select>
-        </div>
-        <div class="filter-form">
-            <div>
-                <label for="tipoAbono" style="font-weight: bold;">TIPO ENTRADA</label>
-                <select name="tipoAbono" class="input">
-                    <option name="tipoAbonoTarjeta" value="T">Tarjeta</option>
-                    <option name="tipoAbonoEfectivo" value="E">Efectivo</option>
+              </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form action="/add_movement" method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="tipoEnt" class="block text-xs font-bold uppercase text-slate-500 mb-2">Tipo Entrada</label>
+                    <select name="tipoEnt" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        <option name="tipoEntrada" value="E">Existente</option>
+                        <option name="tipoEntrada" value="M">Manual</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="fecha" class="block text-xs font-bold uppercase text-slate-500 mb-2">Fecha</label>
+                    <input name="fecha" label="fecha" type="date" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                </div>
+            </div>  
+
+            <div id="divConceptoManual">
+                <label for="conceptoManual" class="block text-xs font-bold uppercase text-slate-500 mb-2">Concepto</label>
+                <input name="conceptoManual" label="conceptoManual" type="text" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm" placeholder="Nombre del concepto">
+            </div>
+
+            <div id="divConceptoSeleccion">
+                <label for="conceptoSeleccion" class="block text-xs font-bold uppercase text-slate-500 mb-2">Concepto</label>
+                <select name="conceptoSeleccion" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                    {% for concept in movements_concept_list_query_results%}
+                        <option name="selected_concept" value="{{ concept.0 }}">{{ concept.0 }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="input-moneda">
-                <label for="cantidad" style="font-weight: bold;">CANTIDAD</label>
-                <input name="cantidad" label="cantidad" type="text" class="input texto-derecha">
-                <span class="moneda">€</span>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="tipoAbono" class="block text-xs font-bold uppercase text-slate-500 mb-2">Tipo Abono</label>
+                    <select name="tipoAbono" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                        <option name="tipoAbonoTarjeta" value="T">Tarjeta</option>
+                        <option name="tipoAbonoEfectivo" value="E">Efectivo</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cantidad" class="block text-xs font-bold uppercase text-slate-500 mb-2">Cantidad</label>
+                    <div class="relative">
+                        <input name="cantidad" label="cantidad" type="text" class="w-full px-4 py-2.5 pr-8 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm text-right" placeholder="0.00">
+                        <span class="absolute right-3 top-2.5 text-slate-400 font-semibold">€</span>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div>
-            <button class="boton" type="submit">Guardar</button>
-            <button class="boton" type="reset">Refrescar</button>
-        </div>
-    </form>
+            
+            <div class="flex items-center gap-4 pt-4 border-t border-slate-200">
+                <button class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-6 py-2.5 rounded-lg transition-colors text-sm shadow" type="submit">Guardar</button>
+                <button class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm" type="reset">Refrescar</button>
+            </div>
+        </form>
+    </div>
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tipoSelect = document.querySelector('select[name="tipoEnt"]');
-    // CORREGIDO: input en lugar de select
-    const manualConcept = document.querySelector('input[name="conceptoManual"]').closest('div'); 
-    const listedConcept = document.querySelector('select[name="conceptoSeleccion"]').closest('div');
+    const manualConcept = document.getElementById('divConceptoManual'); 
+    const listedConcept = document.getElementById('divConceptoSeleccion');
+
+    if (!tipoSelect || !manualConcept || !listedConcept) return;
 
     const handleChange = () => {
         const tipo = tipoSelect.value;
-        console.log(tipo); // CORREGIDO: console.log en lugar de print
-
-        manualConcept.style.display = '';
-        listedConcept.style.display = ''; 
-
         if (tipo === 'M') {
             listedConcept.style.display = 'none';
+            manualConcept.style.display = '';
         } else if (tipo === 'E') {
             manualConcept.style.display = 'none';
+            listedConcept.style.display = '';
         }
     };
 

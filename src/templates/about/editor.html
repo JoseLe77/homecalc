@@ -1,35 +1,42 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda shadow">
-    <ul>
-        <li><p style="font-weight: bold; color:#e3c75f; margin-left:20px;  font-size: 20px;">Usuario:</p><p style="color:#fff; margin-left:20px; margin-top: -25px;">{{username_active}}</p></li>
-        <li><a href="{{ url_for('about') }}">Manual</a></li>
-        <li><a href="{{ url_for('change_password') }}">Cambiar Contraseña</a></li>
-        <li class="active"><a href="{{ url_for('config') }}">Configuración</a></li>
-        <li><a href="{{ url_for('contact') }}">Contacto</a></li>
-    </ul>
-</nav>
-<section class="contenedor-ancho">
-    <article class="manual">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class="flashes card alert">
-        {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Usuario: <span class="text-amber-400">{{username_active}}</span></li>
+            <li><a href="{{ url_for('about') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('about') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">menu_book</span>Manual</a></li>
+            <li><a href="{{ url_for('change_password') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('change_password') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">key</span>Cambiar Contraseña</a></li>
+            {% if user_session_config != 'ocultar' and user_session_config != 'no-visible' %}
+            <li><a href="{{ url_for('config') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [ url_for('config'), url_for('editor') ] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">admin_panel_settings</span>Configuración</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('contact') }}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('contact') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">mail</span>Contacto</a></li>
+        </ul>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
-            </ul>
+          </ul>
         {% endif %} 
-        {% endwith %}
-    <article class="card">
-        <h2 class="no-margen-inferior margen-izquierda">Editor SQL</h2>
-        <div class="card margen-inferior" style="padding:16px;">
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
-                <button id="run-sql" class="boton">Ejecutar</button>
-                <button id="clear-sql" class="boton">Limpiar</button>
-                <select id="templates-sql" style="padding:6px;">
+    {% endwith %}
+
+    <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 border border-slate-200 space-y-6">
+        <h1 class="text-xl font-extrabold text-slate-900 pb-3 border-b border-slate-200 uppercase tracking-tight flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500">code</span>
+            Editor SQL
+        </h1>
+
+        <div class="space-y-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <button id="run-sql" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-5 py-2 rounded-lg transition-colors text-sm shadow flex items-center gap-1.5"><span class="material-symbols-outlined text-base">play_arrow</span>Ejecutar</button>
+                <button id="clear-sql" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-5 py-2 rounded-lg transition-colors text-sm flex items-center gap-1.5"><span class="material-symbols-outlined text-base">restart_alt</span>Limpiar</button>
+                <select id="templates-sql" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#161d2e]">
                     <option value="">-- Plantillas --</option>
                     <option value="SELECT name FROM sqlite_master WHERE type='table';">Listar tablas</option>
-                    <!-- <option value="SELECT * FROM sqlite_master LIMIT 50;">Mostrar sqlite_master</option> -->
                     <option value="SELECT t1.id, 
 t1.name Nombre_tabla, 
 t1.description Decription_tabla, 
@@ -39,41 +46,19 @@ FROM DB_TABLES t1, DB_TABLES_FIELDS t2
 WHERE t1.id=t2.table_id 
 AND t1.name='--TABLA--';">Listar Campos de Tablas</option>
                 </select>
-                <label style="margin-left:auto; color:#666; font-size:0.9em">Solo consultas <strong>SELECT</strong></label>
+                <span class="ml-auto text-xs text-slate-500 font-medium">Solo consultas <strong>SELECT</strong></span>
             </div>
 
-            <textarea id="sql-editor" style="max-width:100%; height:260px;">SELECT name FROM sqlite_master WHERE type='table';</textarea>
+            <div class="border border-slate-300 rounded-lg overflow-hidden">
+                <textarea id="sql-editor" class="w-full">SELECT name FROM sqlite_master WHERE type='table';</textarea>
+            </div>
         </div>
-    </article>
-    <article class="card margen-superior" style="padding:0;">
-        <div id="query-result" style="margin-top:12px; max-height:320px; overflow:auto; background:#fff; border:1px solid #eee; padding:8px"></div>
-    </article>
-</section>
+    </div>
 
-<script>
-    document.getElementById('registry_switch').addEventListener('change', function() {
-        const value = this.checked ? 1 : 0;
-        
-        fetch('{{ url_for("admin_registry_config") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({status: value})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                this.checked = !this.checked;
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            this.checked = !this.checked;
-            console.error('Error:', error);
-        });
-    });
-</script>
+    <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+        <div id="query-result" class="overflow-x-auto text-sm"></div>
+    </div>
+</section>
 
 <!-- CodeMirror (CDN) for SQL editing -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
@@ -109,10 +94,9 @@ AND t1.name='--TABLA--';">Listar Campos de Tablas</option>
             return;
         }
 
-        // Validación simple: permitir sólo SELECT/PRAGMA/WITH
         var ql = query.replace(/^\s+/, '').toLowerCase();
         if(!(ql.startsWith('select') || ql.startsWith('pragma') || ql.startsWith('with'))){
-            document.getElementById('query-result').innerHTML = '<div class="card alert" style="color:#900">Solo consultas de lectura (SELECT/PRAGMA) están permitidas.</div>';
+            document.getElementById('query-result').innerHTML = '<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">Solo consultas de lectura (SELECT/PRAGMA) están permitidas.</div>';
             return;
         }
 
@@ -125,25 +109,25 @@ AND t1.name='--TABLA--';">Listar Campos de Tablas</option>
         .then(function(data){
             var container = document.getElementById('query-result');
             if(!data.success){
-                container.innerHTML = '<div class="card alert" style="color:#900">Error: ' + (data.error || 'Error desconocido') + '</div>';
+                container.innerHTML = '<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">Error: ' + (data.error || 'Error desconocido') + '</div>';
                 return;
             }
 
             var cols = data.columns || [];
             var rows = data.rows || [];
             if(rows.length === 0){
-                container.innerHTML = '<div class="card" style="padding:10px">Consulta ejecutada correctamente. Sin filas devueltas.</div>';
+                container.innerHTML = '<div class="p-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-sm">Consulta ejecutada correctamente. Sin filas devueltas.</div>';
                 return;
             }
 
-            var html = '<table style="width:100%; border-collapse:collapse">';
-            html += '<thead><tr>' + cols.map(function(c){ return '<th style="border:1px solid #ddd; padding:6px; text-align:left">'+escapeHtml(c)+'</th>'; }).join('') + '</tr></thead>';
-            html += '<tbody>' + rows.map(function(r){ return '<tr>' + r.map(function(cell){ return '<td style="border:1px solid #eee; padding:6px">'+escapeHtml(String(cell))+'</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
+            var html = '<table class="w-full border-collapse border border-slate-200 text-left text-sm">';
+            html += '<thead><tr class="bg-slate-100 text-slate-700">' + cols.map(function(c){ return '<th class="border border-slate-200 px-4 py-2 font-bold whitespace-nowrap">'+escapeHtml(c)+'</th>'; }).join('') + '</tr></thead>';
+            html += '<tbody class="divide-y divide-slate-200">' + rows.map(function(r){ return '<tr class="hover:bg-slate-50">' + r.map(function(cell){ return '<td class="border border-slate-200 px-4 py-2 text-slate-600 whitespace-nowrap">'+escapeHtml(String(cell))+'</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
             html += '</table>';
             container.innerHTML = html;
         })
         .catch(function(err){
-            document.getElementById('query-result').innerHTML = '<div class="card alert" style="color:#900">Error de conexión.</div>';
+            document.getElementById('query-result').innerHTML = '<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">Error de conexión.</div>';
             console.error(err);
         });
     }
@@ -154,4 +138,3 @@ AND t1.name='--TABLA--';">Listar Campos de Tablas</option>
 </script>
 
 {% endblock %}
-

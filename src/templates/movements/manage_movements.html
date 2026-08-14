@@ -1,148 +1,122 @@
 {% extends './base.html' %}
 {% block main %}
-<nav class="nav-main menu menu-izquierda">
-    <ul>
-        <li><a href="{{url_for('form')}}">Registro</a></li>
-        <li><a href="{{url_for('manage_movements')}}" class="active">Visualizar</a></li>
-        <li><a href="{{url_for('movements_analysis')}}">Analisis</a></li>
-    </ul>
-</nav>
-<section class="contenedor">
-    <form action="/manage_movements_filter" method="POST" class="card filter-form margen-inferior">
-        <div class="margen-derecha">
-            <label for="concepto" style="font-weight: bold;">CONCEPTO</label>
-            <select name="concepto" class="input">
-                <option name="selected_year" value="TODOS">TODOS</option>
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Menú interior horizontal -->
+    <nav class="bg-slate-900 rounded-xl shadow-md overflow-hidden">
+        <ul class="flex flex-wrap items-center">
+            <li class="bg-black/20 px-6 py-4 border-r border-slate-800 text-slate-400 font-semibold text-sm uppercase tracking-wider hidden sm:block">Movimientos</li>
+            <li><a href="{{url_for('form')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('form') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">add_circle</span>Registro</a></li>
+            <li><a href="{{url_for('manage_movements')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path in [url_for('manage_movements'), url_for('manage_movements_filter')] %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">visibility</span>Visualizar</a></li>
+            <li><a href="{{url_for('movements_analysis')}}" class="flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-all {% if request.path == url_for('movements_analysis') %}bg-amber-400 text-slate-900 shadow-md{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="material-symbols-outlined text-lg">analytics</span>Análisis</a></li>
+        </ul>
+    </nav>
+
+    <!-- Formulario de Filtros -->
+    <form action="/manage_movements_filter" method="POST" class="bg-white rounded-xl shadow-md p-6 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <div>
+            <label for="concepto" class="block text-xs font-bold uppercase text-slate-500 mb-1">Concepto</label>
+            <select name="concepto" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                <option value="TODOS">TODOS</option>
                 {% for movement_concept in movements_concept_list_query_results%}
-                    <option name="selected_movement_concept" value="{{ movement_concept.0 }}">{{ movement_concept.0 }}</option>
+                    <option value="{{ movement_concept.0 }}">{{ movement_concept.0 }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label for="tipoAbono" style="font-weight: bold;">TIPO</label>
-            <select name="tipoAbono" class="input">
-                <option name="selected_year" value="TODOS">TODOS</option>
-                <option name="tipoAbonoTarjeta" value="T">TARJETA</option>
-                <option name="tipoAbonoEfectivo" value="E">EFECTIVO</option>
+            <label for="tipoAbono" class="block text-xs font-bold uppercase text-slate-500 mb-1">Tipo</label>
+            <select name="tipoAbono" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                <option value="TODOS">TODOS</option>
+                <option value="T">TARJETA</option>
+                <option value="E">EFECTIVO</option>
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="año" style="font-weight: bold;">AÑO</label>
-            <select name="año" class="input">
+        <div>
+            <label for="año" class="block text-xs font-bold uppercase text-slate-500 mb-1">Año</label>
+            <select name="año" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
                 {% for year in existing_movement_years_list_query_results%}
-                    <option name="selected_year" value="{{ year.0 }}">{{ year.0 }}</option>
+                    <option value="{{ year.0 }}">{{ year.0 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="margen-derecha">
-            <label for="mes" style="font-weight: bold;">MES</label>
-            <select name="mes" class="input">
-                <option name="selected_year" value="0">TODOS</option>
+        <div>
+            <label for="mes" class="block text-xs font-bold uppercase text-slate-500 mb-1">Mes</label>
+            <select name="mes" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#161d2e] text-sm bg-white">
+                <option value="0">TODOS</option>
                 {% for month in existing_movement_months_list_query_results%}
-                    <option name="selected_month" value="{{ month.0 }}">{{ month.1 }}</option>
+                    <option value="{{ month.0 }}">{{ month.1 }}</option>
                 {% endfor %}
             </select>
         </div>
-        <button class="boton" type="submit">Filtrar</button>
+        <div>
+            <button class="w-full bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors text-sm shadow" type="submit">Filtrar</button>
+        </div>
     </form>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <ul class="flashes card alert">
+        <ul class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
             {% for category, message in messages %}
             <li class="{{ category }}">{{ message }}</li>
             {% endfor %}
         </ul>
         {% endif %}
     {% endwith %}
-    <div class="contenedor" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
-        <div><a style="font-weight: bold;">ULTIMO FILTRO: </a>{{ filtered_data }}</div>
-        <button class="boton" id="export-csv-btn" style="margin-bottom: 0px;">Exportar ↧</button>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white rounded-xl shadow-md p-4 border border-slate-200">
+        <div class="text-sm font-semibold text-slate-700"><span class="text-slate-400 uppercase text-xs">Último filtro:</span> {{ filtered_data }}</div>
+        <button class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg transition-colors text-sm shadow flex items-center gap-1.5" id="export-csv-btn">
+            <span class="material-symbols-outlined text-lg">download</span> Exportar CSV
+        </button>
     </div>
     
-    <table class="card tabla" id="tabla">
-        <thead class="tabla-encabezado-fijo">
-            <tr>
-                <th class="texto-centrado">FECHA</td>
-                <th class="texto-centrado">CONCEPTO</td>
-                <th class="texto-centrado">TIPO</td>
-                <th class="texto-centrado">CANTIDAD</td>
-                <th class="texto-centrado no-export">ACCIONES</td>       
-            </tr>
-        </thead>
-        <tbody class="tabla_con_encabezado">
-        {% for extracted_data in movements_filter_list_query_results %}
-            <tr>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.1 }}</td>
-                <td style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.2 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; color: var(--color-primario)">{{ extracted_data.3 }}</td>
-                <td class="texto-centrado" style="font-weight:bold; text-transform: uppercase; color: var(--color-primario)">{{ extracted_data.4 }} €</td>
-                <td class="texto-centrado no-export">
-                    <!-- <a href="/selected_movement/{{ extracted_data.0 }}" class="boton">Editar</a> -->
-                    <a href="/delete_movement/{{ extracted_data.0 }}" class="boton">Borrar</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="tabla">
+                <thead>
+                    <tr class="bg-slate-900 text-white uppercase text-xs tracking-wider">
+                        <th class="py-3 px-4 text-center">Fecha</th>
+                        <th class="py-3 px-4">Concepto</th>
+                        <th class="py-3 px-4 text-center">Tipo</th>
+                        <th class="py-3 px-4 text-center">Cantidad</th>
+                        <th class="py-3 px-4 text-center no-export">Acciones</th>       
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 text-sm">
+                {% for extracted_data in movements_filter_list_query_results %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-center font-bold text-slate-900 whitespace-nowrap">{{ extracted_data.1 }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800 uppercase">{{ extracted_data.2 }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-slate-600">{{ extracted_data.3 }}</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-900">{{ extracted_data.4 }} €</td>
+                        <td class="py-3 px-4 text-center no-export">
+                            <a href="/delete_movement/{{ extracted_data.0 }}" class="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span> Borrar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </section>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form[action="/manage_expenses_filter"]');
-
-  const tipoSelect = form.querySelector('select[name="tipo"]');
-  const periodicidadSelect = form.querySelector('select[name="periodicidad"]');
-  const anioDiv = form.querySelector('select[name="año"]').closest('div');
-  const periodicidadDiv = periodicidadSelect.closest('div');
-  const mesDiv = form.querySelector('select[name="mes"]').closest('div');
-
-  const handleChange = () => {
-    const tipo = tipoSelect.value;
-    const periodicidad = periodicidadSelect.value;
-
-    // Mostrar todo por defecto
-    anioDiv.style.display = '';
-    periodicidadDiv.style.display = '';
-    mesDiv.style.display = '';
-
-    // Reglas
-    if (tipo === 'P') {
-      anioDiv.style.display = 'none'; // ocultar año
-      if (periodicidad === 'M') {
-        mesDiv.style.display = 'none'; // ocultar mes si periodicidad = M
-      }
-    } else if (tipo === 'E') {
-      periodicidadDiv.style.display = 'none'; // ocultar periodicidad
-    }
-  };
-
-  // Ejecutar al cargar
-  handleChange();
-
-  // Escuchar cambios
-  tipoSelect.addEventListener('change', handleChange);
-  periodicidadSelect.addEventListener('change', handleChange);
-});
-
 document.getElementById('export-csv-btn').addEventListener('click', function() {
     const table = document.getElementById('tabla');
     let csv = [];
     
-    // Agregar encabezados (excluyendo columnas con clase 'no-export')
     const headers = [];
-    table.querySelectorAll('thead tr th').forEach((th, colIndex) => {
+    table.querySelectorAll('thead tr th').forEach((th) => {
         if (!th.classList.contains('no-export')) {
             headers.push(th.textContent.trim());
         }
     });
     csv.push(headers.join(','));
     
-    // Agregar filas (excluyendo columnas con clase 'no-export')
     table.querySelectorAll('tbody tr').forEach(row => {
         const cells = [];
         row.querySelectorAll('td').forEach((td, colIndex) => {
-            // Obtener el encabezado correspondiente
             const th = table.querySelectorAll('thead tr th')[colIndex];
-            // Omitir si tiene la clase 'no-export'
             if (!th || !th.classList.contains('no-export')) {
                 cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
             }
@@ -152,7 +126,6 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
         }
     });
     
-    // Crear blob y descargar
     const csvContent = csv.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -165,43 +138,4 @@ document.getElementById('export-csv-btn').addEventListener('click', function() {
     document.body.removeChild(link);
 });
 </script>
-<!-- <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form[action="/manage_expenses_filter"]');
-
-  const tipoSelect = form.querySelector('select[name="tipo"]');
-  const periodicidadSelect = form.querySelector('select[name="periodicidad"]');
-  const anioDiv = form.querySelector('select[name="año"]').closest('div');
-  const periodicidadDiv = periodicidadSelect.closest('div');
-  const mesDiv = form.querySelector('select[name="mes"]').closest('div');
-
-  const handleChange = () => {
-    const tipo = tipoSelect.value;
-    const periodicidad = periodicidadSelect.value;
-
-    // Mostrar todo por defecto
-    anioDiv.style.display = '';
-    periodicidadDiv.style.display = '';
-    mesDiv.style.display = '';
-
-    // Reglas
-    if (tipo === 'P') {
-      anioDiv.style.display = 'none'; // ocultar año
-      if (periodicidad === 'M') {
-        mesDiv.style.display = 'none'; // ocultar mes si periodicidad = M
-      }
-    } else if (tipo === 'E') {
-      periodicidadDiv.style.display = 'none'; // ocultar periodicidad
-    }
-  };
-
-  // Ejecutar al cargar
-  handleChange();
-
-  // Escuchar cambios
-  tipoSelect.addEventListener('change', handleChange);
-  periodicidadSelect.addEventListener('change', handleChange);
-});
-</script> -->
 {% endblock %}
-
